@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { FaTags, FaCreditCard, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaMapPin } from 'react-icons/fa';
 import { Modal } from '@/components/Modal';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export default function TicketingPage() {
   const params = useParams();
@@ -389,7 +390,7 @@ export default function TicketingPage() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-gray-600 mb-4">
             <div className="flex items-center gap-2">
               <FaCalendarAlt />
-              <span>{new Date(event.startDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              <span>{formatInTimeZone(event.startDate, event.timezone, 'EEEE, MMMM d, yyyy')}</span>
             </div>
             <div className="flex items-center gap-2">
               <FaClock />
