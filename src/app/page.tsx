@@ -27,7 +27,12 @@ async function fetchEventsWithMedia(): Promise<EventWithMedia[]> {
   );
   let eventsData: EventDetailsDTO[] = [];
   if (eventsResponse.ok) {
-    eventsData = await eventsResponse.json();
+    try {
+      eventsData = await eventsResponse.json();
+    } catch (err) {
+      console.error('Failed to parse events JSON:', err);
+      eventsData = [];
+    }
   }
   if (!eventsData || eventsData.length === 0) {
     eventsResponse = await fetch(
@@ -35,35 +40,128 @@ async function fetchEventsWithMedia(): Promise<EventWithMedia[]> {
       { cache: 'no-store' }
     );
     if (eventsResponse.ok) {
-      eventsData = await eventsResponse.json();
+      try {
+        eventsData = await eventsResponse.json();
+      } catch (err) {
+        console.error('Failed to parse events JSON (fallback):', err);
+        eventsData = [];
+      }
     }
   }
 
-  const eventsWithMedia = await Promise.all(
+  // Use Promise.allSettled instead of Promise.all to handle individual failures gracefully
+  const eventsWithMediaResults = await Promise.allSettled(
     eventsData.map(async (event: EventDetailsDTO) => {
       try {
-        const flyerRes = await fetch(`${baseUrl}/api/proxy/event-medias?eventId.equals=${event.id}&eventFlyer.equals=true`, { cache: 'no-store' });
-        let mediaArray: any[] = [];
-        if (flyerRes.ok) {
-          const flyerData = await flyerRes.json();
-          mediaArray = Array.isArray(flyerData) ? flyerData : (flyerData ? [flyerData] : []);
-        }
-        if (!mediaArray.length) {
-          const featuredRes = await fetch(`${baseUrl}/api/proxy/event-medias?eventId.equals=${event.id}&isFeaturedImage.equals=true`, { cache: 'no-store' });
-          if (featuredRes.ok) {
-            const featuredData = await featuredRes.json();
-            mediaArray = Array.isArray(featuredData) ? featuredData : (featuredData ? [featuredData] : []);
+        console.log(`Fetching media for event ID: ${event.id}, title: ${event.title}`);
+
+        // Add timeout to prevent hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+        try {
+          const flyerRes = await fetch(
+            `${baseUrl}/api/proxy/event-medias?eventId.equals=${event.id}&eventFlyer.equals=true`,
+            {
+              cache: 'no-store',
+              signal: controller.signal
+            }
+          );
+          clearTimeout(timeoutId);
+
+          let mediaArray: any[] = [];
+
+          if (flyerRes.ok) {
+            try {
+              const flyerData = await flyerRes.json();
+              mediaArray = Array.isArray(flyerData) ? flyerData : (flyerData ? [flyerData] : []);
+              console.log(`Event ${event.id}: Found ${mediaArray.length} flyer media items`);
+            } catch (jsonErr) {
+              console.error(`Event ${event.id}: Failed to parse flyer JSON:`, jsonErr);
+              mediaArray = [];
+            }
+          } else {
+            console.log(`Event ${event.id}: Flyer fetch failed with status ${flyerRes.status}`);
           }
+
+          if (!mediaArray.length) {
+            const featuredController = new AbortController();
+            const featuredTimeoutId = setTimeout(() => featuredController.abort(), 10000);
+
+            try {
+              const featuredRes = await fetch(
+                `${baseUrl}/api/proxy/event-medias?eventId.equals=${event.id}&isFeaturedImage.equals=true`,
+                {
+                  cache: 'no-store',
+                  signal: featuredController.signal
+                }
+              );
+              clearTimeout(featuredTimeoutId);
+
+              if (featuredRes.ok) {
+                try {
+                  const featuredData = await featuredRes.json();
+                  mediaArray = Array.isArray(featuredData) ? featuredData : (featuredData ? [featuredData] : []);
+                  console.log(`Event ${event.id}: Found ${mediaArray.length} featured media items`);
+                } catch (jsonErr) {
+                  console.error(`Event ${event.id}: Failed to parse featured JSON:`, jsonErr);
+                  mediaArray = [];
+                }
+              } else {
+                console.log(`Event ${event.id}: Featured image fetch failed with status ${featuredRes.status}`);
+              }
+            } catch (featuredErr) {
+              clearTimeout(featuredTimeoutId);
+              console.error(`Event ${event.id}: Featured image fetch error:`, featuredErr);
+            }
+          }
+
+          if (mediaArray.length > 0) {
+            const fileUrl = mediaArray[0].fileUrl;
+            console.log(`Event ${event.id}: Using media URL: ${fileUrl}`);
+
+            // Always use fileUrl for displaying images
+            if (fileUrl && fileUrl.startsWith('http')) {
+              console.log(`Event ${event.id}: Using fileUrl for image display`);
+              return { ...event, thumbnailUrl: fileUrl };
+            } else {
+              console.warn(`Event ${event.id}: Invalid fileUrl: ${fileUrl}`);
+              return { ...event, thumbnailUrl: undefined, placeholderText: `No poster available for "${event.title}" yet` };
+            }
+          }
+
+          console.log(`Event ${event.id}: No media found, using placeholder`);
+          return { ...event, thumbnailUrl: undefined, placeholderText: `No poster available for "${event.title}" yet` };
+        } catch (fetchErr) {
+          clearTimeout(timeoutId);
+          throw fetchErr;
         }
-        if (mediaArray.length > 0) {
-          return { ...event, thumbnailUrl: mediaArray[0].fileUrl };
-        }
-        return { ...event, thumbnailUrl: undefined, placeholderText: event.title || 'No image available' };
       } catch (err) {
-        return { ...event, thumbnailUrl: undefined, placeholderText: event.title || 'No image available' };
+        console.error(`Error fetching media for event ${event.id} (${event.title}):`, err);
+        return { ...event, thumbnailUrl: undefined, placeholderText: `No poster available for "${event.title}" yet` };
       }
     })
   );
+
+  // Process results and handle any rejected promises
+  const eventsWithMedia: EventWithMedia[] = [];
+
+  eventsWithMediaResults.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      eventsWithMedia.push(result.value);
+    } else {
+      // If a promise was rejected, create a fallback event with placeholder
+      const originalEvent = eventsData[index];
+      console.error(`Event ${originalEvent.id} (${originalEvent.title}) failed to process:`, result.reason);
+      eventsWithMedia.push({
+        ...originalEvent,
+        thumbnailUrl: undefined,
+        placeholderText: `No poster available for "${originalEvent.title}" yet`
+      });
+    }
+  });
+
+  console.log(`Successfully processed ${eventsWithMedia.length} events out of ${eventsData.length} total events`);
   return eventsWithMedia;
 }
 
@@ -105,9 +203,14 @@ export default async function Page() {
   let fetchError = false;
 
   try {
+    console.log('Starting to fetch events with media...');
     events = await fetchEventsWithMedia();
+    console.log(`Successfully fetched ${events.length} events`);
   } catch (err) {
+    console.error('Failed to fetch events with media:', err);
     fetchError = true;
+    // Provide fallback events to prevent complete page failure
+    events = [];
   }
 
   // Determine hero image based on upcoming events
@@ -132,12 +235,15 @@ export default async function Page() {
         return aDate - bDate;
       });
 
+    console.log(`Found ${upcomingEvents.length} upcoming events`);
+
     if (upcomingEvents.length > 0) {
       const event = upcomingEvents[0];
       const eventDate = event.startDate ? new Date(event.startDate) : null;
       if (eventDate && eventDate <= threeMonthsFromNow && event.thumbnailUrl) {
         heroImageUrl = event.thumbnailUrl;
         nextEvent = event;
+        console.log(`Using hero image from event: ${event.title} (ID: ${event.id})`);
       }
     }
   }
@@ -151,17 +257,21 @@ export default async function Page() {
     });
     if (candidateEvent) {
       try {
+        console.log(`Trying to fetch hero image for event: ${candidateEvent.title} (ID: ${candidateEvent.id})`);
         const heroUrl = await fetchHeroImageForEvent(candidateEvent.id!);
         if (heroUrl) {
           heroImageUrl = heroUrl;
+          console.log(`Successfully fetched hero image: ${heroUrl}`);
         }
-      } catch {
+      } catch (err) {
+        console.error('Failed to fetch hero image:', err);
         mediaFetchError = true;
       }
     }
     // If still default, use cache-busting version
     if (!heroImageUrl || heroImageUrl === "/images/side_images/chilanka_2025.webp") {
       heroImageUrl = defaultHeroImageUrl;
+      console.log('Using default hero image with cache busting');
     }
   }
 
