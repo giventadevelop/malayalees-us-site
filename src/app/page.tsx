@@ -1,4 +1,3 @@
-'use server';
 import Link from "next/link";
 import { UserRoleDisplay } from "@/components/UserRoleDisplay";
 // import { ProfileBootstrapper } from "@/components/ProfileBootstrapper"; // Remove client bootstrapper
@@ -6,7 +5,7 @@ import { EventCard } from "@/components/EventCard";
 import Image from "next/image";
 import type { EventDetailsDTO } from '@/types';
 import { TeamImage } from '@/components/TeamImage';
-import { getTenantId } from '@/lib/env';
+import { getTenantId, getAppUrl } from '@/lib/env';
 import { formatDateLocal } from '@/lib/date';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { bootstrapUserProfile } from '@/components/ProfileBootstrapperApiServerActions';
@@ -19,34 +18,53 @@ interface EventWithMedia extends EventDetailsDTO {
 
 // Move all event fetching to the server component
 async function fetchEventsWithMedia(): Promise<EventWithMedia[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = getAppUrl();
+  console.log('Fetching events from:', `${baseUrl}/api/proxy/event-details`);
 
-  let eventsResponse = await fetch(
-    `${baseUrl}/api/proxy/event-details?sort=startDate,asc`,
-    { cache: 'no-store' }
-  );
   let eventsData: EventDetailsDTO[] = [];
-  if (eventsResponse.ok) {
-    try {
-      eventsData = await eventsResponse.json();
-    } catch (err) {
-      console.error('Failed to parse events JSON:', err);
-      eventsData = [];
-    }
-  }
-  if (!eventsData || eventsData.length === 0) {
-    eventsResponse = await fetch(
-      `${baseUrl}/api/proxy/event-details?sort=startDate,desc`,
+
+  try {
+    let eventsResponse = await fetch(
+      `${baseUrl}/api/proxy/event-details?sort=startDate,asc`,
       { cache: 'no-store' }
     );
+
+    console.log('Events response status:', eventsResponse.status);
+
     if (eventsResponse.ok) {
       try {
         eventsData = await eventsResponse.json();
+        console.log('Successfully fetched events:', eventsData.length);
       } catch (err) {
-        console.error('Failed to parse events JSON (fallback):', err);
+        console.error('Failed to parse events JSON:', err);
         eventsData = [];
       }
+    } else {
+      console.log('Events fetch failed with status:', eventsResponse.status);
+      // Try fallback
+      try {
+        eventsResponse = await fetch(
+          `${baseUrl}/api/proxy/event-details?sort=startDate,desc`,
+          { cache: 'no-store' }
+        );
+        if (eventsResponse.ok) {
+          try {
+            eventsData = await eventsResponse.json();
+            console.log('Successfully fetched events (fallback):', eventsData.length);
+          } catch (err) {
+            console.error('Failed to parse events JSON (fallback):', err);
+            eventsData = [];
+          }
+        } else {
+          console.log('Fallback events fetch also failed with status:', eventsResponse.status);
+        }
+      } catch (fallbackErr) {
+        console.error('Fallback events fetch error:', fallbackErr);
+      }
     }
+  } catch (fetchErr) {
+    console.error('Events fetch error:', fetchErr);
+    eventsData = [];
   }
 
   // Use Promise.allSettled instead of Promise.all to handle individual failures gracefully
@@ -118,57 +136,55 @@ async function fetchEventsWithMedia(): Promise<EventWithMedia[]> {
 
           if (mediaArray.length > 0) {
             const fileUrl = mediaArray[0].fileUrl;
-            console.log(`Event ${event.id}: Using media URL: ${fileUrl}`);
-
-            // Always use fileUrl for displaying images
-            if (fileUrl && fileUrl.startsWith('http')) {
-              console.log(`Event ${event.id}: Using fileUrl for image display`);
-              return { ...event, thumbnailUrl: fileUrl };
-            } else {
-              console.warn(`Event ${event.id}: Invalid fileUrl: ${fileUrl}`);
-              return { ...event, thumbnailUrl: undefined, placeholderText: `No poster available for "${event.title}" yet` };
+            if (fileUrl) {
+              return {
+                ...event,
+                thumbnailUrl: fileUrl,
+                placeholderText: mediaArray[0].altText || event.title
+              };
             }
           }
 
-          console.log(`Event ${event.id}: No media found, using placeholder`);
-          return { ...event, thumbnailUrl: undefined, placeholderText: `No poster available for "${event.title}" yet` };
-        } catch (fetchErr) {
-          clearTimeout(timeoutId);
-          throw fetchErr;
+          return {
+            ...event,
+            thumbnailUrl: undefined,
+            placeholderText: event.title
+          };
+        } catch (mediaErr) {
+          console.error(`Event ${event.id}: Media fetch error:`, mediaErr);
+          return {
+            ...event,
+            thumbnailUrl: undefined,
+            placeholderText: event.title
+          };
         }
-      } catch (err) {
-        console.error(`Error fetching media for event ${event.id} (${event.title}):`, err);
-        return { ...event, thumbnailUrl: undefined, placeholderText: `No poster available for "${event.title}" yet` };
+      } catch (eventErr) {
+        console.error(`Event ${event.id}: General error:`, eventErr);
+        return {
+          ...event,
+          thumbnailUrl: undefined,
+          placeholderText: event.title
+        };
       }
     })
   );
 
-  // Process results and handle any rejected promises
-  const eventsWithMedia: EventWithMedia[] = [];
+  // Filter out failed promises and return successful results
+  const eventsWithMedia: EventWithMedia[] = eventsWithMediaResults
+    .filter((result): result is PromiseFulfilledResult<EventWithMedia> => result.status === 'fulfilled')
+    .map(result => result.value);
 
-  eventsWithMediaResults.forEach((result, index) => {
-    if (result.status === 'fulfilled') {
-      eventsWithMedia.push(result.value);
-    } else {
-      // If a promise was rejected, create a fallback event with placeholder
-      const originalEvent = eventsData[index];
-      console.error(`Event ${originalEvent.id} (${originalEvent.title}) failed to process:`, result.reason);
-      eventsWithMedia.push({
-        ...originalEvent,
-        thumbnailUrl: undefined,
-        placeholderText: `No poster available for "${originalEvent.title}" yet`
-      });
-    }
-  });
-
-  console.log(`Successfully processed ${eventsWithMedia.length} events out of ${eventsData.length} total events`);
+  console.log(`Successfully processed ${eventsWithMedia.length} events with media`);
   return eventsWithMedia;
 }
 
 async function fetchHeroImageForEvent(eventId: number): Promise<string | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = getAppUrl();
   try {
-    const mediaRes = await fetch(`${baseUrl}/api/proxy/event-medias?eventId.equals=${eventId}&isHeroImage.equals=true&isActiveHeroImage.equals=true`);
+    const mediaRes = await fetch(
+      `${baseUrl}/api/proxy/event-medias?eventId.equals=${eventId}&isFeaturedImage.equals=true`,
+      { cache: 'no-store' }
+    );
     if (mediaRes.ok) {
       const mediaData = await mediaRes.json();
       const mediaArray = Array.isArray(mediaData) ? mediaData : (mediaData ? [mediaData] : []);
@@ -269,412 +285,266 @@ export default async function Page() {
       }
     }
     // If still default, use cache-busting version
-    if (!heroImageUrl || heroImageUrl === "/images/side_images/chilanka_2025.webp") {
+    if (heroImageUrl === "/images/side_images/chilanka_2025.webp") {
       heroImageUrl = defaultHeroImageUrl;
-      console.log('Using default hero image with cache busting');
     }
   }
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-blue-100 via-white to-blue-200">
-      <main>
-        {/* Hero Section */}
-        <section
-          className="hero-section relative w-full h-[350px] md:h-[350px] sm:h-[220px] h-[160px] bg-transparent pb-0"
-          style={{ height: undefined }}
-        >
-          {/* Side Image as absolute vertical border with enhanced soft shadow, now extends further into navbar for stronger blending */}
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: '250px',
-              minWidth: '120px',
-              height: '100%',
-              zIndex: 1,
-            }}
-            className="w-[120px] md:w-[250px] min-w-[80px] h-full"
-          >
-            {/* Overlay logo at top left of side image */}
-            <Image
-              src="/images/side_images/malayalees_us_logo.avif"
-              alt="Malayalees US Logo"
-              width={80}
-              height={80}
-              style={{
-                position: 'absolute',
-                top: 8,
-                left: 8,
-                background: 'rgba(255,255,255,0.7)',
-                borderRadius: '50%',
-                boxShadow: '0 8px 64px 16px rgba(80,80,80,0.22)',
-                zIndex: 2,
-              }}
-              className="md:w-[120px] md:h-[120px] w-[80px] h-[80px]"
-              priority
-            />
-            <Image
-              src="/images/side_images/pooram_side_image_two_images_blur_1.png"
-              alt="Kerala Sea Coast"
-              width={250}
-              height={400}
-              className="h-full object-cover rounded-l-lg shadow-2xl"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                objectPosition: '60% center',
-                display: 'block',
-                boxShadow: '0 0 96px 32px rgba(80,80,80,0.22)',
-              }}
-              priority
-            />
-          </div>
+    <div className="home-page">
+      {/* Hero Section */}
+      <section className="hero-section relative h-screen flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src={heroImageUrl}
+            alt="Malayalees US Hero"
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        </div>
 
-          {/* Hero Image fills the rest */}
-          <div
-            className="absolute hero-image-container"
-            style={{
-              left: 265,
-              top: 8,
-              right: 8,
-              bottom: 8,
-              zIndex: 2,
-            }}
-          >
-            <div className="w-full h-full relative">
-              {/* Blurred background image for width fill */}
-              <Image
-                src={heroImageUrl}
-                alt="Hero blurred background"
-                fill
-                className="object-cover w-full h-full blur-lg scale-105"
-                style={{
-                  zIndex: 0,
-                  filter: 'blur(24px) brightness(1.1)',
-                  objectPosition: 'center',
-                }}
-                aria-hidden="true"
-                priority
-              />
-              {/* Main hero image, fully visible */}
-              <Image
-                src={heroImageUrl}
-                alt="Event or Default"
-                fill
-                className="object-cover w-full h-full"
-                style={{
-                  objectFit: 'cover',
-                  objectPosition: 'center',
-                  zIndex: 1,
-                  background: 'linear-gradient(to bottom, #f8fafc 0%, #fff 100%)',
-                }}
-                priority
-              />
-              {/* Fade overlays for all four borders */}
-              <div className="pointer-events-none absolute left-0 top-0 w-full h-8" style={{ background: 'linear-gradient(to bottom, rgba(248,250,252,1) 0%, rgba(248,250,252,0) 100%)', zIndex: 20 }} />
-              <div className="pointer-events-none absolute left-0 bottom-0 w-full h-8" style={{ background: 'linear-gradient(to top, rgba(248,250,252,1) 0%, rgba(248,250,252,0) 100%)', zIndex: 20 }} />
-              <div className="pointer-events-none absolute left-0 top-0 h-full w-8" style={{ background: 'linear-gradient(to right, rgba(248,250,252,1) 0%, rgba(248,250,252,0) 100%)', zIndex: 20 }} />
-              <div className="pointer-events-none absolute right-0 top-0 h-full w-8" style={{ background: 'linear-gradient(to left, rgba(248,250,252,1) 0%, rgba(248,250,252,0) 100%)', zIndex: 20 }} />
-            </div>
-            {nextEvent && nextEvent.admissionType === 'ticketed' && (
+        {/* Hero Content */}
+        <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            Welcome to Malayalees US
+          </h1>
+          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
+            Connecting Malayalees across the United States through culture, community, and shared heritage.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/events"
+              className="bg-yellow-400 text-black px-8 py-3 rounded-lg font-semibold hover:bg-yellow-300 transition-colors"
+            >
+              Explore Events
+            </Link>
+            <Link
+              href="/event"
+              className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-black transition-colors"
+            >
+              Join Our Community
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="about-section py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="about-content">
+              <span className="section-subtitle text-yellow-500 font-semibold mb-2 block">About Us</span>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">Preserving Our Heritage</h2>
+              <p className="text-gray-600 mb-6">
+                Malayalees US is dedicated to preserving and promoting the rich cultural heritage of Kerala
+                across the United States. We bring together Malayalees from all walks of life to celebrate
+                our traditions, language, and values.
+              </p>
+              <p className="text-gray-600 mb-8">
+                Through cultural events, educational programs, and community initiatives, we create a strong
+                network that supports our community while sharing the beauty of Malayali culture with the
+                broader American society.
+              </p>
               <Link
-                href={`/events/${nextEvent.id}/tickets`}
-                className="absolute bottom-6 right-6 z-10"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                href="/event"
+                className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-semibold hover:bg-yellow-300 transition-colors inline-block"
               >
-                <Image
-                  src="/images/buy_tickets_click_here_red.webp"
-                  alt="Buy Tickets"
-                  width={160}
-                  height={60}
-                  style={{ opacity: 0.7, width: '160px', height: 'auto' }}
-                  className="rounded shadow"
-                  priority
-                />
-              </Link>
-            )}
-            {/* If not ticketed but registration required, show Register button as before */}
-            {nextEvent && nextEvent.admissionType !== 'ticketed' && nextEvent.isRegistrationRequired && (
-              <Link
-                href={`/events/${nextEvent.id}/register`}
-                className="absolute bottom-6 right-6 z-10 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-blue-700 transition"
-              >
-                Register for this event
-              </Link>
-            )}
-          </div>
-        </section>
-
-        {/* Feature Boxes Section */}
-        <section className="feature-boxes flex flex-col md:flex-row w-full mt-12">
-          <div className="feature-box flex-1 w-full min-h-[180px] mb-4 md:mb-0" style={{ backgroundImage: "url('/images/unite_india_logo.avif')", backgroundSize: '45%', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundColor: '#1a1a1a', padding: '40px' }}>
-            {/* <div>
-                      <h4>Story behind the foundation</h4>
-                      <a href="#vision-section" className="link-text">Mission and Vision</a>
-                    </div> */}
-          </div>
-          <div className="feature-box flex-1 w-full min-h-[180px]" style={
-            nextEvent
-              ? { background: '#fff', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }
-              : { backgroundImage: "url('/images/lady_dance.jpeg')", backgroundSize: '55%', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', padding: '40px' }
-          }>
-            {nextEvent ? (
-              <div className="flex flex-col md:flex-row items-center gap-4">
-                <Image src={nextEvent.thumbnailUrl || '/images/kalari_jump.jpeg'} alt={nextEvent.title || 'Event'} className="w-24 h-24 object-cover rounded shadow-md mb-2 md:mb-0" width={96} height={96} style={{ minWidth: 72, minHeight: 72 }} />
-                <div className="flex-1">
-                  <h4 className="text-xl font-bold mb-1 text-gray-900">{nextEvent.title}</h4>
-                  <div className="text-sm text-gray-600 mb-1">
-                    {formatDateLocal(nextEvent.startDate)}
-                    {nextEvent.admissionType === 'ticketed' && nextEvent.startTime && (
-                      <span className="ml-2">| Start: {nextEvent.startTime}</span>
-                    )}
-                  </div>
-                  {nextEvent.description && (
-                    <div className="text-gray-700 text-sm mb-2 line-clamp-3">{nextEvent.description}</div>
-                  )}
-                  {nextEvent.admissionType === 'ticketed' && (
-                    <a
-                      href={`/events/${nextEvent.id}/tickets`}
-                      className="button bg-yellow-400 text-gray-900 px-4 py-2 rounded font-semibold text-sm shadow hover:bg-yellow-300 transition mt-2 inline-block"
-                    >
-                      Buy Tickets
-                    </a>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div>
-                <h4>cultural events, educational programs, and community gatherings</h4>
-                <a href="/events" className="link-text">Upcoming events</a>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Events Section */}
-        <section id="events" className="events-section py-20 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="section-title-wrapper mb-10 text-center">
-              <h3 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">Upcoming Events</h3>
-              <div className="section-subtitle text-lg text-yellow-500 font-semibold mb-2">Join Our Celebrations</div>
-            </div>
-            {mediaFetchError && (
-              <div className="text-center text-red-600 font-bold py-8">
-                Event media fetch failed.
-              </div>
-            )}
-            {fetchError ? (
-              <div className="text-center text-red-600 font-bold py-8">
-                Sorry, we couldn't load events at this time. Please try again later.
-              </div>
-            ) : (() => {
-              // Find upcoming and past events
-              const today = new Date();
-              const upcomingEvents = events.filter(event => event.startDate && new Date(event.startDate) >= today);
-              if (upcomingEvents.length > 0) {
-                return (
-                  <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
-                    {upcomingEvents.slice(0, 6).map((event) => (
-                      <div
-                        key={event.id}
-                        className="flex justify-center"
-                        style={{ width: 350, minWidth: 350, maxWidth: 350, height: 500, minHeight: 500, maxHeight: 500 }}
-                      >
-                        <EventCard event={event} placeholderText={event.placeholderText} />
-                      </div>
-                    ))}
-                  </div>
-                );
-              }
-              // If no upcoming, check for past events
-              const pastEvents = events
-                .filter(event => event.startDate && new Date(event.startDate) < today)
-                .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-              if (pastEvents.length > 0) {
-                return (
-                  <>
-                    <div className="text-center text-blue-700 font-bold text-2xl mb-6">Past Events</div>
-                    <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
-                      {pastEvents.slice(0, 6).map((event) => (
-                        <div
-                          key={event.id}
-                          className="flex justify-center"
-                          style={{ width: 350, minWidth: 350, maxWidth: 350, height: 500, minHeight: 500, maxHeight: 500 }}
-                        >
-                          <EventCard event={event} placeholderText={event.placeholderText} />
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                );
-              }
-              // No events at all
-              return (
-                <div className="text-center text-gray-500 py-8">
-                  No events found.
-                </div>
-              );
-            })()}
-            <div className="text-center mt-8">
-              <Link href="/events" className="inline-block bg-yellow-400 text-gray-900 px-8 py-3 rounded-lg font-semibold text-lg shadow hover:bg-yellow-300 transition">
-                View All Events
+                Learn More
               </Link>
             </div>
-          </div>
-        </section>
-
-        {/* About Section */}
-        <section id="about" className="about-us-section py-20 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <div className="section-title-wrapper mb-10">
-              <h3 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">About Us</h3>
-              <div className="section-subtitle text-lg text-yellow-500 font-semibold mb-2">Who We Are</div>
-            </div>
-            <div className="about-us-content bg-white rounded-lg shadow p-8 md:p-12 flex flex-col md:flex-row gap-8 items-center">
-              <img src="/images/about_us_malyalee_us.jpg" alt="About Us" className="rounded-lg w-full md:w-1/2 max-w-md shadow-lg" />
-              <div className="about-us-text text-lg text-gray-700 md:w-1/2">
-                <p>
-                  Formed  with the purpose of bringing together Indians of Kerala origin living in New Jersey/US to maintain the rich heritage and to provide their children an opportunity to get a glimpse of our culture.
-
-
-
-                  Malayalees.us, is one of the largest  Indian Associations in America.  It continues to grow , while spreading the culture of the beautiful state of Kerala through popular events and activities.
-
-                  The community stands for the integrity and unity of malayalees in the USA. It seeks to promote the culture of Kerala, the southernmost state of India. It preserves Kerala traditions in American soil for future generations to discover, share, and follow.
-                </p>
-                <ul className="list-disc pl-6 mt-4 text-base text-gray-600">
-                  <li>Organizing cultural festivals and events</li>
-                  <li>Supporting students and professionals</li>
-                  <li>Promoting Malayalam language and arts</li>
-                  <li>Community outreach and social support</li>
-                </ul>
-              </div>
+            <div className="about-image">
+              <Image
+                src="/images/side_images/kerala_coconut_tree_and_lake.avif"
+                alt="Kerala Culture"
+                width={600}
+                height={400}
+                className="rounded-lg shadow-lg"
+              />
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* What We Do Section */}
-        <section className="what-we-do py-20 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="section-title-wrapper mb-10">
-              <span className="section-subtitle text-yellow-500 font-semibold mb-2 block">What we do</span>
-              <h3 className="text-3xl md:text-4xl font-bold mb-6 ml-0 md:ml-12">Cultural Workshops and Educational Events</h3>
-            </div>
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Traditional Dance & Music */}
-              <div className="service-item flex gap-6 items-start">
-                <div className="service-icon w-16 h-16 flex items-center justify-center bg-yellow-100 rounded-full">
-                  {/* Music Icon */}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-8 h-8 text-green-500"><path fill="currentColor" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6zm-2 16c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" /></svg>
-                </div>
-                <div className="service-content">
-                  <h4 className="text-xl font-semibold mb-2">Traditional Dance & Music</h4>
-                  <p>Experience the rich heritage of Kerala through dance and music workshops.</p>
-                </div>
-              </div>
-              {/* Art & Craft */}
-              <div className="service-item flex gap-6 items-start">
-                <div className="service-icon w-16 h-16 flex items-center justify-center bg-yellow-100 rounded-full">
-                  {/* Art Icon */}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-8 h-8 text-orange-500"><path fill="currentColor" d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" /></svg>
-                </div>
-                <div className="service-content">
-                  <h4 className="text-xl font-semibold mb-2">Art & Craft Workshops</h4>
-                  <p>Learn traditional Kerala art forms and crafts through hands-on workshops.</p>
-                </div>
-              </div>
-              {/* Kerala Folklore and Tribal Traditions */}
-              <div className="service-item flex gap-6 items-start">
-                <div className="service-icon w-16 h-16 flex items-center justify-center bg-yellow-100 rounded-full">
-                  {/* Book Icon */}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-8 h-8 text-blue-500"><path fill="currentColor" d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" /></svg>
-                </div>
-                <div className="service-content">
-                  <h4 className="text-xl font-semibold mb-2">Kerala Folklore and Tribal Traditions</h4>
-                  <p>Introduce lesser-known folk dances like Theyyam, Padayani, and Poothan Thira.</p>
-                </div>
-              </div>
-              {/* Kerala Cuisine */}
-              <div className="service-item flex gap-6 items-start">
-                <div className="service-icon w-16 h-16 flex items-center justify-center bg-yellow-100 rounded-full">
-                  {/* Cuisine Icon */}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-8 h-8 text-yellow-500"><path fill="currentColor" d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z" /></svg>
-                </div>
-                <div className="service-content">
-                  <h4 className="text-xl font-semibold mb-2">Kerala Cuisine Classes</h4>
-                  <p>Master the art of traditional Kerala cooking with expert chefs.</p>
-                </div>
-              </div>
-            </div>
+      {/* Events Section */}
+      <section className="events-section py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="section-title-wrapper mb-10 text-center">
+            <span className="section-subtitle text-yellow-500 font-semibold mb-2 block">Events</span>
+            <h3 className="text-3xl md:text-4xl font-bold mb-6">Upcoming Cultural Events</h3>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Join us for exciting cultural events that celebrate our heritage and bring our community together.
+            </p>
           </div>
-        </section>
 
-        {/* Ticker/Banner Section */}
-        <section className="ticker-section bg-yellow-400 text-white py-2 overflow-hidden">
-          <div className="ticker flex animate-marquee whitespace-nowrap">
-            <div className="ticker-item px-8">Culture is the thread to thrive and ties generations to their roots !</div>
-            <div className="ticker-item px-8">Culture is the thread to thrive and ties generations to their roots !</div>
-            <div className="ticker-item px-8">Culture is the thread to thrive and ties generations to their roots !</div>
+          {events && events.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {events.slice(0, 6).map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No events scheduled at the moment.</p>
+              <p className="text-gray-400 mt-2">Check back soon for upcoming cultural events!</p>
+            </div>
+          )}
+
+          <div className="text-center mt-12">
+            <Link
+              href="/events"
+              className="bg-yellow-400 text-black px-8 py-3 rounded-lg font-semibold hover:bg-yellow-300 transition-colors"
+            >
+              View All Events
+            </Link>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Team Section */}
-        <section className="team-section py-20 bg-white" id="team-section">
-          <div className="container mx-auto px-4">
-            <div className="section-title-wrapper mb-10 text-center">
-              <span className="section-subtitle text-yellow-500 font-semibold mb-2 block">Team</span>
-              <h3 className="text-3xl md:text-4xl font-bold mb-6">Meet our best volunteers team</h3>
-            </div>
-            <div className="flex justify-center">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 max-w-4xl">
-                {/* Team members - use images from public/images/team_members/ */}
-                <div className="team-item flex flex-col items-center">
-                  <TeamImage src="/images/team_members/Manoj_Kizhakkoot.png" name="Manoj Kizhakkoot" />
-                </div>
-                <div className="team-item flex flex-col items-center">
-                  <TeamImage src="/images/team_members/srk.png" name="SRK" />
-                </div>
-              </div>
-            </div>
+      {/* Services Section */}
+      <section className="services-section py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="section-title-wrapper mb-10 text-center">
+            <span className="section-subtitle text-yellow-500 font-semibold mb-2 block">Services</span>
+            <h3 className="text-3xl md:text-4xl font-bold mb-6">What We Offer</h3>
           </div>
-        </section>
-
-        {/* Contact Section */}
-        <section className="contact-section py-20 bg-gray-50" id="contact">
-          <div className="container mx-auto px-4">
-            <div className="section-title-wrapper mb-10">
-              <span className="section-subtitle text-yellow-500 font-semibold mb-2 block">Contact</span>
-              <h3 className="text-3xl md:text-4xl font-bold mb-6">Get in touch</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Cultural Events */}
+            <div className="service-item flex gap-6 items-start">
+              <div className="service-icon w-16 h-16 flex items-center justify-center bg-yellow-100 rounded-full">
+                {/* Calendar Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-8 h-8 text-yellow-500"><path fill="currentColor" d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" /></svg>
+              </div>
+              <div className="service-content">
+                <h4 className="text-xl font-semibold mb-2">Cultural Events</h4>
+                <p>Organize and participate in traditional festivals, music concerts, and cultural celebrations.</p>
+              </div>
             </div>
-            <p className="contact-description text-center max-w-2xl mx-auto mb-10 text-gray-600">Connect with us to learn more about our community initiatives and how you can get involved in preserving and promoting Malayali culture across the United States. Join us in fostering cultural exchange and building stronger connections within our diverse communities.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="contact-item">
-                <h6 className="text-lg font-semibold mb-2">Location</h6>
-                <p>Unite India
-                  <br />New Jersey, USA</p>
+            {/* Language Classes */}
+            <div className="service-item flex gap-6 items-start">
+              <div className="service-icon w-16 h-16 flex items-center justify-center bg-yellow-100 rounded-full">
+                {/* Language Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-8 h-8 text-blue-500"><path fill="currentColor" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM18.92 8h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zM5.08 16h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zM8.03 8L5.08 5.44C6.17 6.76 7.53 7.78 9.01 8.34c-.42.31-.83.65-1.23 1.04C7.27 9.06 6.73 8.03 6.14 7.01 7.27 8.03 8.03 9.27 8.03 10.66c0 1.39-.76 2.63-1.89 3.65.59-1.02 1.13-2.05 1.67-3.08.4.39.81.73 1.23 1.04-1.48.56-2.84 1.58-3.93 2.9L8.03 16c1.39-1.39 2.53-2.53 3.42-3.42.89.89 2.03 2.03 3.42 3.42l-1.67 1.67c-1.09-1.32-2.45-2.34-3.93-2.9.42-.31.83-.65 1.23-1.04.54 1.03 1.08 2.06 1.67 3.08-1.13-1.02-1.89-2.26-1.89-3.65 0-1.39.76-2.63 1.89-3.65-.59 1.02-1.13 2.05-1.67 3.08-.4-.39-.81-.73-1.23-1.04 1.48-.56 2.84-1.58 3.93-2.9L8.03 8z" /></svg>
               </div>
-              <div className="contact-item">
-                <h6 className="text-lg font-semibold mb-2">Phone</h6>
-                <p><a href="tel:+16317088442" className="text-blue-600 hover:underline">+1 (631) 708-8442</a></p>
+              <div className="service-content">
+                <h4 className="text-xl font-semibold mb-2">Language Classes</h4>
+                <p>Learn Malayalam through structured classes and cultural immersion programs.</p>
               </div>
-              <div className="contact-item">
-                <h6 className="text-lg font-semibold mb-2">Social</h6>
-                <div className="flex gap-3">
-                  <a href="https://www.facebook.com/profile.php?id=61573944338286" className="social-icon bg-gray-800 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-yellow-400" target="_blank" rel="noopener noreferrer">
-                    <i className="fab fa-facebook-f"></i>
-                  </a>
-                </div>
+            </div>
+            {/* Dance & Music */}
+            <div className="service-item flex gap-6 items-start">
+              <div className="service-icon w-16 h-16 flex items-center justify-center bg-yellow-100 rounded-full">
+                {/* Music Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-8 h-8 text-green-500"><path fill="currentColor" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" /></svg>
               </div>
-              <div className="contact-item">
-                <h6 className="text-lg font-semibold mb-2">Email</h6>
-                <p><a href="mailto:Contactus@malyalees.org" className="text-blue-600 hover:underline">Contactus@malyalees.org</a></p>
+              <div className="service-content">
+                <h4 className="text-xl font-semibold mb-2">Dance & Music</h4>
+                <p>Master classical dance forms like Kathakali, Mohiniyattam, and traditional music.</p>
+              </div>
+            </div>
+            {/* Art & Craft Workshops */}
+            <div className="service-item flex gap-6 items-start">
+              <div className="service-icon w-16 h-16 flex items-center justify-center bg-yellow-100 rounded-full">
+                {/* Art Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-8 h-8 text-purple-500"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg>
+              </div>
+              <div className="service-content">
+                <h4 className="text-xl font-semibold mb-2">Art & Craft Workshops</h4>
+                <p>Learn traditional Kerala art forms and crafts through hands-on workshops.</p>
+              </div>
+            </div>
+            {/* Kerala Folklore and Tribal Traditions */}
+            <div className="service-item flex gap-6 items-start">
+              <div className="service-icon w-16 h-16 flex items-center justify-center bg-yellow-100 rounded-full">
+                {/* Book Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-8 h-8 text-blue-500"><path fill="currentColor" d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" /></svg>
+              </div>
+              <div className="service-content">
+                <h4 className="text-xl font-semibold mb-2">Kerala Folklore and Tribal Traditions</h4>
+                <p>Introduce lesser-known folk dances like Theyyam, Padayani, and Poothan Thira.</p>
+              </div>
+            </div>
+            {/* Kerala Cuisine */}
+            <div className="service-item flex gap-6 items-start">
+              <div className="service-icon w-16 h-16 flex items-center justify-center bg-yellow-100 rounded-full">
+                {/* Cuisine Icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-8 h-8 text-yellow-500"><path fill="currentColor" d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z" /></svg>
+              </div>
+              <div className="service-content">
+                <h4 className="text-xl font-semibold mb-2">Kerala Cuisine Classes</h4>
+                <p>Master the art of traditional Kerala cooking with expert chefs.</p>
               </div>
             </div>
           </div>
-        </section>
-      </main>
-    </div >
+        </div>
+      </section>
+
+      {/* Ticker/Banner Section */}
+      <section className="ticker-section bg-yellow-400 text-white py-2 overflow-hidden">
+        <div className="ticker flex animate-marquee whitespace-nowrap">
+          <div className="ticker-item px-8">Culture is the thread to thrive and ties generations to their roots !</div>
+          <div className="ticker-item px-8">Culture is the thread to thrive and ties generations to their roots !</div>
+          <div className="ticker-item px-8">Culture is the thread to thrive and ties generations to their roots !</div>
+        </div>
+      </section>
+
+      {/* Team Section */}
+      <section className="team-section py-20 bg-white" id="team-section">
+        <div className="container mx-auto px-4">
+          <div className="section-title-wrapper mb-10 text-center">
+            <span className="section-subtitle text-yellow-500 font-semibold mb-2 block">Team</span>
+            <h3 className="text-3xl md:text-4xl font-bold mb-6">Meet our best volunteers team</h3>
+          </div>
+          <div className="flex justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 max-w-4xl">
+              {/* Team members - use images from public/images/team_members/ */}
+              <div className="team-item flex flex-col items-center">
+                <TeamImage src="/images/team_members/Manoj_Kizhakkoot.png" name="Manoj Kizhakkoot" />
+              </div>
+              <div className="team-item flex flex-col items-center">
+                <TeamImage src="/images/team_members/srk.png" name="SRK" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section className="contact-section py-20 bg-gray-50" id="contact">
+        <div className="container mx-auto px-4">
+          <div className="section-title-wrapper mb-10">
+            <span className="section-subtitle text-yellow-500 font-semibold mb-2 block">Contact</span>
+            <h3 className="text-3xl md:text-4xl font-bold mb-6">Get in touch</h3>
+          </div>
+          <p className="contact-description text-center max-w-2xl mx-auto mb-10 text-gray-600">Connect with us to learn more about our community initiatives and how you can get involved in preserving and promoting Malayali culture across the United States. Join us in fostering cultural exchange and building stronger connections within our diverse communities.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="contact-item">
+              <h6 className="text-lg font-semibold mb-2">Location</h6>
+              <p>Unite India
+                <br />New Jersey, USA</p>
+            </div>
+            <div className="contact-item">
+              <h6 className="text-lg font-semibold mb-2">Phone</h6>
+              <p><a href="tel:+16317088442" className="text-blue-600 hover:underline">+1 (631) 708-8442</a></p>
+            </div>
+            <div className="contact-item">
+              <h6 className="text-lg font-semibold mb-2">Social</h6>
+              <div className="flex gap-3">
+                <a href="https://www.facebook.com/profile.php?id=61573944338286" className="social-icon bg-gray-800 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-yellow-400" target="_blank" rel="noopener noreferrer">
+                  <i className="fab fa-facebook-f"></i>
+                </a>
+              </div>
+            </div>
+            <div className="contact-item">
+              <h6 className="text-lg font-semibold mb-2">Email</h6>
+              <p><a href="mailto:Contactus@malyalees.org" className="text-blue-600 hover:underline">Contactus@malyalees.org</a></p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }

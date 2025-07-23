@@ -29,7 +29,7 @@ async function upsertUserProfileForCheckout({
   clerkPhone?: string;
   clerkImageUrl?: string;
 }): Promise<{ userId?: string; email: string }> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = getAppUrl();
   const tenantId = getTenantId();
   const now = new Date().toISOString();
 

@@ -16,7 +16,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-03-31.basil',
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const APP_URL = getAppUrl();
 
 // Define ShoppingCartItem locally (not in @/types)
 export interface ShoppingCartItem {
@@ -87,7 +87,7 @@ async function createTransaction(transactionData: Omit<EventTicketTransactionDTO
 
 // Helper to bulk create transaction items
 async function createTransactionItemsBulk(items: any[]): Promise<any[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = getAppUrl();
   const response = await fetchWithJwtRetry(
     `${baseUrl}/api/proxy/event-ticket-transaction-items/bulk`,
     {
@@ -333,7 +333,7 @@ export async function processStripeSessionServer(
 }
 
 export async function fetchTransactionQrCode(eventId: number, transactionId: number): Promise<{ qrCodeImageUrl: string }> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = getAppUrl();
   const response = await fetchWithJwtRetry(
     `${baseUrl}/api/proxy/events/${eventId}/transactions/${transactionId}/qrcode`,
     { method: 'GET', headers: { 'Content-Type': 'application/json' } }

@@ -3,7 +3,7 @@ import { stripe } from '@/lib/stripe';
 import { getTenantId } from '@/lib/env';
 import type { EventTicketTransactionDTO } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const API_BASE_URL = getAppUrl();
 
 export async function refundTicketTransactionServer(ticket: EventTicketTransactionDTO, reason: string) {
   if (!ticket.stripePaymentIntentId) {

@@ -7,7 +7,7 @@ import type { EventTicketTypeDTO, EventTicketTypeFormDTO, EventDetailsDTO } from
 import { getCachedApiJwt, generateApiJwt } from '@/lib/api/jwt';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+const APP_URL = getAppUrl();
 
 async function fetchWithJwtRetry(apiUrl: string, options: RequestInit = {}) {
   let token = await getCachedApiJwt();
@@ -115,7 +115,7 @@ export async function deleteTicketTypeServer(ticketTypeId: number, eventId: stri
 export async function fetchTicketTypeByIdServer(
   ticketTypeId: number
 ): Promise<EventTicketTypeDTO | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = getAppUrl();
   const response = await fetch(
     `${baseUrl}/api/proxy/event-ticket-types/${ticketTypeId}`,
     {
@@ -153,7 +153,7 @@ export async function updateTicketTypeInventoryServer(
       updatedAt: new Date().toISOString(),
     };
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const baseUrl = getAppUrl();
     const response = await fetch(`${baseUrl}/api/proxy/event-ticket-types/${ticketTypeId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

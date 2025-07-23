@@ -1,11 +1,9 @@
-"use client";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import TrpcProvider from "@/lib/trpc/Provider";
 import Script from "next/script";
 import { Header } from "@/components/Header";
-import { usePathname } from "next/navigation";
 import { Footer } from "@/components/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -15,10 +13,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-  // If using usePathname in a client component:
-  // const pathname = usePathname();
-  const isAuthRoute = pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up');
+  // For server components, we can't use usePathname, so we'll handle auth routes differently
+  const isAuthRoute = false; // We'll handle this in the Header component
 
   return (
     <html lang="en" suppressHydrationWarning>

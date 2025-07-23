@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import {
   fetchEventsFilteredServer,
   fetchEventTypesServer,
+  fetchCalendarEventsServer,
   cancelEventServer,
   deleteCalendarEventForEventServer,
 } from './ApiServerActions';
@@ -19,6 +20,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [events, setEvents] = useState<EventDetailsDTO[]>([]);
   const [eventTypes, setEventTypes] = useState<EventTypeDetailsDTO[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<EventCalendarEntryDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
@@ -51,9 +53,11 @@ export default function AdminPage() {
       else if (searchField === 'caption') filterParams.caption = searchCaption;
       const { events: eventsResult, totalCount: fetchedTotalCount } = await fetchEventsFilteredServer(filterParams);
       const types = await fetchEventTypesServer();
+      const calendarEventsResult = await fetchCalendarEventsServer();
       setEvents(eventsResult);
       setTotalCount(fetchedTotalCount);
       setEventTypes(types);
+      setCalendarEvents(calendarEventsResult);
     } catch (e: any) {
       setError(e.message || 'Failed to load events');
     } finally {
@@ -202,6 +206,7 @@ export default function AdminPage() {
           <EventList
             events={events}
             eventTypes={eventTypes}
+            calendarEvents={calendarEvents}
             onEdit={event => router.push(`/admin/events/${event.id}/edit`)}
             onCancel={handleCancel}
             loading={loading}

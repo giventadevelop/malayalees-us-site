@@ -1,6 +1,7 @@
 "use server";
 import { PromotionEmailRequestDTO } from '@/types';
 import { withTenantId } from '@/lib/withTenantId';
+import { getAppUrl } from '@/lib/env';
 
 export async function sendPromotionEmailServer(form: Partial<PromotionEmailRequestDTO>) {
   // Trim and validate all required fields
@@ -18,7 +19,7 @@ export async function sendPromotionEmailServer(form: Partial<PromotionEmailReque
     promoCode,
     bodyHtml,
   });
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = getAppUrl();
   const res = await fetch(`${baseUrl}/api/proxy/send-promotion-emails`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

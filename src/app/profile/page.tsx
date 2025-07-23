@@ -1,22 +1,17 @@
-"use client";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import ProfileForm from "@/components/ProfileForm";
-import { useAuth } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { fetchUserProfileServer } from "./ApiServerActions";
 
-export default function ProfilePage() {
-  const { userId, isSignedIn } = useAuth();
-  const router = useRouter();
+export default async function ProfilePage() {
+  const { userId } = await auth();
 
-  useEffect(() => {
-    if (!isSignedIn) {
-      router.replace("/sign-in");
-    }
-  }, [isSignedIn, router]);
-
-  if (!isSignedIn) {
-    return null; // or a loading spinner
+  if (!userId) {
+    redirect("/sign-in");
   }
+
+  // Fetch user profile server-side
+  const userProfile = await fetchUserProfileServer(userId);
 
   return (
     <div className="min-h-screen p-8 max-w-3xl mx-auto">
@@ -29,7 +24,7 @@ export default function ProfilePage() {
         </div>
         <div className="rounded-xl shadow p-8 sm:p-10" style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #e0f7fa 100%)' }}>
           <p className="mb-6 text-sm text-gray-500 font-medium">Update your contact information.</p>
-          <ProfileForm />
+          <ProfileForm initialProfile={userProfile} />
         </div>
       </div>
     </div>
