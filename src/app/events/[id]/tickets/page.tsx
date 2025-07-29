@@ -26,8 +26,11 @@ export default function TicketingPage() {
   const [totalAmount, setTotalAmount] = useState(0);
   const [savedAmount, setSavedAmount] = useState(0);
   const [showDiscountModal, setShowDiscountModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const defaultHeroImageUrl = `/images/side_images/chilanka_2025.webp?v=${Date.now()}`;
+  useEffect(() => { setMounted(true); }, []);
+
+  const defaultHeroImageUrl = `/images/default_placeholder_hero_image.jpeg?v=${Date.now()}`;
 
   useEffect(() => {
     async function fetchData() {
@@ -37,6 +40,13 @@ export default function TicketingPage() {
         const eventRes = await fetch(`/api/proxy/event-details/${eventId}`);
         const eventData = await eventRes.json();
         setEvent(eventData);
+
+        // Store event details early for loading page
+        if (eventData) {
+          sessionStorage.setItem('eventTitle', eventData.title || '');
+          sessionStorage.setItem('eventLocation', eventData.location || '');
+        }
+
         // Fetch ticket types for this event
         const ticketRes = await fetch(`/api/proxy/event-ticket-types?eventId.equals=${eventId}`);
         const ticketData = await ticketRes.json();
@@ -81,6 +91,12 @@ export default function TicketingPage() {
           imageUrl = defaultHeroImageUrl;
         }
         setHeroImageUrl(imageUrl);
+
+        // Store hero image URL for loading page (enhanced buffering strategy)
+        if (imageUrl) {
+          console.log('Tickets page - storing hero image URL:', imageUrl);
+          // TODO: Implement hero image buffering if needed
+        }
       } catch (e) {
         setEvent(null);
         setTicketTypes([]);
@@ -260,125 +276,73 @@ export default function TicketingPage() {
     return <div className="min-h-screen flex items-center justify-center text-xl text-red-600">Event not found.</div>;
   }
 
-  // --- HERO SECTION (copied/adapted from home page) ---
+  // --- HERO SECTION (prompt-compliant) ---
   return (
-    <div className="min-h-screen bg-gray-100 pb-12">
-      {/* Hero Section - matches home page */}
-      <section
-        className="hero-section relative w-full h-[350px] md:h-[350px] sm:h-[220px] h-[160px] bg-transparent pb-0 mb-8"
-        style={{ height: undefined }}
-      >
-        {/* Side Image as absolute vertical border with enhanced soft shadow */}
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: '250px',
-            minWidth: '120px',
-            height: '100%',
-            zIndex: 1,
-          }}
-          className="w-[120px] md:w-[250px] min-w-[80px] h-full"
-        >
-          {/* Overlay logo at top left of side image */}
-          <Image
-            src="/images/side_images/malayalees_us_logo.avif"
-            alt="Malayalees US Logo"
-            width={80}
-            height={80}
-            style={{
-              position: 'absolute',
-              top: 8,
-              left: 8,
-              background: 'rgba(255,255,255,0.7)',
-              borderRadius: '50%',
-              boxShadow: '0 8px 64px 16px rgba(80,80,80,0.22)',
-              zIndex: 2,
-            }}
-            className="md:w-[120px] md:h-[120px] w-[80px] h-[80px]"
-            priority
-          />
-          <Image
-            src="/images/side_images/pooram_side_image_two_images_blur_1.png"
-            alt="Kerala Sea Coast"
-            fill
-            className="h-full object-cover rounded-l-lg shadow-2xl"
-            style={{
-              objectPosition: '60% center',
-              boxShadow: '0 0 96px 32px rgba(80,80,80,0.22)',
-            }}
-            priority
-          />
-        </div>
-        {/* Hero Image fills the rest */}
-        <div
-          className="absolute hero-image-container"
-          style={{
-            left: 265,
-            top: 8,
-            right: 8,
-            bottom: 8,
-            zIndex: 2,
-          }}
-        >
-          <div className="w-full h-full relative">
-            {/* Blurred background image for width fill */}
-            <Image
-              src={heroImageUrl || defaultHeroImageUrl}
-              alt="Hero blurred background"
-              fill
-              className="object-cover w-full h-full blur-lg scale-105"
-              style={{
-                zIndex: 0,
-                filter: 'blur(24px) brightness(1.1)',
-                objectPosition: 'center',
-              }}
-              aria-hidden="true"
-              priority
-            />
-            {/* Main hero image, fully visible */}
-            <Image
-              src={heroImageUrl || defaultHeroImageUrl}
-              alt="Event or Default"
-              fill
-              className="object-cover w-full h-full"
-              style={{
-                objectFit: 'cover',
-                objectPosition: 'center',
-                zIndex: 1,
-                background: 'linear-gradient(to bottom, #f8fafc 0%, #fff 100%)',
-              }}
-              priority
-            />
-            {/* Fade overlays for all four borders */}
-            <div className="pointer-events-none absolute left-0 top-0 w-full h-8" style={{ background: 'linear-gradient(to bottom, rgba(248,250,252,1) 0%, rgba(248,250,252,0) 100%)', zIndex: 20 }} />
-            <div className="pointer-events-none absolute left-0 bottom-0 w-full h-8" style={{ background: 'linear-gradient(to top, rgba(248,250,252,1) 0%, rgba(248,250,252,0) 100%)', zIndex: 20 }} />
-            <div className="pointer-events-none absolute left-0 top-0 h-full w-8" style={{ background: 'linear-gradient(to right, rgba(248,250,252,1) 0%, rgba(248,250,252,0) 100%)', zIndex: 20 }} />
-            <div className="pointer-events-none absolute right-0 top-0 h-full w-8" style={{ background: 'linear-gradient(to left, rgba(248,250,252,1) 0%, rgba(248,250,252,0) 100%)', zIndex: 20 }} />
-          </div>
-          {/* Buy Tickets image overlay if ticketed */}
-          {event && event.admissionType === 'ticketed' && (
-            <div
-              className="absolute bottom-6 right-6 z-10"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              <Image
-                src="/images/buy_tickets_click_here_red.webp"
-                alt="Buy Tickets"
-                width={160}
-                height={60}
-                style={{ opacity: 0.7, height: 'auto' }}
-                className="rounded shadow"
-                priority
-              />
-            </div>
-          )}
-        </div>
-      </section>
-      {/* --- END HERO SECTION --- */}
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      {/* Responsive Hero Image CSS */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .hero-image {
+            width: 100%;
+            height: auto; /* Let image dictate height */
+            object-fit: cover; /* Cover full width, may crop height */
+            object-position: center;
+            display: block;
+            margin: 0;
+            padding: 0; /* Remove padding to bleed to edges */
+          }
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          .hero-section {
+            min-height: 10vh;
+            background-color: transparent !important; /* Remove coral background */
+            padding-top: 40px; /* Top padding to prevent header cut-off */
+            margin-left: calc(-50vw + 50%) !important;
+            margin-right: calc(-50vw + 50%) !important;
+            width: 100vw !important;
+          }
+
+          @media (max-width: 768px) {
+            .hero-image {
+              height: auto; /* Let image dictate height on mobile */
+              padding: 25px 0 0 0; /* Increased top padding for mobile */
+            }
+          }
+
+          @media (max-width: 767px) {
+            .hero-section {
+              padding-top: 50px !important; /* Extra mobile top padding */
+              margin-top: 0 !important;
+              min-height: 5vh !important;
+              background-color: transparent !important; /* Remove coral background on mobile */
+              margin-left: calc(-50vw + 50%) !important;
+              margin-right: calc(-50vw + 50%) !important;
+              width: 100vw !important;
+            }
+
+            .mobile-logo {
+              top: 120px !important;
+            }
+          }
+        `
+      }} />
+
+
+      {/* HERO SECTION - Full width bleeding to edges */}
+      <section className="hero-section" style={{ position: 'relative', marginTop: '0', paddingTop: '0', padding: '0', margin: '0', backgroundColor: 'transparent', height: '400px', overflow: 'hidden', width: '100%' }}>
+        <img
+          src={heroImageUrl || defaultHeroImageUrl}
+          alt="Event Hero"
+          className="hero-image"
+          style={{ margin: '0', padding: '0', display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+        {/* Responsive logo positioned as overlay on hero image */}
+        <div className="absolute top-1/2 left-4 z-50 mobile-logo" style={{ transform: 'translateY(-50%)' }}>
+          <img src="/images/mcefee_logo_black_border_transparent.png" alt="MCEFEE Logo" style={{ width: '140px', height: 'auto', maxWidth: '30vw' }} className="block md:hidden" />
+          <img src="/images/mcefee_logo_black_border_transparent.png" alt="MCEFEE Logo" style={{ width: '180px', height: 'auto', maxWidth: '15vw' }} className="hidden md:block" />
+        </div>
+        <div className="hero-overlay" style={{ opacity: 0.1, height: '5px', padding: '20' }}></div>
+      </section>
+      <div className="flex-grow max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Event Details Card */}
         <div className="bg-teal-50 rounded-xl shadow-lg p-6 md:p-8 mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
@@ -390,11 +354,11 @@ export default function TicketingPage() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-gray-600 mb-4">
             <div className="flex items-center gap-2">
               <FaCalendarAlt />
-              <span>{formatInTimeZone(event.startDate, event.timezone, 'EEEE, MMMM d, yyyy')}</span>
+              <span>{formatInTimeZone(event.startDate, event.timezone || 'America/New_York', 'EEEE, MMMM d, yyyy')}</span>
             </div>
             <div className="flex items-center gap-2">
               <FaClock />
-              <span>{formatTime(event.startTime)}{event.endTime ? ` - ${formatTime(event.endTime)}` : ''}</span>
+              <span>{formatTime(event.startTime)}{event.endTime ? ` - ${formatTime(event.endTime)}` : ''} {'('}{formatInTimeZone(event.startDate, event.timezone || 'America/New_York', 'zzz')}{')'}</span>
             </div>
             {event.location && (
               <div className="flex items-center gap-2">

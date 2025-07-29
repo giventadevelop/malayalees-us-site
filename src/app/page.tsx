@@ -234,9 +234,9 @@ export default async function Page() {
   const threeMonthsFromNow = new Date();
   threeMonthsFromNow.setMonth(today.getMonth() + 3);
 
-  let heroImageUrl = "/images/side_images/chilanka_2025.webp"; // default image
+  let heroImageUrl = "/images/default_placeholder_hero_image.jpeg"; // default image
   // Add cache-busting query string to default image so it is never cached
-  const defaultHeroImageUrl = `/images/side_images/chilanka_2025.webp?v=${Date.now()}`;
+  const defaultHeroImageUrl = `/images/default_placeholder_hero_image.jpeg?v=${Date.now()}`;
 
   let nextEvent: EventWithMedia | null = null;
   let mediaFetchError = false;
@@ -265,7 +265,7 @@ export default async function Page() {
   }
 
   // Fallback: If heroImageUrl is still default, try to fetch a hero image from event media
-  if (!heroImageUrl || heroImageUrl === "/images/side_images/chilanka_2025.webp") {
+  if (!heroImageUrl || heroImageUrl === "/images/default_placeholder_hero_image.jpeg") {
     // Find an event in the next 3 months
     const candidateEvent = events.find(event => {
       const eventDate = event.startDate ? new Date(event.startDate) : null;
@@ -285,7 +285,7 @@ export default async function Page() {
       }
     }
     // If still default, use cache-busting version
-    if (heroImageUrl === "/images/side_images/chilanka_2025.webp") {
+    if (heroImageUrl === "/images/default_placeholder_hero_image.jpeg") {
       heroImageUrl = defaultHeroImageUrl;
     }
   }

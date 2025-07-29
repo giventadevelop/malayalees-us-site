@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processStripeSessionServer, fetchTransactionQrCode } from '@/app/event/success/ApiServerActions';
 import { fetchEventDetailsByIdServer } from '@/app/admin/events/[id]/media/ApiServerActions';
-import { getAppUrl } from '@/lib/env';
 
-const APP_URL = getAppUrl();
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 async function fetchTransactionItemsByTransactionId(transactionId: number) {
   const res = await fetch(`${APP_URL}/api/proxy/event-ticket-transaction-items?transactionId.equals=${transactionId}`, { cache: 'no-store' });
@@ -18,7 +17,7 @@ async function fetchTicketTypeById(ticketTypeId: number) {
 }
 
 async function getHeroImageUrl(eventId: number) {
-  const defaultHeroImageUrl = `/images/side_images/chilanka_2025.webp?v=${Date.now()}`;
+  const defaultHeroImageUrl = `/images/default_placeholder_hero_image.jpeg?v=${Date.now()}`;
   let imageUrl: string | null = null;
   try {
     const flyerRes = await fetch(`${APP_URL}/api/proxy/event-medias?eventId.equals=${eventId}&eventFlyer.equals=true`, { cache: 'no-store' });
@@ -62,10 +61,21 @@ export async function POST(req: NextRequest) {
     let qrCodeData = null;
     if (transaction.id && eventDetails?.id) {
       try {
+        console.log('[QR Code Debug] Attempting to fetch QR code for:', {
+          eventId: eventDetails.id,
+          transactionId: transaction.id
+        });
         qrCodeData = await fetchTransactionQrCode(eventDetails.id, transaction.id);
+        console.log('[QR Code Debug] QR code fetched successfully:', qrCodeData);
       } catch (err) {
+        console.error('[QR Code Debug] Failed to fetch QR code:', err);
         qrCodeData = null;
       }
+    } else {
+      console.log('[QR Code Debug] Skipping QR code fetch - missing IDs:', {
+        transactionId: transaction.id,
+        eventId: eventDetails?.id
+      });
     }
     // Fetch transaction items and ticket type names
     let transactionItems = [];

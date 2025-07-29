@@ -22,8 +22,10 @@ function getTicketTypeName(ticketTypeId: number | undefined, eventTicketTypes: a
   return found?.name || '-';
 }
 
-export default async function QrCodeScanPage({ params }: { params: { eventId: string; transactionId: string } }) {
-  const { eventId, transactionId } = params;
+export default async function QrCodeScanPage({ params }: { params: Promise<{ eventId: string; transactionId: string }> | { eventId: string; transactionId: string } }) {
+  // Await params for Next.js 15+ compatibility
+  const resolvedParams = typeof params.then === 'function' ? await params : params;
+  const { eventId, transactionId } = resolvedParams;
   let qrCodeUsage: QrCodeUsageDTO | null = null;
   let fetchError: string | null = null;
   try {

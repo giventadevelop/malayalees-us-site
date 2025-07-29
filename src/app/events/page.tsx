@@ -13,7 +13,7 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [heroImageUrl, setHeroImageUrl] = useState<string>("/images/side_images/chilanka_2025.webp");
+  const [heroImageUrl, setHeroImageUrl] = useState<string>("/images/default_placeholder_hero_image.jpeg");
   const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
@@ -60,11 +60,11 @@ export default function EventsPage() {
             return;
           }
         }
-        setHeroImageUrl("/images/side_images/chilanka_2025.webp");
+        setHeroImageUrl("/images/default_placeholder_hero_image.jpeg");
       } catch (err) {
         setFetchError(true);
         setEvents([]);
-        setHeroImageUrl("/images/side_images/chilanka_2025.webp");
+        setHeroImageUrl("/images/default_placeholder_hero_image.jpeg");
       } finally {
         setLoading(false);
       }

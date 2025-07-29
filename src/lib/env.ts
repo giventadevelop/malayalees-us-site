@@ -33,27 +33,29 @@ export function getTenantId() {
 }
 
 /**
- * Gets the current app URL dynamically, making the application truly port-agnostic.
- * Priority order:
- * 1. NEXT_PUBLIC_APP_URL environment variable (highest priority)
- * 2. PORT environment variable
- * 3. Default to localhost:3000 (lowest priority)
- *
- * This ensures the app works regardless of how the port is specified.
+ * Get the app URL for port-agnostic configuration
+ * This is used for server-side API calls to ensure the application works on any port
+ * Returns the full URL including protocol (e.g., "http://localhost:3000" or "https://mcefee.org")
  */
 export function getAppUrl(): string {
-  // If NEXT_PUBLIC_APP_URL is explicitly set, use it (highest priority)
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL;
+  // In production, use the actual domain
+  if (process.env.NODE_ENV === 'production') {
+    return process.env.NEXT_PUBLIC_APP_URL || 'https://mcefee.org';
   }
+  // In development, use localhost with dynamic port detection
+  return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+}
 
-  // In development, try to detect the port
-  if (process.env.NODE_ENV === 'development') {
-    // Check for PORT environment variable (set by command line or env)
-    const port = process.env.PORT || '3000';
-    return `http://localhost:${port}`;
+/**
+ * Get the email host URL prefix for QR code generation
+ * This is used to ensure QR codes work properly in email contexts
+ * Returns the full URL including protocol (e.g., "http://localhost:3000" or "https://mcefee.org")
+ */
+export function getEmailHostUrlPrefix(): string {
+  // In production, use the actual domain
+  if (process.env.NODE_ENV === 'production') {
+    return process.env.NEXT_PUBLIC_APP_URL || 'https://mcefee.org';
   }
-
-  // Default fallback
-  return 'http://localhost:3000';
+  // In development, use localhost
+  return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 }

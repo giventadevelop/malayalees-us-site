@@ -10,13 +10,14 @@ import { withTenantId } from '@/lib/withTenantId';
 import Stripe from 'stripe';
 import { getTenantSettings } from '@/lib/tenantSettingsCache';
 import { fetchWithJwtRetry } from '@/lib/proxyHandler';
+import { getEmailHostUrlPrefix } from '@/lib/env';
 
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-03-31.basil',
 });
 
-const APP_URL = getAppUrl();
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 // Define ShoppingCartItem locally (not in @/types)
 export interface ShoppingCartItem {
@@ -87,7 +88,7 @@ async function createTransaction(transactionData: Omit<EventTicketTransactionDTO
 
 // Helper to bulk create transaction items
 async function createTransactionItemsBulk(items: any[]): Promise<any[]> {
-  const baseUrl = getAppUrl();
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const response = await fetchWithJwtRetry(
     `${baseUrl}/api/proxy/event-ticket-transaction-items/bulk`,
     {
@@ -333,11 +334,30 @@ export async function processStripeSessionServer(
 }
 
 export async function fetchTransactionQrCode(eventId: number, transactionId: number): Promise<{ qrCodeImageUrl: string }> {
-  const baseUrl = getAppUrl();
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+  // Get the current domain/host URL prefix for email context
+  const emailHostUrlPrefix = getEmailHostUrlPrefix();
+
+  console.log('[fetchTransactionQrCode] Starting QR code fetch:', {
+    eventId,
+    transactionId,
+    emailHostUrlPrefix,
+    baseUrl
+  });
+
   const response = await fetchWithJwtRetry(
-    `${baseUrl}/api/proxy/events/${eventId}/transactions/${transactionId}/qrcode`,
-    { method: 'GET', headers: { 'Content-Type': 'application/json' } }
+    `${baseUrl}/api/proxy/events/${eventId}/transactions/${transactionId}/emailHostUrlPrefix/${Buffer.from(emailHostUrlPrefix).toString('base64')}/qrcode`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    }
   );
+
+  console.log('[fetchTransactionQrCode] Response status:', response.status);
+
   if (!response.ok) {
     const errorBody = await response.text();
     console.error('Failed to fetch QR code:', response.status, errorBody);
@@ -345,5 +365,6 @@ export async function fetchTransactionQrCode(eventId: number, transactionId: num
   }
   // Always treat as plain text URL
   const url = await response.text();
+  console.log('[fetchTransactionQrCode] QR code URL received:', url);
   return { qrCodeImageUrl: url };
 }

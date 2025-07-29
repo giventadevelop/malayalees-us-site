@@ -2,7 +2,7 @@ import { stripe } from '@/lib/stripe';
 import type { UserProfileDTO, EventTicketTypeDTO } from '@/types';
 import { fetchDiscountCodeByIdServer } from '@/app/admin/events/[id]/discount-codes/list/ApiServerActions';
 import Stripe from 'stripe';
-import { getTenantId } from '@/lib/env';
+import { getTenantId, getAppUrl } from '@/lib/env';
 
 interface CartItem {
   ticketType: EventTicketTypeDTO;
@@ -202,8 +202,8 @@ export async function createStripeCheckoutSession(
     line_items,
     customer_email: upsertedUser.email,
     mode: 'payment',
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/event/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/`,
+    success_url: `${getAppUrl()}/event/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${getAppUrl()}/`,
     metadata: {
       ...(upsertedUser.userId && { userId: upsertedUser.userId }),
       eventId: String(eventId),

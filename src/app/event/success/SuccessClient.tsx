@@ -7,6 +7,7 @@ import {
   FaMoneyBillWave, FaInfoCircle, FaReceipt, FaMapPin, FaClock
 } from "react-icons/fa";
 import { formatInTimeZone } from "date-fns-tz";
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface SuccessClientProps {
   session_id: string;
@@ -27,6 +28,67 @@ export default function SuccessClient({ session_id }: SuccessClientProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Hero image is handled by the HydrationSafeHeroImage component
+
+  // Check if we were redirected due to already processed payment
+  useEffect(() => {
+    const paymentStatus = searchParams?.get('payment');
+    if (paymentStatus === 'already-processed') {
+      console.log('User was redirected due to already processed payment');
+      // You could show a toast or notification here if needed
+    }
+  }, [searchParams]);
+
+  // Enhanced back button prevention
+  useEffect(() => {
+    console.log('Setting up enhanced navigation prevention...');
+
+    // Check if we're on a Stripe URL and redirect
+    if (window.location.href.includes('checkout.stripe.com')) {
+      console.log('Detected Stripe URL - redirecting to home');
+      window.location.replace('/');
+      return;
+    }
+
+    // Enhanced back button prevention
+    const handlePopState = (e: PopStateEvent) => {
+      console.log('Back button detected - preventing navigation and redirecting to home');
+      e.preventDefault();
+      window.location.replace('/');
+    };
+
+    // Remove beforeunload handler to allow normal navigation
+    // Only prevent specific refresh attempts via keydown
+
+    // Enhanced keydown prevention for F5 and Ctrl+R
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+        console.log('Refresh attempt detected - preventing');
+        e.preventDefault();
+        window.location.replace('/');
+        return false;
+      }
+    };
+
+    // Add event listeners
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Push current state to prevent back navigation
+    window.history.pushState(null, '', window.location.href);
+    window.history.pushState(null, '', window.location.href);
+
+    console.log('Enhanced navigation prevention setup complete');
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   // Helper to get ticket number from either camelCase or snake_case, or fallback to 'TKTN'+id
   function getTicketNumber(transaction: any) {
@@ -48,7 +110,10 @@ export default function SuccessClient({ session_id }: SuccessClientProps) {
         if (getRes.ok) {
           const data = await getRes.json();
           if (data.transaction) {
-            if (!cancelled) setResult(data);
+            if (!cancelled) {
+              setResult(data);
+              // Hero image is handled by HydrationSafeHeroImage component
+            }
             setLoading(false);
             return;
           }
@@ -61,7 +126,10 @@ export default function SuccessClient({ session_id }: SuccessClientProps) {
         });
         if (!postRes.ok) throw new Error(await postRes.text());
         const postData = await postRes.json();
-        if (!cancelled) setResult(postData);
+        if (!cancelled) {
+          setResult(postData);
+          // Hero image is handled by HydrationSafeHeroImage component
+        }
       } catch (err: any) {
         if (!cancelled) setError(err?.message || "Unknown error");
       } finally {
@@ -72,7 +140,9 @@ export default function SuccessClient({ session_id }: SuccessClientProps) {
     return () => { cancelled = true; };
   }, [session_id]);
 
-  if (loading) return <LoadingTicket />;
+  if (loading) {
+    return <LoadingTicket sessionId={session_id} />;
+  }
   if (error) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 text-center p-4">
@@ -82,7 +152,17 @@ export default function SuccessClient({ session_id }: SuccessClientProps) {
       </div>
     );
   }
-  const { transaction, userProfile, eventDetails, qrCodeData, transactionItems, heroImageUrl } = result || {};
+  const { transaction, userProfile, eventDetails, qrCodeData, transactionItems, heroImageUrl: fetchedHeroImageUrl } = result || {};
+
+  // Clear hero image storage since we're on success page
+  if (fetchedHeroImageUrl) {
+    // Don't update heroImageUrl state, handled by component
+    // Clear storage since we have the actual data now
+    sessionStorage.removeItem('eventHeroImageUrl');
+    sessionStorage.removeItem('eventId');
+    localStorage.removeItem('eventHeroImageUrl');
+    localStorage.removeItem('eventId');
+  }
   if (!transaction) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 text-center p-4">
@@ -107,86 +187,136 @@ export default function SuccessClient({ session_id }: SuccessClientProps) {
   if (qrCodeData && qrCodeData.error) qrError = qrCodeData.error;
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-12">
-      {/* Hero Section - matches ticketing page */}
-      <section className="hero-section relative w-full h-[350px] md:h-[350px] sm:h-[220px] h-[160px] bg-transparent pb-0 mb-8">
-        <div className="absolute hero-image-container left-0 top-0 right-0 bottom-0 z-0">
-          <div className="w-full h-full relative">
-            {/* Blurred background image for width fill */}
-            <Image
-              src={heroImageUrl || "/images/side_images/chilanka_2025.webp"}
-              alt={eventDetails.title || 'Event Image'}
-              fill
-              className="object-cover w-full h-full blur-lg scale-105"
-              style={{ zIndex: 0, filter: 'blur(24px) brightness(1.1)', objectPosition: 'center' }}
-              aria-hidden="true"
-              priority
-            />
-            {/* Main hero image, fully visible */}
-            <Image
-              src={heroImageUrl || "/images/side_images/chilanka_2025.webp"}
-              alt={eventDetails.title || 'Event Image'}
-              fill
-              className="object-cover w-full h-full"
-              style={{ objectFit: 'cover', objectPosition: 'center', zIndex: 1, background: 'linear-gradient(to bottom, #f8fafc 0%, #fff 100%)' }}
-              priority
-            />
-            {/* Fade overlays for all four borders */}
-            <div className="pointer-events-none absolute left-0 top-0 w-full h-8" style={{ background: 'linear-gradient(to bottom, rgba(248,250,252,1) 0%, rgba(248,250,252,0) 100%)', zIndex: 20 }} />
-            <div className="pointer-events-none absolute left-0 bottom-0 w-full h-8" style={{ background: 'linear-gradient(to top, rgba(248,250,252,1) 0%, rgba(248,250,252,0) 100%)', zIndex: 20 }} />
-            <div className="pointer-events-none absolute left-0 top-0 h-full w-8" style={{ background: 'linear-gradient(to right, rgba(248,250,252,1) 0%, rgba(248,250,252,0) 100%)', zIndex: 20 }} />
-            <div className="pointer-events-none absolute right-0 top-0 h-full w-8" style={{ background: 'linear-gradient(to left, rgba(248,250,252,1) 0%, rgba(248,250,252,0) 100%)', zIndex: 20 }} />
-          </div>
+    <div className="min-h-screen bg-gray-100">
+
+      {/* HERO SECTION - Full width bleeding to edges */}
+      <section className="hero-section" style={{ position: 'relative', marginTop: '0', paddingTop: '0', padding: '0', margin: '0', backgroundColor: 'transparent', height: '400px', overflow: 'hidden', width: '100%' }}>
+        <Image
+          src={fetchedHeroImageUrl || "/images/default_placeholder_hero_image.jpeg"}
+          alt="Event Hero"
+          fill
+          className="hero-image object-cover"
+        />
+        {/* Responsive logo positioned as overlay on hero image */}
+        <div className="absolute top-1/2 left-4 z-50 mobile-logo" style={{ transform: 'translateY(-50%)' }}>
+          <img src="/images/mcefee_logo_black_border_transparent.png" alt="MCEFEE Logo" style={{ width: '140px', height: 'auto', maxWidth: '30vw' }} className="block md:hidden" />
+          <img src="/images/mcefee_logo_black_border_transparent.png" alt="MCEFEE Logo" style={{ width: '180px', height: 'auto', maxWidth: '15vw' }} className="hidden md:block" />
         </div>
-        {/* Event Details Card */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="bg-teal-50 rounded-xl shadow-lg p-6 md:p-8 mb-8 mt-16" style={{ position: 'relative', top: '60px' }}>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
-              {eventDetails.title}
-            </h2>
-            {eventDetails.caption && (
-              <div className="text-lg text-teal-700 font-semibold mb-2">{eventDetails.caption}</div>
-            )}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-gray-600 mb-4">
-              <div className="flex items-center gap-2">
-                <FaCalendarAlt />
-                <span>{formatInTimeZone(eventDetails.startDate, eventDetails.timezone, 'EEEE, MMMM d, yyyy')}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <FaClock />
-                <span>
-                  {formatTime(eventDetails.startTime)}{eventDetails.endTime ? ` - ${formatTime(eventDetails.endTime)}` : ''}
-                  {' '}
-                  ({formatInTimeZone(eventDetails.startDate, eventDetails.timezone, 'zzz')})
-                </span>
-              </div>
-              {eventDetails.location && (
-                <div className="flex items-center gap-2">
-                  <FaMapPin />
-                  <span>{eventDetails.location}</span>
-                </div>
-              )}
-            </div>
-            {eventDetails.description && <p className="text-gray-700 text-base">{eventDetails.description}</p>}
-          </div>
-        </div>
+        <div className="hero-overlay" style={{ opacity: 0.1, height: '5px', padding: '20' }}></div>
       </section>
-      {/* --- END HERO SECTION --- */}
-      <div className="max-w-4xl w-full mx-auto">
-        {/* Payment Success Card */}
-        <div className="bg-white p-6 sm:p-8 rounded-b-2xl shadow-2xl border-t-4 border-teal-500 text-center relative z-10 mx-4 sm:mx-8" style={{ marginTop: '-40px' }}>
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 ring-4 ring-white -mt-16 mb-4">
-            <FaCheckCircle className="h-10 w-10 text-green-500" />
+
+      {/* CSS Styles for hero section */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .hero-image {
+            width: 100%;
+            height: auto; /* Let image dictate height */
+            object-fit: cover; /* Cover full width, may crop height */
+            object-position: center;
+            display: block;
+            margin: 0;
+            padding: 0; /* Remove padding to bleed to edges */
+          }
+
+          .hero-section {
+            min-height: 10vh;
+            background-color: transparent !important; /* Remove coral background */
+            padding-top: 40px; /* Top padding to prevent header cut-off */
+            margin-left: calc(-50vw + 50%) !important;
+            margin-right: calc(-50vw + 50%) !important;
+            width: 100vw !important;
+          }
+
+          @media (max-width: 768px) {
+            .hero-image {
+              height: auto; /* Let image dictate height on mobile */
+              padding: 0; /* Remove padding to bleed to edges on mobile */
+            }
+          }
+
+          @media (max-width: 767px) {
+            .hero-section {
+              padding-top: 50px !important; /* Extra mobile top padding */
+              margin-top: 0 !important;
+              min-height: 5vh !important;
+              background-color: transparent !important; /* Remove coral background on mobile */
+              margin-left: calc(-50vw + 50%) !important;
+              margin-right: calc(-50vw + 50%) !important;
+              width: 100vw !important;
+            }
+
+            .mobile-logo {
+              top: 120px !important;
+            }
+          }
+        `
+      }} />
+
+      {/* Main content container - ui_style_guide.mdc compliant */}
+      <div className="max-w-5xl mx-auto px-8 py-8" style={{ marginTop: '80px' }}>
+        {/* Enhanced Warning Message */}
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <FaInfoCircle className="h-5 w-5 text-yellow-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                <strong>Important:</strong> Please do not refresh this page, use the back button, or press F5.
+                Your payment has been processed successfully. If you need to return to the home page,
+                use the navigation menu above. Any attempt to refresh or go back will redirect you to the homepage.
+              </p>
+            </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Payment Successful!</h1>
-          <p className="mt-2 text-gray-600">
-            Thank you for your purchase. Your tickets for <strong>{eventDetails.title}</strong> are confirmed.<br />
-            A confirmation is sent to your email: <strong>{transaction.email}</strong>
-          </p>
+        </div>
+
+        {/* Payment Success Card */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 ring-4 ring-white -mt-16 mb-4">
+              <FaCheckCircle className="h-10 w-10 text-green-500" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Payment Successful!</h1>
+            <p className="mt-2 text-gray-600">
+              Thank you for your purchase. Your tickets for <strong>{eventDetails.title}</strong> are confirmed.<br />
+              A confirmation is sent to your email: <strong>{transaction.email}</strong>
+            </p>
+          </div>
+        </div>
+
+        {/* Event Details Card */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+            {eventDetails.title}
+          </h2>
+          {eventDetails.caption && (
+            <div className="text-lg text-teal-700 font-semibold mb-4">{eventDetails.caption}</div>
+          )}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-gray-600 mb-4">
+            <div className="flex items-center gap-2">
+              <FaCalendarAlt />
+              <span>{formatInTimeZone(eventDetails.startDate, eventDetails.timezone, 'EEEE, MMMM d, yyyy')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FaClock />
+              <span>
+                {formatTime(eventDetails.startTime)}{eventDetails.endTime ? ` - ${formatTime(eventDetails.endTime)}` : ''}
+                {' '}
+                ({formatInTimeZone(eventDetails.startDate, eventDetails.timezone, 'zzz')})
+              </span>
+            </div>
+            {eventDetails.location && (
+              <div className="flex items-center gap-2">
+                <FaMapPin />
+                <span>{eventDetails.location}</span>
+              </div>
+            )}
+          </div>
+          {eventDetails.description && <p className="text-gray-700 text-base">{eventDetails.description}</p>}
         </div>
 
         {/* QR Code Section */}
-        <div className="w-full bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-200 mt-8 text-center">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8 text-center">
           {!qrCodeData && !qrError && (
             <div className="text-lg text-teal-700 font-semibold flex items-center justify-center gap-2">
               <FaTicketAlt className="animate-bounce" />
@@ -212,7 +342,8 @@ export default function SuccessClient({ session_id }: SuccessClientProps) {
           )}
         </div>
 
-        <div className="w-full bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-200 mt-8">
+        {/* Transaction Summary */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-3 mb-6">
             <FaReceipt className="text-teal-500" />
             Transaction Summary
@@ -247,7 +378,7 @@ export default function SuccessClient({ session_id }: SuccessClientProps) {
 
         {/* Transaction Item Breakdown */}
         {transactionItems && transactionItems.length > 0 && (
-          <div className="w-full bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-200 mt-8">
+          <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-3 mb-6">
               <FaTicketAlt className="text-teal-500" />
               Ticket Breakdown
@@ -277,6 +408,7 @@ export default function SuccessClient({ session_id }: SuccessClientProps) {
           </div>
         )}
       </div>
+
     </div>
   );
 }
