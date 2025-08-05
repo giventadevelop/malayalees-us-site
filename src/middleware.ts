@@ -5,13 +5,29 @@ export default authMiddleware({
   publicRoutes: [
     "/",
     "/event",
+    "/event/success",
+    "/event/success/(.*)",
     "/pricing",
     "/events",
+    "/events/(.*)/tickets",
+    "/events/(.*)/tickets/(.*)",
+    "/events/(.*)/register",
+    "/events/(.*)/register/(.*)",
+    "/events/(.*)/checkout",
+    "/events/(.*)/checkout/(.*)",
+    "/events/(.*)/payment",
+    "/events/(.*)/payment/(.*)",
+    "/events/(.*)/success",
+    "/events/(.*)/success/(.*)",
+    "/events/(.*)",
     "/api/proxy/(.*)",
     "/api/webhooks/(.*)",
     "/api/event/success/process",
     "/api/tasks",
     "/api/billing/(.*)",
+    "/api/stripe/(.*)",
+    "/api/payment/(.*)",
+    "/api/checkout/(.*)",
     "/images/(.*)",
     "/_next/(.*)",
     "/favicon.ico",
@@ -23,7 +39,12 @@ export default authMiddleware({
   // Routes that can be accessed while signed out, but also show user info if signed in
   ignoredRoutes: [
     "/api/webhooks/(.*)",
-    "/api/proxy/(.*)"
+    "/api/proxy/(.*)",
+    "/api/stripe/event-checkout",
+    "/api/stripe/get-session",
+    "/api/payment/(.*)",
+    "/api/checkout/(.*)",
+    "/api/billing/(.*)"
   ],
 
   // Debug mode for development

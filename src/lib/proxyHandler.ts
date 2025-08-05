@@ -124,7 +124,15 @@ export function createProxyHandler({ injectTenantId = true, allowedMethods = ['G
         } else if (method !== 'GET' && method !== 'DELETE') {
           // Apply tenantId injection for POST/PUT requests if needed
           if (injectTenantId && payload && typeof payload === 'object') {
-            payload = withTenantId(payload);
+            if (Array.isArray(payload)) {
+              // For arrays, inject tenantId into each array item if they are objects
+              payload = payload.map(item => 
+                typeof item === 'object' && item !== null ? withTenantId(item) : item
+              );
+            } else {
+              // For single objects, inject tenantId normally
+              payload = withTenantId(payload);
+            }
           }
           
           // Special debugging for promotion emails

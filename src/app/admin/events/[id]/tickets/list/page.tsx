@@ -1,5 +1,5 @@
 import { EventTicketTransactionDTO, EventTicketTransactionStatisticsDTO } from '@/types';
-import { FaSearch, FaTicketAlt, FaEnvelope, FaUser, FaHashtag, FaCalendarAlt, FaChevronLeft, FaChevronRight, FaUsers, FaPhotoVideo, FaTags, FaPercent } from 'react-icons/fa';
+import { FaSearch, FaTicketAlt, FaEnvelope, FaUser, FaHashtag, FaCalendarAlt, FaChevronLeft, FaChevronRight, FaUsers, FaPhotoVideo, FaTags, FaPercent, FaHome } from 'react-icons/fa';
 import Link from 'next/link';
 import React, { useState, useRef } from 'react';
 import { Pagination } from '@/components/Pagination';
@@ -37,7 +37,7 @@ async function fetchTickets(eventId: string, searchParams: SearchParams) {
   const pageSize = parseInt(searchParams.pageSize || PAGE_SIZE.toString(), 10);
   const query: Record<string, any> = {
     'eventId.equals': eventId,
-    _sort: 'purchaseDate,desc',
+    _sort: 'createdAt,desc', // Use createdAt for proper sorting
     page,
     size: pageSize,
   };
@@ -45,12 +45,27 @@ async function fetchTickets(eventId: string, searchParams: SearchParams) {
   if (searchParams.transactionId) query['id.equals'] = searchParams.transactionId;
   if (searchParams.name) query['firstName.contains'] = searchParams.name;
   const qs = buildQueryString(query);
+  console.log('Fetching tickets with query:', qs);
   const res = await fetch(`${baseUrl}/api/proxy/event-ticket-transactions?${qs}`, { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch tickets');
   const rows = await res.json();
+  // Debug: Log purchase dates to verify sorting
+  console.log('Purchase dates from response:', rows.map((row: any) => ({
+    id: row.id,
+    purchaseDate: row.purchaseDate,
+    createdAt: row.createdAt
+  })));
+
+  // Fallback: Sort by purchaseDate descending if backend sorting doesn't work
+  const sortedRows = Array.isArray(rows) ? rows.sort((a: any, b: any) => {
+    const dateA = new Date(a.purchaseDate || a.createdAt || 0);
+    const dateB = new Date(b.purchaseDate || b.createdAt || 0);
+    return dateB.getTime() - dateA.getTime(); // Descending order
+  }) : [];
+
   // Read total count from x-total-count header
   const totalCount = parseInt(res.headers.get('x-total-count') || '0', 10);
-  return { rows, totalCount };
+  return { rows: sortedRows, totalCount };
 }
 
 async function fetchStatistics(eventId: string): Promise<EventTicketTransactionStatisticsDTO | null> {
@@ -109,33 +124,37 @@ export default async function TicketListPage({ params, searchParams }: { params:
   const endItemControl = (currentPage - 1) * pageSize + rows.length;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 pt-32 pb-8">
       {/* Responsive Button Group */}
-      <div className="w-full overflow-x-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-6 justify-items-center mx-auto max-w-6xl">
-          <Link href="/admin/manage-usage" className="w-full max-w-xs flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-lg shadow-sm hover:shadow-md p-3 sm:p-4 text-xs sm:text-sm transition-all duration-200">
-            <FaUsers className="text-lg sm:text-xl mb-2" />
-            <span className="font-semibold text-center leading-tight">Manage Usage<br />[Users]</span>
+      <div className="w-full">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1 sm:gap-2 mb-8 justify-items-stretch max-w-[280px] sm:max-w-4xl sm:mx-auto">
+          <Link href="/admin" className="flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-800 rounded-lg shadow-sm hover:shadow-md p-1.5 sm:p-3 text-xs transition-all duration-200 min-h-[60px] sm:min-h-[80px]">
+            <FaHome className="text-xs sm:text-base mb-0.5 sm:mb-1" />
+            <span className="font-medium text-center leading-tight text-[8px] sm:text-xs">Admin Home</span>
           </Link>
-          <Link href={`/admin/events/${eventId}/media/list`} className="w-full max-w-xs flex flex-col items-center justify-center bg-yellow-50 hover:bg-yellow-100 text-yellow-800 rounded-lg shadow-sm hover:shadow-md p-3 sm:p-4 text-xs sm:text-sm transition-all duration-200">
-            <FaPhotoVideo className="text-lg sm:text-xl mb-2" />
-            <span className="font-semibold text-center leading-tight">Manage Media Files</span>
+          <Link href="/admin/manage-usage" className="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-lg shadow-sm hover:shadow-md p-1.5 sm:p-3 text-xs transition-all duration-200 min-h-[60px] sm:min-h-[80px]">
+            <FaUsers className="text-xs sm:text-base mb-0.5 sm:mb-1" />
+            <span className="font-medium text-center leading-tight text-[8px] sm:text-xs">Manage Usage<br />[Users]</span>
           </Link>
-          <Link href="/admin" className="w-full max-w-xs flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 text-green-800 rounded-lg shadow-sm hover:shadow-md p-3 sm:p-4 text-xs sm:text-sm transition-all duration-200">
-            <FaCalendarAlt className="text-lg sm:text-xl mb-2" />
-            <span className="font-semibold text-center leading-tight">Manage Events</span>
+          <Link href={`/admin/events/${eventId}/media/list`} className="flex flex-col items-center justify-center bg-yellow-50 hover:bg-yellow-100 text-yellow-800 rounded-lg shadow-sm hover:shadow-md p-1.5 sm:p-3 text-xs transition-all duration-200 min-h-[60px] sm:min-h-[80px]">
+            <FaPhotoVideo className="text-xs sm:text-base mb-0.5 sm:mb-1" />
+            <span className="font-medium text-center leading-tight text-[8px] sm:text-xs">Manage Media Files</span>
           </Link>
-          <Link href={`/admin/events/${eventId}/ticket-types/list`} className="w-full max-w-xs flex flex-col items-center justify-center bg-purple-50 hover:bg-purple-100 text-purple-800 rounded-lg shadow-sm hover:shadow-md p-3 sm:p-4 text-xs sm:text-sm transition-all duration-200">
-            <FaTags className="text-lg sm:text-xl mb-2" />
-            <span className="font-semibold text-center leading-tight">Manage Ticket Types</span>
+          <Link href="/admin" className="flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 text-green-800 rounded-lg shadow-sm hover:shadow-md p-1.5 sm:p-3 text-xs transition-all duration-200 min-h-[60px] sm:min-h-[80px]">
+            <FaCalendarAlt className="text-xs sm:text-base mb-0.5 sm:mb-1" />
+            <span className="font-medium text-center leading-tight text-[8px] sm:text-xs">Manage Events</span>
           </Link>
-          <Link href={`/admin/events/${eventId}/tickets/list`} className="w-full max-w-xs flex flex-col items-center justify-center bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-lg shadow-sm hover:shadow-md p-3 sm:p-4 text-xs sm:text-sm transition-all duration-200">
-            <FaTicketAlt className="text-lg sm:text-xl mb-2" />
-            <span className="font-semibold text-center leading-tight">Manage Tickets</span>
+          <Link href={`/admin/events/${eventId}/ticket-types/list`} className="flex flex-col items-center justify-center bg-purple-50 hover:bg-purple-100 text-purple-800 rounded-lg shadow-sm hover:shadow-md p-1.5 sm:p-3 text-xs transition-all duration-200 min-h-[60px] sm:min-h-[80px]">
+            <FaTags className="text-xs sm:text-base mb-0.5 sm:mb-1" />
+            <span className="font-medium text-center leading-tight text-[8px] sm:text-xs">Manage Ticket Types</span>
           </Link>
-          <Link href={`/admin/events/${eventId}/discount-codes/list`} className="w-full max-w-xs flex flex-col items-center justify-center bg-pink-50 hover:bg-pink-100 text-pink-800 rounded-lg shadow-sm hover:shadow-md p-3 sm:p-4 text-xs sm:text-sm transition-all duration-200">
-            <FaPercent className="text-lg sm:text-xl mb-2" />
-            <span className="font-semibold text-center leading-tight">Manage Discount Codes</span>
+          <Link href={`/admin/events/${eventId}/tickets/list`} className="flex flex-col items-center justify-center bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-lg shadow-sm hover:shadow-md p-1.5 sm:p-3 text-xs transition-all duration-200 min-h-[60px] sm:min-h-[80px]">
+            <FaTicketAlt className="text-xs sm:text-base mb-0.5 sm:mb-1" />
+            <span className="font-medium text-center leading-tight text-[8px] sm:text-xs">Manage Tickets</span>
+          </Link>
+          <Link href={`/admin/events/${eventId}/discount-codes/list`} className="flex flex-col items-center justify-center bg-pink-50 hover:bg-pink-100 text-pink-800 rounded-lg shadow-sm hover:shadow-md p-1.5 sm:p-3 text-xs transition-all duration-200 min-h-[60px] sm:min-h-[80px]">
+            <FaPercent className="text-xs sm:text-base mb-0.5 sm:mb-1" />
+            <span className="font-medium text-center leading-tight text-[8px] sm:text-xs">Manage Discount Codes</span>
           </Link>
         </div>
       </div>
@@ -197,7 +216,6 @@ export default async function TicketListPage({ params, searchParams }: { params:
               <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 border-b border-r border-gray-300">Email</th>
               <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 border-b border-r border-gray-300">Quantity</th>
               <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 border-b border-r border-gray-300">Total</th>
-              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 border-b border-r border-gray-300">Purchase Date</th>
               <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 border-b border-gray-300">Status</th>
             </tr>
           </thead>

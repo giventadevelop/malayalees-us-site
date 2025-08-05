@@ -3,13 +3,11 @@ import { redirect } from 'next/navigation';
 import TicketTypeListClient from './TicketTypeListClient';
 import type { EventDetailsDTO, EventTicketTypeDTO } from '@/types';
 import Link from 'next/link';
-import { FaUsers, FaPhotoVideo, FaCalendarAlt, FaTags, FaTicketAlt, FaPercent } from 'react-icons/fa';
+import { FaUsers, FaPhotoVideo, FaCalendarAlt, FaTags, FaTicketAlt, FaPercent, FaHome } from 'react-icons/fa';
 import { fetchEventDetailsForTicketListPage, fetchTicketTypesForTicketListPage } from './ApiServerActions';
 
 interface Props {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }> | { id: string };
 }
 
 export default async function TicketTypeListPage({ params }: Props) {
@@ -18,7 +16,8 @@ export default async function TicketTypeListPage({ params }: Props) {
     redirect('/sign-in');
   }
 
-  const eventId = parseInt(params.id);
+  const resolvedParams = typeof params.then === 'function' ? await params : params;
+  const eventId = parseInt(resolvedParams.id);
   if (isNaN(eventId)) {
     redirect('/admin/events');
   }
@@ -31,7 +30,7 @@ export default async function TicketTypeListPage({ params }: Props) {
   const ticketTypes = await fetchTicketTypesForTicketListPage(eventId);
 
   return (
-    <div className="max-w-5xl mx-auto px-8 py-8">
+    <div className="max-w-5xl mx-auto px-8 py-8" style={{ paddingTop: '118px' }}>
       {/* Title Section */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Manage Ticket Types</h1>
@@ -43,6 +42,13 @@ export default async function TicketTypeListPage({ params }: Props) {
       {/* Button Group */}
       <div className="w-full overflow-x-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-6 justify-items-center mx-auto max-w-6xl">
+          <Link
+            href="/admin"
+            className="w-full max-w-xs flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-800 rounded-lg shadow-sm hover:shadow-md p-3 sm:p-4 text-xs sm:text-sm transition-all duration-200"
+          >
+            <FaHome className="text-lg sm:text-xl mb-2" />
+            <span className="font-semibold text-center leading-tight">Admin Home</span>
+          </Link>
           <Link
             href="/admin/manage-usage"
             className="w-full max-w-xs flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-lg shadow-sm hover:shadow-md p-3 sm:p-4 text-xs sm:text-sm transition-all duration-200"
