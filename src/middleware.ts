@@ -4,9 +4,13 @@ export default authMiddleware({
   // Public routes that don't require authentication
   publicRoutes: [
     "/",
+    "/charity-theme",
+    "/(charity-theme)",
     "/event",
     "/event/success",
     "/event/success/(.*)",
+    "/event/ticket-qr",
+    "/test-mobile",
     "/pricing",
     "/events",
     "/events/(.*)/tickets",
@@ -23,6 +27,8 @@ export default authMiddleware({
     "/api/proxy/(.*)",
     "/api/webhooks/(.*)",
     "/api/event/success/process",
+    "/api/debug/(.*)",
+    "/api/test-mobile",
     "/api/tasks",
     "/api/billing/(.*)",
     "/api/stripe/(.*)",
@@ -63,7 +69,7 @@ export const config = {
   matcher: [
     // Skip Next.js internals and all static files
     '/((?!_next|[^?]*\\.[\\w]+$|_next).*)',
-    // Optional: Protect API routes
+    // Protect API routes
     '/(api|trpc)(.*)',
   ],
 };
