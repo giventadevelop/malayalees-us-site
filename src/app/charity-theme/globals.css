@@ -1,586 +1,261 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kaushan+Script&display=swap');
+/* Charity Theme Route - Independent Styles */
+/* This file contains styles specific to the charity-theme route */
+
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600&family=Epilogue:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* Shadcn/UI Colors - matching Tailwind config expectations */
-    --background: #ffffff;
-    --foreground: #212529;
-    /* Dark Text */
-    --card: #ffffff;
-    --card-foreground: #212529;
-    --popover: #ffffff;
-    --popover-foreground: #212529;
-    --primary: #FF6B35;
-    /* Orange Accent */
-    --primary-foreground: #ffffff;
-    --secondary: #F8F9FA;
-    /* Light Gray */
-    --secondary-foreground: #212529;
-    --muted: #F8F9FA;
-    /* Light Gray */
-    --muted-foreground: #6C757D;
-    /* Medium Gray */
-    --accent: #F8F9FA;
-    /* Light Gray */
-    --accent-foreground: #212529;
-    --destructive: #E91E63;
-    /* Pink Accent */
-    --destructive-foreground: #ffffff;
-    --border: #e5e5e5;
-    /* Default border, adjust if needed */
-    --input: #e5e5e5;
-    /* Default input border, adjust if needed */
-    --ring: #FF6B35;
-    /* Orange Accent for focus rings */
-    --color-chart-1: #FF6B35;
-    /* Orange Accent */
-    --color-chart-2: #F9C23C;
-    /* Yellow Accent */
-    --color-chart-3: #4A90E2;
-    /* Blue Accent */
-    --color-chart-4: #28A745;
-    /* Green Accent */
-    --color-chart-5: #E91E63;
-    /* Pink Accent */
-    --radius: 0.5rem;
-    /* Default radius for Shadcn components */
-
-    /* Additional Design System Colors */
-    --color-dark-background: #2C3E50;
-    --color-medium-gray: #6C757D;
-    --color-yellow-accent: #F9C23C;
-    --color-blue-accent: #4A90E2;
-    --color-green-accent: #28A745;
-    --color-pink-accent: #E91E63;
-    --color-cyan-accent: #17A2B8;
-    --color-progress-background: #E9ECEF;
-
-    /* Font Families */
-    --font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --font-script: "Kaushan Script", cursive;
-  }
-
-  * {
-    border-color: var(--border);
-  }
-
-  body {
-    background-color: var(--background);
-    color: var(--foreground);
-    line-height: 1.6;
-    /* Regular body text line height */
-    font-size: 16px;
-    /* Regular body text font size */
-    font-family: var(--font-body);
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: var(--font-display);
-    color: var(--foreground);
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  h1 {
-    font-size: 48px;
-  }
-
-  h2 {
-    font-size: 36px;
-    line-height: 1.3;
-  }
-
-  h3 {
-    font-size: 28px;
-    font-weight: 600;
-    line-height: 1.4;
-  }
-
-  h4 {
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 1.4;
-  }
-
-  h5 {
-    font-size: 20px;
-    font-weight: 600;
-    line-height: 1.5;
-  }
-
-  h6 {
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 1.5;
-  }
-
-  p {
-    font-size: 16px;
-    line-height: 1.6;
-    color: var(--color-medium-gray);
-  }
-
-  a {
-    color: var(--color-blue-accent);
-    text-decoration: none;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  .text-large {
-    font-size: 18px;
-    line-height: 1.6;
-    font-weight: 400;
-  }
-
-  .text-small {
-    font-size: 14px;
-    line-height: 1.5;
-    font-weight: 400;
-  }
-
-  .font-script {
-    font-family: var(--font-script);
-  }
-
-  .container {
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 32px;
-    /* Desktop padding */
-    padding-right: 32px;
-    /* Mobile padding */
-  }
-
-  @media (max-width: 768px) {
-    .container {
-      padding-left: 16px;
-      /* Mobile padding */
-      padding-right: 16px;
-      /* Mobile padding */
-    }
-  }
+/* Route-specific CSS variables */
+:root {
+  --charity-primary: #2563eb;
+  --charity-secondary: #1e40af;
+  --charity-accent: #f59e0b;
+  --charity-success: #10b981;
+  --charity-warning: #f59e0b;
+  --charity-error: #ef4444;
+  --charity-text: #1f2937;
+  --charity-text-light: #6b7280;
+  --charity-bg: #ffffff;
+  --charity-bg-secondary: #f9fafb;
+  --charity-border: #e5e7eb;
 }
 
-@layer utilities {
-
-  /* Scrollbar hide utility */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
+/* Dark mode variables */
+.dark {
+  --charity-primary: #3b82f6;
+  --charity-secondary: #60a5fa;
+  --charity-accent: #fbbf24;
+  --charity-success: #34d399;
+  --charity-warning: #fbbf24;
+  --charity-error: #f87171;
+  --charity-text: #f9fafb;
+  --charity-text-light: #d1d5db;
+  --charity-bg: #111827;
+  --charity-bg-secondary: #1f2937;
+  --charity-border: #374151;
 }
 
-/* Charity Theme Specific Styles */
+/* Route-specific layout wrapper */
 .charity-theme-layout {
+  font-family: 'Sora', 'Epilogue', 'Inter', sans-serif;
+  color: var(--charity-text);
+  background-color: var(--charity-bg);
   min-height: 100vh;
-  background-color: var(--background);
 }
 
+/* Route-specific component styles */
 .charity-theme-layout main {
-  min-height: 100vh;
-}
-
-/* Header Navigation Styles */
-.header-navigation {
-  position: sticky;
-  top: 0;
-  z-index: 50;
   width: 100%;
-  border-bottom: 1px solid var(--border);
-  background-color: white;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  overflow-x: hidden;
+  padding-top: 80px; /* Account for fixed header height */
 }
 
-.header-container {
-  display: flex;
-  height: 90px;
-  align-items: center;
-  justify-content: space-between;
+/* Header-specific styles */
+.charity-theme-layout .header {
+  font-family: 'Sora', 'Epilogue', 'Inter', sans-serif;
 }
 
-.header-left {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 1.5rem;
+/* Smooth scroll behavior for internal navigation */
+.charity-theme-layout {
+  scroll-behavior: smooth;
 }
 
-.header-logo {
-  height: auto;
-  width: auto;
+/* Dropdown animation improvements */
+.charity-theme-layout .group:hover .group-hover\:opacity-100 {
+  transition-delay: 100ms;
 }
 
-.header-nav {
-  display: none;
+/* Mobile menu smooth transitions */
+.charity-theme-layout .mobile-menu-enter {
+  transform: translateX(100%);
 }
 
-@media (min-width: 1024px) {
-  .header-nav {
-    display: flex;
-  }
+.charity-theme-layout .mobile-menu-enter-active {
+  transform: translateX(0);
+  transition: transform 300ms ease-in-out;
 }
 
-.header-nav-list {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-.header-nav-item {
-  position: relative;
-  display: flex;
-  height: 90px;
-  align-items: center;
-}
-
-.header-nav-link {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 1rem;
-  font-weight: 500;
-  transition-property: color;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-.header-nav-link:hover {
-  color: var(--primary);
-}
-
-.header-nav-link.active {
-  color: var(--primary);
-}
-
-.header-nav-dropdown {
-  position: absolute;
-  left: 0;
-  top: 100%;
-  z-index: 10;
-  width: 14rem;
-  list-style: none;
-  border-radius: 0.375rem;
-  background-color: white;
-  padding: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  ring: 1px;
-  ring-color: rgba(0, 0, 0, 0.05);
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-4px);
-}
-
-.header-nav-item:hover .header-nav-dropdown {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.header-nav-dropdown-item {
-  display: block;
-  white-space: nowrap;
-  border-radius: 0.125rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-.header-nav-dropdown-item:hover {
-  background-color: var(--secondary);
-  color: var(--primary);
-}
-
-.header-right {
-  display: none;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-@media (min-width: 1024px) {
-  .header-right {
-    display: flex;
-  }
-}
-
-.header-button {
-  border-radius: 0.375rem;
-  border: 1px solid var(--foreground);
-  border-opacity: 0.5;
-  padding: 0.75rem 2rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--foreground);
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.header-button:hover {
-  border-color: var(--primary);
-  background-color: var(--primary);
-  color: white;
-}
-
-.header-mobile-menu {
-  display: flex;
-  align-items: center;
-}
-
-@media (min-width: 1024px) {
-  .header-mobile-menu {
-    display: none;
-  }
-}
-
-.mobile-menu-button {
-  display: flex;
-  height: 2rem;
-  width: 2rem;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  color: var(--muted-foreground);
-  transition-property: color;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
-}
-
-.mobile-menu-button:hover {
-  color: var(--primary);
-}
-
-.mobile-menu-line {
-  display: block;
-  height: 0.125rem;
-  width: 1.5rem;
-  background-color: currentColor;
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
-}
-
-/* Mobile Menu Styles */
-.mobile-menu {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 50;
-  width: 100%;
-  height: 100vh;
-  background-color: white;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease-in-out;
-  overflow-y: auto;
-}
-
-.mobile-menu.open {
+.charity-theme-layout .mobile-menu-exit {
   transform: translateX(0);
 }
 
-.mobile-menu-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border);
-  background-color: white;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+.charity-theme-layout .mobile-menu-exit-active {
+  transform: translateX(100%);
+  transition: transform 300ms ease-in-out;
 }
 
-.mobile-menu-close {
-  padding: 0.5rem;
-  color: var(--muted-foreground);
-  transition: color 0.2s;
-  background: none;
-  border: none;
+/* Inter font utility class */
+.charity-theme-layout .font-inter {
+  font-family: 'Inter', 'Sora', 'Epilogue', sans-serif;
+}
+
+/* Enhanced focus states for accessibility */
+.charity-theme-layout *:focus-visible {
+  outline: 2px solid var(--charity-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Scale animations */
+.charity-theme-layout .hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+
+.charity-theme-layout .active\:scale-98:active {
+  transform: scale(0.98);
+}
+
+/* Menu item hover transitions */
+.charity-theme-layout .menu-item-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Button interaction enhancements */
+.charity-theme-layout .touch-manipulation {
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Enhanced button hover states */
+.charity-theme-layout button:hover {
   cursor: pointer;
-  border-radius: 0.375rem;
 }
 
-.mobile-menu-close:hover {
-  color: var(--primary);
-  background-color: var(--secondary);
+.charity-theme-layout button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
 }
 
-.mobile-menu-nav {
-  padding: 1.5rem;
-}
-
-.mobile-menu-nav-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  space-y: 0;
-}
-
-.mobile-menu-nav-item {
-  border-bottom: 1px solid var(--border);
-}
-
-.mobile-menu-nav-item:last-child {
-  border-bottom: none;
-}
-
-.mobile-menu-nav-link {
-  display: block;
-  padding: 1rem 0;
-  color: var(--foreground);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
-  cursor: pointer;
-  background: none;
-  border: none;
-  width: 100%;
-  text-align: left;
-}
-
-.mobile-menu-nav-link:hover {
-  color: var(--primary);
-}
-
-.mobile-menu-dropdown {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease-in-out;
-  background-color: var(--secondary);
-  margin: 0 -1.5rem;
-}
-
-.mobile-menu-dropdown.open {
-  max-height: 500px;
-}
-
-.mobile-menu-dropdown-item {
-  padding: 0.75rem 1rem;
-  padding-left: 3rem;
-  color: var(--muted-foreground);
-  text-decoration: none;
-  font-size: 0.875rem;
-  transition: color 0.2s;
-  display: block;
-  border-bottom: 1px solid var(--border);
-}
-
-.mobile-menu-dropdown-item:hover {
-  color: var(--primary);
-  background-color: var(--accent);
-}
-
-.mobile-menu-dropdown-item:last-child {
-  border-bottom: none;
-}
-
-/* Hero Section Styles */
-.hero-section {
+/* Hamburger and icon button specific styling */
+.charity-theme-layout .icon-button {
   position: relative;
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--color-yellow-accent) 100%);
-  color: white;
-  padding: 4rem 1rem;
+  overflow: hidden;
 }
 
-.hero-title {
-  font-size: 3rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  line-height: 1.2;
+.charity-theme-layout .icon-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
 }
 
-.hero-subtitle {
-  font-size: 1.25rem;
-  margin-bottom: 2rem;
-  opacity: 0.9;
-  max-width: 600px;
+.charity-theme-layout .icon-button:active::before {
+  width: 100%;
+  height: 100%;
 }
 
-.hero-buttons {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  justify-content: center;
+/* Footer-specific enhancements */
+.charity-theme-layout footer {
+  font-family: 'Inter', 'Sora', 'Epilogue', sans-serif;
 }
 
-.hero-button {
-  padding: 1rem 2rem;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
+/* Footer link hover animations */
+.charity-theme-layout footer nav a {
+  position: relative;
+  display: inline-block;
 }
 
-.hero-button-primary {
-  background-color: white;
-  color: var(--primary);
+.charity-theme-layout footer nav a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: currentColor;
+  transition: width 0.3s ease-in-out;
 }
 
-.hero-button-primary:hover {
-  background-color: var(--secondary);
-  transform: translateY(-2px);
+.charity-theme-layout footer nav a:hover::after {
+  width: 100%;
 }
 
-.hero-button-secondary {
-  background-color: transparent;
-  color: white;
-  border: 2px solid white;
+/* Back-to-top button enhanced styling */
+.charity-theme-layout .back-to-top-button {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.hero-button-secondary:hover {
-  background-color: white;
-  color: var(--primary);
+/* Social media icons enhanced hover effects */
+.charity-theme-layout footer .social-icon {
+  position: relative;
+  overflow: hidden;
 }
 
-/* Responsive Design */
+.charity-theme-layout footer .social-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.charity-theme-layout footer .social-icon:hover::before {
+  width: 100%;
+  height: 100%;
+}
+
+/* Tablet-specific responsive behavior */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .charity-theme-layout nav {
+    /* Reduce spacing for tablet */
+    gap: 0.5rem;
+  }
+  
+  .charity-theme-layout .header-nav-item {
+    font-size: 15px;
+    padding: 8px 12px;
+  }
+  
+  /* Adjust button sizes for tablet */
+  .charity-theme-layout button {
+    min-width: 42px;
+    min-height: 42px;
+  }
+  
+  /* Footer tablet adjustments */
+  .charity-theme-layout footer {
+    padding: 1rem;
+  }
+}
+
+/* Responsive design for charity theme */
 @media (max-width: 768px) {
-  .hero-title {
-    font-size: 2rem;
+  .charity-theme-layout {
+    /* Mobile-specific styles */
+    padding: 0;
   }
-
-  .hero-subtitle {
-    font-size: 1rem;
+  
+  .charity-theme-layout main {
+    padding-top: 60px; /* Reduced header height on mobile */
   }
+}
 
-  .hero-buttons {
-    flex-direction: column;
-    align-items: center;
+@media (min-width: 769px) and (max-width: 1024px) {
+  .charity-theme-layout {
+    /* Tablet-specific styles */
+    padding: 0 1rem;
   }
+}
 
-  .hero-button {
-    width: 100%;
-    max-width: 300px;
-    text-align: center;
+@media (min-width: 1025px) {
+  .charity-theme-layout {
+    /* Desktop-specific styles */
+    padding: 0 2rem;
   }
 }
