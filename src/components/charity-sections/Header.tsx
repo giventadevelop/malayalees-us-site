@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Grid, Search, ChevronDown, X, Menu } from 'lucide-react';
+import { Search, ChevronDown, X, Menu } from 'lucide-react';
 
 const navItems = [
   {
@@ -129,44 +128,20 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-100">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
-            {/* Left side - Grid button and Logo */}
-            <div className="flex items-center space-x-4">
-              <button 
-                aria-label="Open side panel" 
-                className="
-                  hidden lg:flex items-center justify-center
-                  w-11 h-11 min-w-[44px] min-h-[44px]
-                  font-inter font-medium
-                  text-gray-600 hover:text-gray-900 active:text-blue-600
-                  bg-transparent hover:bg-gray-50 active:bg-gray-100
-                  border-2 border-transparent hover:border-gray-200 active:border-blue-300
-                  rounded-xl
-                  focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
-                  transition-all duration-300 ease-in-out
-                  hover:scale-105 active:scale-98
-                  hover:shadow-sm active:shadow-md
-                "
-              >
-                <Grid 
-                  size={20} 
-                  className="transition-all duration-300 ease-in-out"
-                  strokeWidth={2}
-                  aria-hidden="true"
-                />
-              </button>
-              
+            {/* Left side - Unite India Text Logo */}
+            <div className="flex items-center">
               <Link href="/charity-theme" className="flex items-center">
-                <Image
-                  src="/images/charity-theme/logo_black.png"
-                  alt="Charity Logo"
-                  width={140}
-                  height={32}
-                  priority
-                  className="h-8 w-auto"
-                />
+                <div className="text-left">
+                  <div className="text-2xl font-bold text-purple-600 leading-tight">
+                    Unite India
+                  </div>
+                  <div className="text-xs font-medium text-purple-500 uppercase tracking-wider">
+                    A NONPROFIT CORPORATION
+                  </div>
+                </div>
               </Link>
             </div>
 
@@ -180,14 +155,12 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                       className={`
                         relative flex items-center space-x-1 font-inter
                         text-base lg:text-base font-medium tracking-wide
-                        px-3 py-2 mx-1 rounded-lg
+                        px-3 py-2 mx-1
                         transition-all duration-300 ease-in-out
-                        focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
-                        hover:scale-105 active:scale-98 active:transition-transform active:duration-150
-                        ${
-                          item.active
-                            ? 'text-blue-600 font-semibold bg-blue-50 border-b-2 border-blue-600'
-                            : 'text-gray-600 font-medium hover:text-gray-900 hover:bg-gray-50 hover:font-semibold'
+                        focus:outline-none
+                        ${item.active
+                          ? 'text-blue-400 font-semibold border-b-2 border-blue-400'
+                          : 'text-blue-400 font-medium hover:text-blue-500 hover:font-semibold border-b-2 border-transparent hover:border-blue-400'
                         }
                       `}
                       onClick={(e) => handleSmoothScroll(e, item.href)}
@@ -196,16 +169,16 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                     >
                       <span className="tracking-[0.025em]">{item.name}</span>
                       {item.dropdown && (
-                        <ChevronDown 
-                          size={16} 
-                          className="text-gray-400 transition-transform duration-300 group-hover:rotate-180 group-hover:text-gray-600" 
+                        <ChevronDown
+                          size={16}
+                          className="text-gray-400 transition-transform duration-300 group-hover:rotate-180 group-hover:text-gray-600"
                           aria-hidden="true"
                         />
                       )}
                     </Link>
-                    
+
                     {item.dropdown && (
-                      <div 
+                      <div
                         className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50"
                         role="menu"
                         aria-label={`${item.name} submenu`}
@@ -217,11 +190,10 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                               href={subItem.href}
                               className="
                                 block px-4 py-2 mx-1 rounded-lg
-                                text-sm font-medium text-gray-600 tracking-[0.025em]
-                                hover:text-gray-900 hover:bg-gray-50 hover:font-semibold
-                                focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-white
+                                text-sm font-medium text-blue-400 tracking-[0.025em]
+                                hover:text-blue-500 hover:font-semibold
+                                focus:outline-none
                                 transition-all duration-300 ease-in-out
-                                hover:scale-105 active:scale-98
                               "
                               onClick={(e) => handleSmoothScroll(e, subItem.href)}
                               role="menuitem"
@@ -238,10 +210,10 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
               </nav>
             )}
 
-            {/* Right side - Search and Donate */}
+            {/* Right side - Search */}
             <div className="flex items-center space-x-4">
-              <button 
-                aria-label="Search" 
+              <button
+                aria-label="Search"
                 className="
                   hidden sm:flex items-center justify-center
                   w-11 h-11 min-w-[44px] min-h-[44px]
@@ -250,26 +222,20 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                   bg-transparent hover:bg-gray-50 active:bg-gray-100
                   border-2 border-transparent hover:border-gray-200 active:border-blue-300
                   rounded-xl
-                  focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
+                  focus:outline-none
                   transition-all duration-300 ease-in-out
                   hover:scale-105 active:scale-98
                   hover:shadow-sm active:shadow-md
                 "
               >
-                <Search 
-                  size={20} 
+                <Search
+                  size={20}
                   className="transition-all duration-300 ease-in-out"
                   strokeWidth={2}
                   aria-hidden="true"
                 />
               </button>
-              
-              <Link 
-                href="#donate" 
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-              >
-                Donate
-              </Link>
+
 
               {/* Mobile menu button */}
               <button
@@ -281,7 +247,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                   bg-transparent hover:bg-gray-50 active:bg-gray-100
                   border-2 border-transparent hover:border-gray-200 active:border-blue-300
                   rounded-xl
-                  focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
+                  focus:outline-none
                   transition-all duration-300 ease-in-out
                   hover:scale-105 active:scale-98
                   hover:shadow-sm active:shadow-md
@@ -292,12 +258,42 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
               >
-                <Menu 
-                  size={22} 
+                <svg
+                  width={22}
+                  height={22}
+                  viewBox="0 0 24 24"
+                  fill="none"
                   className="transition-all duration-300 ease-in-out"
-                  strokeWidth={2.5}
                   aria-hidden="true"
-                />
+                >
+                  {/* Top bar - medium length */}
+                  <rect
+                    x="4"
+                    y="6"
+                    width="12"
+                    height="2"
+                    rx="1"
+                    fill="currentColor"
+                  />
+                  {/* Middle bar - full length */}
+                  <rect
+                    x="4"
+                    y="11"
+                    width="16"
+                    height="2"
+                    rx="1"
+                    fill="currentColor"
+                  />
+                  {/* Bottom bar - short length */}
+                  <rect
+                    x="4"
+                    y="16"
+                    width="8"
+                    height="2"
+                    rx="1"
+                    fill="currentColor"
+                  />
+                </svg>
               </button>
             </div>
           </div>
@@ -306,31 +302,30 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        <div
+          className="mobile-menu-overlay"
           onClick={closeMobileMenu}
         />
       )}
 
       {/* Mobile Menu Sidebar */}
-      <div 
+      <div
         id="mobile-menu"
-        className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
-          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
         aria-hidden={!isMobileMenuOpen}
       >
         <div className="flex flex-col h-full">
           {/* Mobile Menu Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-100">
-            <Image
-              src="/images/charity-theme/logo_black.png"
-              alt="Charity Logo"
-              width={120}
-              height={24}
-              priority
-              className="h-6 w-auto"
-            />
+          <div className="flex items-center justify-between p-6">
+            <div className="text-left">
+              <div className="text-lg font-bold text-purple-600 leading-tight">
+                Unite India
+              </div>
+              <div className="text-[10px] font-medium text-purple-500 uppercase tracking-wider">
+                A NONPROFIT CORPORATION
+              </div>
+            </div>
             <button
               onClick={closeMobileMenu}
               className="
@@ -341,7 +336,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                 bg-transparent hover:bg-gray-50 active:bg-gray-100
                 border-2 border-transparent hover:border-gray-200 active:border-red-300
                 rounded-xl
-                focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2
+                focus:outline-none
                 transition-all duration-300 ease-in-out
                 hover:scale-105 active:scale-98
                 hover:shadow-sm active:shadow-md
@@ -349,8 +344,8 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
               "
               aria-label="Close navigation menu"
             >
-              <X 
-                size={22} 
+              <X
+                size={22}
                 className="transition-all duration-300 ease-in-out"
                 strokeWidth={2.5}
                 aria-hidden="true"
@@ -371,10 +366,9 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                           flex items-center justify-between w-full text-left
                           font-inter text-base font-medium tracking-[0.025em]
                           py-4 px-4 min-h-[44px] rounded-xl
-                          text-gray-600 hover:text-gray-900 hover:bg-gray-50 hover:font-semibold
-                          focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
+                          text-blue-400 hover:text-blue-500 hover:font-semibold
+                          focus:outline-none
                           transition-all duration-300 ease-in-out
-                          active:scale-98 active:transition-transform active:duration-150
                         "
                         aria-expanded={openDropdowns.has(item.name)}
                         aria-label={`Toggle ${item.name} submenu`}
@@ -382,16 +376,14 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                         <span>{item.name}</span>
                         <ChevronDown
                           size={18}
-                          className={`text-gray-400 transition-transform duration-300 ${
-                            openDropdowns.has(item.name) ? 'rotate-180 text-gray-600' : ''
-                          }`}
+                          className={`text-gray-400 transition-transform duration-300 ${openDropdowns.has(item.name) ? 'rotate-180 text-gray-600' : ''
+                            }`}
                           aria-hidden="true"
                         />
                       </button>
-                      <div 
-                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                          openDropdowns.has(item.name) ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
-                        }`}
+                      <div
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${openDropdowns.has(item.name) ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+                          }`}
                         role="menu"
                         aria-label={`${item.name} submenu`}
                       >
@@ -402,11 +394,10 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                               href={subItem.href}
                               className="
                                 block py-3 px-4 min-h-[44px] rounded-lg
-                                font-inter text-sm font-medium text-gray-600 tracking-[0.025em]
-                                hover:text-gray-900 hover:bg-gray-50 hover:font-semibold
-                                focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
+                                font-inter text-sm font-medium text-blue-400 tracking-[0.025em]
+                                hover:text-blue-500 hover:font-semibold
+                                focus:outline-none
                                 transition-all duration-300 ease-in-out
-                                active:scale-98 active:transition-transform active:duration-150
                               "
                               onClick={(e) => {
                                 closeMobileMenu();
@@ -427,13 +418,11 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                       className={`
                         block py-4 px-4 min-h-[44px] rounded-xl
                         font-inter text-base font-medium tracking-[0.025em]
-                        focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
+                        focus:outline-none
                         transition-all duration-300 ease-in-out
-                        active:scale-98 active:transition-transform active:duration-150
-                        ${
-                          item.active
-                            ? 'text-blue-600 font-semibold bg-blue-50 border-l-4 border-blue-600'
-                            : 'text-gray-600 font-medium hover:text-gray-900 hover:bg-gray-50 hover:font-semibold'
+                        ${item.active
+                          ? 'text-blue-400 font-semibold border-l-4 border-blue-400'
+                          : 'text-blue-400 font-medium hover:text-blue-500 hover:font-semibold border-l-4 border-transparent hover:border-blue-400'
                         }
                       `}
                       onClick={(e) => {
@@ -452,26 +441,13 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
 
             {/* Mobile Menu Actions */}
             <div className="px-6 mt-8 space-y-3">
-              <button 
-                className="
-                  w-full py-4 px-6 min-h-[44px] rounded-xl
-                  font-inter font-semibold text-base tracking-[0.025em]
-                  bg-blue-600 hover:bg-blue-700 text-white
-                  focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
-                  transition-all duration-300 ease-in-out
-                  hover:scale-105 active:scale-98 hover:shadow-lg
-                "
-                aria-label="Make a donation"
-              >
-                Donate
-              </button>
-              <button 
+              <button
                 className="
                   w-full py-4 px-6 min-h-[44px] rounded-xl
                   font-inter font-medium text-base tracking-[0.025em]
                   border-2 border-gray-200 text-gray-600 hover:text-gray-900
                   hover:bg-gray-50 hover:border-gray-300 hover:font-semibold
-                  focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
+                  focus:outline-none
                   transition-all duration-300 ease-in-out
                   active:scale-98 flex items-center justify-center space-x-2
                 "

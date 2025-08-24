@@ -4,14 +4,7 @@ import React from 'react';
 
 const BrandSection: React.FC = () => {
   return (
-    <div className="py-32 bg-gradient-to-br from-blue-700 to-blue-900 text-white relative overflow-hidden text-center">
-      {/* Background Pattern */}
-      <div
-        className="absolute inset-0 opacity-30"
-        style={{
-          backgroundImage: 'url("data:image/svg+xml,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="50" cy="50" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
-        }}
-      ></div>
+    <div className="py-32 pb-80 bg-gradient-to-br from-blue-700 to-blue-900 text-white relative overflow-hidden text-center">
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-6xl md:text-8xl lg:text-12xl font-semibold leading-none tracking-tighter mb-8 bg-gradient-to-br from-white to-white/70 bg-clip-text text-transparent">

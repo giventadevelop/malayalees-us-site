@@ -7,28 +7,28 @@ const projects = [
     id: 1,
     title: 'Helping in village houses',
     category: 'Building',
-    description: 'Pink salmon cherry salmon combtail gourami frigate mackerel snake.',
+    description: '',
     color: '#37E085'
   },
   {
     id: 2,
-    title: 'Building school in Africa',
+    title: 'Building schools',
     category: 'Building',
-    description: 'Pink salmon cherry salmon combtail gourami frigate mackerel snake.',
+    description: '',
     color: '#FF8159'
   },
   {
     id: 3,
     title: 'Water delivery in hot places',
     category: 'Water',
-    description: 'Pink salmon cherry salmon combtail gourami frigate mackerel snake.',
+    description: '',
     color: '#34BDC6'
   },
   {
     id: 4,
     title: 'Help with education',
     category: 'Education',
-    description: 'Pink salmon cherry salmon combtail gourami frigate mackerel snake.',
+    description: '',
     color: '#FFCE59'
   }
 ];
@@ -36,13 +36,6 @@ const projects = [
 const ProjectsSection: React.FC = () => {
   return (
     <div className="py-24 bg-gray-800 text-white relative overflow-hidden">
-      {/* Background Pattern */}
-      <div
-        className="absolute inset-0 opacity-30"
-        style={{
-          backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
-        }}
-      ></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}

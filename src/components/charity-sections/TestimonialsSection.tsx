@@ -28,14 +28,13 @@ const TestimonialsSection: React.FC = () => {
                 Halosaur duckbilled barracudina, goosefish gar pleco, chum salmon armoured catfish gudgeon
                 sawfish whitefish orbicular batfish mummichog paradise fish! Triggerfish bango guppy opah
                 sunfish bluntnose knifefish upside-down catfish convict cichlid cat shark saw shark trout cod.
-                Pink salmon cherry salmon combtail gourami frigate mackerel snake.
               </p>
 
               <div className="flex items-center space-x-4">
                 <img
-                  src="/charity-theme/images/testimonial-samanta.jpg"
-                  alt="Samanta"
-                  className="w-16 h-16 rounded-full object-cover"
+                  src="/images/testimonial-samanta.jpg"
+                  alt="Samanta Johnson"
+                  className="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
                 />
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900">Samanta</h4>

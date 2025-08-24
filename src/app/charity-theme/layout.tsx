@@ -22,7 +22,7 @@ export default function CharityThemeLayout({
   return (
     <>
       {/* Independent layout wrapper */}
-      <div className="charity-theme-layout">
+      <div className="charity-theme-layout overflow-x-hidden">
         <Header variant="charity" />
         {children}
         <Footer />
