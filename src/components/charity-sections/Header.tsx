@@ -242,58 +242,33 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                 className="
                   lg:hidden flex items-center justify-center
                   w-11 h-11 min-w-[44px] min-h-[44px]
-                  font-inter font-medium
-                  text-gray-600 hover:text-gray-900 active:text-blue-600
-                  bg-transparent hover:bg-gray-50 active:bg-gray-100
-                  border-2 border-transparent hover:border-gray-200 active:border-blue-300
-                  rounded-xl
-                  focus:outline-none
-                  transition-all duration-300 ease-in-out
-                  hover:scale-105 active:scale-98
-                  hover:shadow-sm active:shadow-md
-                  touch-manipulation icon-button
+                  text-gray-800 hover:text-gray-900 active:text-blue-600
+                  bg-white hover:bg-gray-50 active:bg-gray-100
+                  border border-gray-300 hover:border-gray-400
+                  rounded-lg
+                  focus:outline-none focus:ring-2 focus:ring-blue-500
+                  transition-colors duration-200
+                  touch-manipulation
+                  relative z-50
                 "
                 onClick={toggleMobileMenu}
                 aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
+                type="button"
               >
-                <svg
-                  width={22}
-                  height={22}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="transition-all duration-300 ease-in-out"
-                  aria-hidden="true"
-                >
-                  {/* Top bar - medium length */}
-                  <rect
-                    x="4"
-                    y="6"
-                    width="12"
-                    height="2"
-                    rx="1"
-                    fill="currentColor"
-                  />
-                  {/* Middle bar - full length */}
-                  <rect
-                    x="4"
-                    y="11"
-                    width="16"
-                    height="2"
-                    rx="1"
-                    fill="currentColor"
-                  />
-                  {/* Bottom bar - short length */}
-                  <rect
-                    x="4"
-                    y="16"
-                    width="8"
-                    height="2"
-                    rx="1"
-                    fill="currentColor"
-                  />
-                </svg>
+                {!isMobileMenuOpen ? (
+                  <div className="flex flex-col justify-center items-center w-6 h-6">
+                    {/* Top bar - medium length (12px) */}
+                    <div className="w-3 h-0.5 bg-gray-800 rounded-sm mb-1"></div>
+                    {/* Middle bar - full length (16px) */}
+                    <div className="w-4 h-0.5 bg-gray-800 rounded-sm mb-1"></div>
+                    {/* Bottom bar - short length (8px) */}
+                    <div className="w-2 h-0.5 bg-gray-800 rounded-sm"></div>
+                  </div>
+                ) : (
+                  <X size={20} className="text-gray-800" />
+                )}
               </button>
             </div>
           </div>

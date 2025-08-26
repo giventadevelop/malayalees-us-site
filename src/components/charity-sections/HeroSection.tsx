@@ -453,8 +453,8 @@ const HeroSection: React.FC = () => {
   return (
     <>
       <div className="min-h-[37.5vh] bg-white pt-20 pb-9 relative">
-        {/* Donate Image - Top Right Corner */}
-        <div className="absolute top-6 right-6 z-50">
+        {/* Donate Image - Top Right Corner - Positioned below header to avoid hamburger overlap */}
+        <div className="absolute top-24 right-6 z-40 lg:top-6">
           <Image
             src="https://cdn.builder.io/api/v1/image/assets%2Fa70a28525f6f491aaa751610252a199c%2Fee43fae6623544d193ab0c26deca1d95?format=webp&width=800"
             alt="Donate"

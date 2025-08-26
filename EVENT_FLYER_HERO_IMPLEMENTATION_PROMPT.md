@@ -147,3 +147,4 @@ interface EventWithMedia extends EventDetailsDTO {
 6. **Test the complete flow** from API calls to image display
 
 This system ensures the hero section always displays relevant, up-to-date event imagery while maintaining performance and reliability.
+
