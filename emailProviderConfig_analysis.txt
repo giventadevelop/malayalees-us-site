@@ -71,3 +71,4 @@ JDL SYNTAX CHANGE:
 ==================
 Current: emailProviderConfig TextBlob
 Recommended: emailProviderConfig String maxlength(2048)
+

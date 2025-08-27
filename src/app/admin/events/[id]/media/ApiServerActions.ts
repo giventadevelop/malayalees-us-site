@@ -78,21 +78,22 @@ export async function fetchOfficialDocsServer(eventId: string) {
 }
 
 export interface MediaUploadParams {
-  title: string;
+  title: string; // Required parameter
   description: string;
-  eventMediaType: string;
-  storageType: string;
-  fileUrl: string;
+  eventMediaType?: string; // Optional in new schema
+  storageType?: string; // Optional in new schema
+  fileUrl?: string; // Optional in new schema
   isFeaturedImage: boolean;
   eventFlyer: boolean;
   isEventManagementOfficialDocument: boolean;
   isHeroImage: boolean;
   isActiveHeroImage: boolean;
   isPublic: boolean;
-  altText: string;
-  displayOrder?: number;
-  userProfileId?: number | null;
+  altText?: string; // Optional in new schema
+  displayOrder?: number; // Optional in new schema
+  userProfileId?: number | null; // Optional in new schema
   files: File[];
+  isTeamMemberProfileImage?: boolean; // Add optional parameter for team member profile images
 }
 
 export async function uploadMedia(eventId: number, {
@@ -110,12 +111,14 @@ export async function uploadMedia(eventId: number, {
   altText,
   displayOrder,
   userProfileId,
-  files
+  files,
+  isTeamMemberProfileImage = false // Default to false for regular event media
 }: MediaUploadParams) {
   const formData = new FormData();
-  files.forEach((file) => {
-    formData.append('files', file);
-  });
+  // For now, handle single file upload per new API schema
+  if (files.length > 0) {
+    formData.append('file', files[0]); // Changed from 'files' to 'file' per new API schema
+  }
 
   const params = new URLSearchParams();
   params.append('eventId', String(eventId));
@@ -125,16 +128,12 @@ export async function uploadMedia(eventId: number, {
   params.append('isActiveHeroImage', String(isActiveHeroImage));
   params.append('isFeaturedImage', String(isFeaturedImage));
   params.append('isPublic', String(isPublic));
-  params.append('altText', altText);
-  if (displayOrder !== undefined) params.append('displayOrder', String(displayOrder));
-  params.append('tenantId', getTenantId());
-  if (userProfileId) params.append('upLoadedById', String(userProfileId));
-  params.append('title', title);
+  params.append('isTeamMemberProfileImage', String(isTeamMemberProfileImage)); // Always include this parameter
+  params.append('title', title); // Required parameter
   params.append('description', description);
-  params.append('eventMediaType', eventMediaType);
-  params.append('storageType', storageType);
+  params.append('tenantId', getTenantId()); // Required parameter
 
-  const url = `${API_BASE_URL}/api/event-medias/upload-multiple?${params.toString()}`;
+  const url = `${API_BASE_URL}/api/proxy/event-medias/upload?${params.toString()}`;
   const res = await fetchWithJwtRetry(url, {
     method: 'POST',
     body: formData,
@@ -210,6 +209,7 @@ export async function uploadMediaServer(params: {
   altText: string;
   displayOrder?: number;
   userProfileId?: number | null;
+  isTeamMemberProfileImage?: boolean; // Add optional parameter for team member profile images
 }) {
   const { eventId, files, ...rest } = params;
 
@@ -221,9 +221,10 @@ export async function uploadMediaServer(params: {
   const uploadParams: MediaUploadParams = {
     ...rest,
     files,
-    eventMediaType,
-    storageType: 's3', // Assuming 's3' as a default
+    eventMediaType: eventMediaType || 'gallery', // Default to gallery if not specified
+    storageType: 's3', // Default storage type
     fileUrl: '', // This seems to be handled by the backend
+    isTeamMemberProfileImage: params.isTeamMemberProfileImage || false, // Pass through the parameter
   };
 
   return await uploadMedia(Number(eventId), uploadParams);

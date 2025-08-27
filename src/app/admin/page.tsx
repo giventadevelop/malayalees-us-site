@@ -126,6 +126,10 @@ export default function AdminPage() {
               <FaCreditCard className="text-base sm:text-lg mb-1 mx-auto" />
               <span className="font-semibold text-center leading-tight">Test Stripe Payments</span>
             </Link>
+            <Link href="/admin/executive-committee" className="w-48 max-w-xs mx-auto flex flex-col items-center justify-center bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-md shadow p-1 sm:p-2 text-xs sm:text-xs transition-all cursor-pointer">
+              <FaUsers className="text-base sm:text-lg mb-1 mx-auto" />
+              <span className="font-semibold text-center leading-tight">Executive Committee</span>
+            </Link>
           </div>
         </div>
       </div>

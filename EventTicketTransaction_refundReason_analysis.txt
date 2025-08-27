@@ -138,3 +138,4 @@ REFUND REASON CATEGORIES:
 8. Fraud Prevention - Security-related refunds
 9. Service Quality - Customer dissatisfaction
 10. Administrative - Other administrative reasons
+

@@ -185,3 +185,4 @@ AUDIT LOG CATEGORIES:
 8. Bulk Operations - Mass updates, imports, exports
 9. Administrative Actions - Policy changes, overrides
 10. Compliance Events - Regulatory, legal requirements
+

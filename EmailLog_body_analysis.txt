@@ -237,3 +237,7 @@ EMAIL CONTENT CATEGORIES:
 8. Event Reminders - Pre-event notifications, schedule reminders
 9. Post-Event Communications - Feedback requests, follow-ups
 10. System Notifications - Maintenance, updates, announcements
+
+
+
+

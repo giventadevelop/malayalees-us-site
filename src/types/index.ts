@@ -609,3 +609,27 @@ export interface PromotionEmailRequestDTO {
   /** Email host URL prefix for email context */
   emailHostUrlPrefix?: string;
 }
+
+/**
+ * DTO for executive committee team member data, matches backend OpenAPI schema.
+ */
+export interface ExecutiveCommitteeTeamMemberDTO {
+  id: number | null;
+  firstName: string;
+  lastName: string;
+  title: string;
+  designation?: string;
+  bio?: string;
+  email?: string;
+  profileImageUrl?: string;
+  expertise?: string;
+  imageBackground?: string;
+  imageStyle?: string;
+  department?: string;
+  joinDate?: string; // ISO date string
+  isActive?: boolean;
+  linkedinUrl?: string;
+  twitterUrl?: string;
+  priorityOrder?: number;
+  websiteUrl?: string;
+}
