@@ -4,45 +4,50 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Search, ChevronDown, X, Menu } from 'lucide-react';
+import { useAuth } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 
 const navItems = [
   {
     name: 'Home',
-    href: '/charity-theme',
+    href: '/',
     active: false
   },
   {
     name: 'About',
-    href: '#about',
-    dropdown: [
-      { name: 'Our Story', href: '#story' },
-      { name: 'Mission & Vision', href: '#mission' },
-      { name: 'Team', href: '#team' }
-    ]
-  },
-  {
-    name: 'Causes',
-    href: '#causes',
-    dropdown: [
-      { name: 'Education', href: '#education' },
-      { name: 'Healthcare', href: '#healthcare' },
-      { name: 'Environment', href: '#environment' },
-      { name: 'Poverty', href: '#poverty' }
-    ]
+    href: '/#about-us',
+    active: false
   },
   {
     name: 'Events',
-    href: '#events'
+    href: '/events',
+    active: false
   },
   {
-    name: 'Gallery',
-    href: '#gallery'
+    name: 'Team',
+    href: '/#team-section',
+    active: false
   },
   {
     name: 'Contact',
-    href: '#contact'
+    href: '/#contact',
+    active: false
   }
 ];
+
+// Admin submenu items
+const adminSubmenuItems = [
+  { name: 'Admin Home', href: '/admin' },
+  { name: 'Manage Users', href: '/admin/manage-usage' },
+  { name: 'Manage Events', href: '/admin' },
+  { name: 'Promotion Emails', href: '/admin/promotion-emails' },
+  { name: 'Test Stripe', href: '/admin/test-stripe' },
+  { name: 'Media Management', href: '/admin/media' },
+  { name: 'Executive Committee', href: '/admin/executive-committee' }
+];
+
+const ORG_NAME = "Adwiise";
 
 type HeaderProps = {
   hideMenuItems?: boolean;
@@ -70,29 +75,40 @@ const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string
 
 export default function Header({ hideMenuItems = false, variant = 'charity' }: HeaderProps) {
   const pathname = usePathname();
+  const { userId } = useAuth();
+  const { user, isLoaded: userLoaded } = useUser();
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
+
+  // Check admin status
+  useEffect(() => {
+    async function checkAdminInOrg() {
+      if (!userLoaded || !user) {
+        setIsAdmin(false);
+        return;
+      }
+      try {
+        const memberships = await user.getOrganizationMemberships();
+        const targetOrgMembership = memberships.find(
+          (membership: any) => membership.organization.name === ORG_NAME
+        );
+        setIsAdmin(
+          targetOrgMembership?.role === 'org:admin' ||
+          targetOrgMembership?.role === 'admin'
+        );
+      } catch {
+        setIsAdmin(false);
+      }
+    }
+    checkAdminInOrg();
+  }, [user, userLoaded]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
-    if (isMobileMenuOpen) {
-      setOpenDropdowns(new Set());
-    }
-  };
-
-  const toggleDropdown = (itemName: string) => {
-    const newOpenDropdowns = new Set(openDropdowns);
-    if (newOpenDropdowns.has(itemName)) {
-      newOpenDropdowns.delete(itemName);
-    } else {
-      newOpenDropdowns.add(itemName);
-    }
-    setOpenDropdowns(newOpenDropdowns);
   };
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
-    setOpenDropdowns(new Set());
   };
 
   useEffect(() => {
@@ -123,7 +139,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
   // Update active state based on current route
   const updatedNavItems = navItems.map(item => ({
     ...item,
-    active: item.href === pathname || (item.href === '/charity-theme' && pathname === '/charity-theme')
+    active: item.href === pathname || (item.href === '/' && pathname === '/charity-theme')
   }));
 
   return (
@@ -145,73 +161,146 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
               </Link>
             </div>
 
-            {/* Center - Desktop Navigation */}
-            {!hideMenuItems && (
-              <nav className="hidden lg:flex items-center space-x-1" role="navigation" aria-label="Main navigation">
-                {updatedNavItems.map((item) => (
-                  <div key={item.name} className="relative group">
+            {/* Center - Desktop Navigation and Right Side Combined */}
+            <div className="hidden lg:flex items-center space-x-1 ml-4">
+              {/* Navigation Menu Items */}
+              {!hideMenuItems && (
+                <nav className="flex items-center space-x-1" role="navigation" aria-label="Main navigation">
+                  {updatedNavItems.map((item) => (
+                    <div key={item.name} className="relative group">
+                      <Link
+                        href={item.href}
+                        className={`
+                          relative flex items-center space-x-1 font-inter
+                          text-base lg:text-base font-medium tracking-wide
+                          px-3 py-2 mx-1
+                          transition-all duration-300 ease-in-out
+                          focus:outline-none
+                          ${item.active
+                            ? 'text-blue-400 font-semibold border-b-2 border-blue-400'
+                            : 'text-blue-400 font-medium hover:text-blue-500 hover:font-semibold border-b-2 border-transparent hover:border-blue-400'
+                          }
+                        `}
+                        onClick={(e) => handleSmoothScroll(e, item.href)}
+                        aria-label={`Navigate to ${item.name}`}
+                        aria-current={item.active ? 'page' : undefined}
+                      >
+                        <span className="tracking-[0.025em]">{item.name}</span>
+                      </Link>
+                    </div>
+                  ))}
+                </nav>
+              )}
+
+              {/* Auth and Admin Menu Items */}
+              <div className="flex items-center space-x-1">
+                {!userId ? (
+                  <>
                     <Link
-                      href={item.href}
+                      href="/sign-in"
                       className={`
-                        relative flex items-center space-x-1 font-inter
-                        text-base lg:text-base font-medium tracking-wide
+                        relative flex items-center font-inter
+                        text-base font-medium tracking-wide
                         px-3 py-2 mx-1
                         transition-all duration-300 ease-in-out
                         focus:outline-none
-                        ${item.active
+                        text-blue-400 font-medium hover:text-blue-500 hover:font-semibold border-b-2 border-transparent hover:border-blue-400
+                      `}
+                    >
+                      <span className="tracking-[0.025em]">Sign In</span>
+                    </Link>
+                    <Link
+                      href="/sign-up"
+                      className={`
+                        relative flex items-center font-inter
+                        text-base font-medium tracking-wide
+                        px-3 py-2 mx-1
+                        transition-all duration-300 ease-in-out
+                        focus:outline-none
+                        text-blue-400 font-medium hover:text-blue-500 hover:font-semibold border-b-2 border-transparent hover:border-blue-400
+                      `}
+                    >
+                      <span className="tracking-[0.025em]">Sign Up</span>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/profile"
+                      className={`
+                        relative flex items-center font-inter
+                        text-base font-medium tracking-wide
+                        px-3 py-2 mx-1
+                        transition-all duration-300 ease-in-out
+                        focus:outline-none
+                        ${pathname === "/profile"
                           ? 'text-blue-400 font-semibold border-b-2 border-blue-400'
                           : 'text-blue-400 font-medium hover:text-blue-500 hover:font-semibold border-b-2 border-transparent hover:border-blue-400'
                         }
                       `}
-                      onClick={(e) => handleSmoothScroll(e, item.href)}
-                      aria-label={`Navigate to ${item.name}`}
-                      aria-current={item.active ? 'page' : undefined}
                     >
-                      <span className="tracking-[0.025em]">{item.name}</span>
-                      {item.dropdown && (
-                        <ChevronDown
-                          size={16}
-                          className="text-gray-400 transition-transform duration-300 group-hover:rotate-180 group-hover:text-gray-600"
-                          aria-hidden="true"
-                        />
-                      )}
+                      <span className="tracking-[0.025em]">Profile</span>
                     </Link>
 
-                    {item.dropdown && (
-                      <div
-                        className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50"
-                        role="menu"
-                        aria-label={`${item.name} submenu`}
-                      >
-                        <div className="py-3">
-                          {item.dropdown.map(subItem => (
-                            <Link
-                              key={subItem.name}
-                              href={subItem.href}
-                              className="
-                                block px-4 py-2 mx-1 rounded-lg
-                                text-sm font-medium text-blue-400 tracking-[0.025em]
-                                hover:text-blue-500 hover:font-semibold
-                                focus:outline-none
-                                transition-all duration-300 ease-in-out
-                              "
-                              onClick={(e) => handleSmoothScroll(e, subItem.href)}
-                              role="menuitem"
-                              aria-label={`Navigate to ${subItem.name}`}
-                            >
-                              {subItem.name}
-                            </Link>
-                          ))}
+                    {/* Admin Menu with Submenu */}
+                    {isAdmin && (
+                      <div className="relative group">
+                        <Link
+                          href="/admin"
+                          className={`
+                            relative flex items-center space-x-1 font-inter
+                            text-base font-medium tracking-wide
+                            px-3 py-2 mx-1
+                            transition-all duration-300 ease-in-out
+                            focus:outline-none
+                            ${pathname?.startsWith("/admin")
+                              ? 'text-blue-400 font-semibold border-b-2 border-blue-400'
+                              : 'text-blue-400 font-medium hover:text-blue-500 hover:font-semibold border-b-2 border-transparent hover:border-blue-400'
+                            }
+                          `}
+                        >
+                          <span className="tracking-[0.025em]">Admin</span>
+                          <ChevronDown
+                            size={16}
+                            className="text-blue-400 transition-transform duration-300 group-hover:rotate-180"
+                            aria-hidden="true"
+                          />
+                        </Link>
+
+                        {/* Admin Submenu */}
+                        <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+                          <div className="py-3">
+                            {adminSubmenuItems.map(subItem => (
+                              <Link
+                                key={subItem.name}
+                                href={subItem.href}
+                                className="
+                                  block px-4 py-2 mx-1 rounded-lg
+                                  text-sm font-medium text-blue-400 tracking-[0.025em]
+                                  hover:text-blue-500 hover:font-semibold hover:bg-blue-50
+                                  focus:outline-none
+                                  transition-all duration-300 ease-in-out
+                                "
+                                role="menuitem"
+                                aria-label={`Navigate to ${subItem.name}`}
+                              >
+                                {subItem.name}
+                              </Link>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}
-                  </div>
-                ))}
-              </nav>
-            )}
 
-            {/* Right side - Search */}
-            <div className="flex items-center space-x-4">
+                    <UserButton afterSignOutUrl="/charity-theme" />
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Right side - Search and Mobile Menu */}
+            <div className="flex items-center space-x-2">
+              {/* Search Button */}
               <button
                 aria-label="Search"
                 className="
@@ -235,7 +324,6 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                   aria-hidden="true"
                 />
               </button>
-
 
               {/* Mobile menu button */}
               <button
@@ -333,86 +421,119 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
             <ul className="space-y-1 px-6">
               {!hideMenuItems && updatedNavItems.map((item) => (
                 <li key={item.name}>
-                  {item.dropdown ? (
-                    <>
-                      <button
-                        onClick={() => toggleDropdown(item.name)}
-                        className="
-                          flex items-center justify-between w-full text-left
-                          font-inter text-base font-medium tracking-[0.025em]
-                          py-4 px-4 min-h-[44px] rounded-xl
-                          text-blue-400 hover:text-blue-500 hover:font-semibold
-                          focus:outline-none
-                          transition-all duration-300 ease-in-out
-                        "
-                        aria-expanded={openDropdowns.has(item.name)}
-                        aria-label={`Toggle ${item.name} submenu`}
-                      >
-                        <span>{item.name}</span>
-                        <ChevronDown
-                          size={18}
-                          className={`text-gray-400 transition-transform duration-300 ${openDropdowns.has(item.name) ? 'rotate-180 text-gray-600' : ''
-                            }`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                      <div
-                        className={`overflow-hidden transition-all duration-300 ease-in-out ${openDropdowns.has(item.name) ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
-                          }`}
-                        role="menu"
-                        aria-label={`${item.name} submenu`}
-                      >
-                        <div className="pl-4 space-y-1 py-2">
-                          {item.dropdown.map(subItem => (
-                            <Link
-                              key={subItem.name}
-                              href={subItem.href}
-                              className="
-                                block py-3 px-4 min-h-[44px] rounded-lg
-                                font-inter text-sm font-medium text-blue-400 tracking-[0.025em]
-                                hover:text-blue-500 hover:font-semibold
-                                focus:outline-none
-                                transition-all duration-300 ease-in-out
-                              "
-                              onClick={(e) => {
-                                closeMobileMenu();
-                                handleSmoothScroll(e, subItem.href);
-                              }}
-                              role="menuitem"
-                              aria-label={`Navigate to ${subItem.name}`}
-                            >
-                              {subItem.name}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <Link
-                      href={item.href}
-                      className={`
-                        block py-4 px-4 min-h-[44px] rounded-xl
-                        font-inter text-base font-medium tracking-[0.025em]
-                        focus:outline-none
-                        transition-all duration-300 ease-in-out
-                        ${item.active
-                          ? 'text-blue-400 font-semibold border-l-4 border-blue-400'
-                          : 'text-blue-400 font-medium hover:text-blue-500 hover:font-semibold border-l-4 border-transparent hover:border-blue-400'
-                        }
-                      `}
-                      onClick={(e) => {
-                        closeMobileMenu();
-                        handleSmoothScroll(e, item.href);
-                      }}
-                      aria-label={`Navigate to ${item.name}`}
-                      aria-current={item.active ? 'page' : undefined}
-                    >
-                      {item.name}
-                    </Link>
-                  )}
+                  <Link
+                    href={item.href}
+                    className={`
+                      block py-4 px-4 min-h-[44px] rounded-xl
+                      font-inter text-base font-medium tracking-[0.025em]
+                      focus:outline-none
+                      transition-all duration-300 ease-in-out
+                      ${item.active
+                        ? 'text-blue-400 font-semibold border-l-4 border-blue-400'
+                        : 'text-blue-400 font-medium hover:text-blue-500 hover:font-semibold border-l-4 border-transparent hover:border-blue-400'
+                      }
+                    `}
+                    onClick={(e) => {
+                      closeMobileMenu();
+                      handleSmoothScroll(e, item.href);
+                    }}
+                    aria-label={`Navigate to ${item.name}`}
+                    aria-current={item.active ? 'page' : undefined}
+                  >
+                    {item.name}
+                  </Link>
                 </li>
               ))}
             </ul>
+
+            {/* Mobile Menu Auth Section */}
+            <div className="px-6 mt-8 space-y-3">
+              {!userId ? (
+                <>
+                  <Link
+                    href="/sign-in"
+                    className="
+                      block w-full py-4 px-6 min-h-[44px] rounded-xl
+                      font-inter font-medium text-base tracking-[0.025em]
+                      text-center border-2 border-blue-200 text-blue-600 hover:text-blue-700
+                      hover:bg-blue-50 hover:border-blue-300 hover:font-semibold
+                      focus:outline-none
+                      transition-all duration-300 ease-in-out
+                      active:scale-98
+                    "
+                    onClick={closeMobileMenu}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    className="
+                      block w-full py-4 px-6 min-h-[44px] rounded-xl
+                      font-inter font-medium text-base tracking-[0.025em]
+                      text-center bg-blue-400 text-white hover:bg-blue-500
+                      hover:font-semibold focus:outline-none
+                      transition-all duration-300 ease-in-out
+                      active:scale-98
+                    "
+                    onClick={closeMobileMenu}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/profile"
+                    className={`
+                      block w-full py-4 px-6 min-h-[44px] rounded-xl
+                      font-inter font-medium text-base tracking-[0.025em]
+                      text-center border-2 border-blue-200 text-blue-600 hover:text-blue-700
+                      hover:bg-blue-50 hover:border-blue-300 hover:font-semibold
+                      focus:outline-none
+                      transition-all duration-300 ease-in-out
+                      active:scale-98
+                      ${pathname === "/profile" ? "border-blue-400 bg-blue-50 font-semibold" : ""}
+                    `}
+                    onClick={closeMobileMenu}
+                  >
+                    Profile
+                  </Link>
+
+                  {/* Mobile Admin Menu */}
+                  {isAdmin && (
+                    <>
+                      <div className="border-t border-gray-200 pt-4 mt-4">
+                        <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3 px-2">
+                          Admin Panel
+                        </div>
+                        {adminSubmenuItems.map(subItem => (
+                          <Link
+                            key={subItem.name}
+                            href={subItem.href}
+                            className="
+                              block py-3 px-4 min-h-[44px] rounded-lg
+                              font-inter text-sm font-medium text-blue-400 tracking-[0.025em]
+                              hover:text-blue-500 hover:font-semibold hover:bg-blue-50
+                              focus:outline-none
+                              transition-all duration-300 ease-in-out
+                            "
+                            onClick={closeMobileMenu}
+                            role="menuitem"
+                            aria-label={`Navigate to ${subItem.name}`}
+                          >
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  <div className="flex justify-center pt-4">
+                    <UserButton afterSignOutUrl="/charity-theme" />
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Mobile Menu Actions */}
             <div className="px-6 mt-8 space-y-3">

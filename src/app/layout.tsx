@@ -3,9 +3,8 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import TrpcProvider from "@/lib/trpc/Provider";
 import Script from "next/script";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import ConditionalLayout from "../components/ConditionalLayout";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,9 +13,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // For server components, we can't use usePathname, so we'll handle auth routes differently
-  const isAuthRoute = false; // We'll handle this in the Header component
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -62,9 +58,11 @@ export default function RootLayout({
           }}
         >
           <TrpcProvider>
-            <ConditionalLayout>
+            <Header hideMenuItems={false} />
+            <div className="flex-1 flex flex-col">
               {children}
-            </ConditionalLayout>
+            </div>
+            <Footer />
           </TrpcProvider>
         </ClerkProvider>
         <Script
