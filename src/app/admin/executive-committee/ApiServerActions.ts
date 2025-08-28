@@ -114,6 +114,20 @@ export async function updateProfileImage(
   }
 }
 
+/**
+ * Uploads a profile image for a team member
+ *
+ * 🎯 IMPORTANT: This function relies ONLY on HTTP status codes for success/failure determination.
+ * - 2xx status codes (200-299) = Success
+ * - Any other status code = Failure
+ *
+ * This approach prevents issues with null responses or malformed JSON from backend errors.
+ * The backend may return a 500 error with a null EventMediaDTO result, but we avoid
+ * processing it to prevent getId() calls on null objects.
+ *
+ * The proxy handler now returns structured error JSON for failures instead of piping
+ * the raw backend error response that contains null objects.
+ */
 export async function uploadTeamMemberProfileImage(
   memberId: number,
   file: File,
@@ -145,27 +159,65 @@ export async function uploadTeamMemberProfileImage(
       body: formData,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Upload failed: ${errorText}`);
-    }
+    // 🎯 CRITICAL: Only rely on HTTP status codes for success/failure determination
+    // This prevents issues with null responses or malformed JSON from backend errors
 
-    const result = await response.json();
+    // Check if the response indicates success (2xx status codes)
+    if (response.status >= 200 && response.status < 300) {
+      console.log('✅ Upload successful - HTTP status:', response.status);
 
-    // Extract the image URL from the response
-    // The response structure may vary, so we need to handle different possible formats
-    if (result.data && Array.isArray(result.data) && result.data.length > 0) {
-      return result.data[0].fileUrl || result.data[0].url;
-    } else if (result.fileUrl) {
-      return result.fileUrl;
-    } else if (result.url) {
-      return result.url;
-    } else {
-      throw new Error('No image URL found in upload response');
+      // Only attempt to parse response if we got a successful status code
+      // CRITICAL: Handle null objects gracefully - even in success scenarios
+      try {
+        const result = await response.json();
+        
+        // 🎯 CRITICAL: Safely check for null/undefined objects before accessing properties
+        // This prevents getId() or property access errors on null objects
+        
+        let imageUrl: string | null = null;
+        
+        // Try different possible response structures, but safely check for null first
+        if (result && typeof result === 'object') {
+          if (result.data && Array.isArray(result.data) && result.data.length > 0) {
+            const firstItem = result.data[0];
+            if (firstItem && typeof firstItem === 'object') {
+              imageUrl = firstItem.fileUrl || firstItem.url || null;
+            }
+          } else if (result.fileUrl) {
+            imageUrl = result.fileUrl;
+          } else if (result.url) {
+            imageUrl = result.url;
+          }
+        }
+        
+        if (imageUrl && typeof imageUrl === 'string') {
+          console.log('✅ Successfully extracted image URL:', imageUrl);
+          return imageUrl;
+        } else {
+          console.warn('⚠️ Upload successful but no valid image URL found in response. Response:', result);
+          // For team member profile uploads, we can accept this as success
+          // The backend upload succeeded even if we can't get the URL
+          return 'upload-successful-no-url';
+        }
+      } catch (parseError) {
+        console.error('❌ Failed to parse successful upload response:', parseError);
+        console.log('Upload succeeded (HTTP 2xx) but response parsing failed - treating as success');
+        // Since HTTP status was 2xx, the upload actually succeeded
+        return 'upload-successful-parse-error';
+      }
+            } else {
+      // 🚫 Any non-2xx status code indicates failure
+      // CRITICAL: For error responses, avoid parsing the response body as it may contain null objects
+      console.error('❌ Upload failed - HTTP status:', response.status);
+      
+      // Don't try to parse error response body to avoid null object issues
+      // The proxy handler now returns structured error JSON, but we'll be safe and not rely on it
+      throw new Error(`Upload failed with HTTP status ${response.status}. Please try again or contact support if the issue persists.`);
     }
   } catch (error) {
     console.error('Error uploading team member profile image:', error);
-    return null;
+    // Instead of returning null, re-throw the error so the UI can show the specific error message
+    throw error;
   }
 }
 

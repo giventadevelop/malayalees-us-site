@@ -454,14 +454,21 @@ const HeroSection: React.FC = () => {
     <>
       <div className="min-h-[37.5vh] bg-white pt-20 pb-9 relative">
         {/* Donate Image - Top Right Corner - Positioned below header to avoid hamburger overlap */}
-        <div className="absolute top-24 right-6 z-40 lg:top-6">
-          <Image
-            src="https://cdn.builder.io/api/v1/image/assets%2Fa70a28525f6f491aaa751610252a199c%2Fee43fae6623544d193ab0c26deca1d95?format=webp&width=800"
-            alt="Donate"
-            width={120}
-            height={60}
-            className="cursor-pointer hover:scale-105 transition-transform duration-300"
-          />
+        <div className="absolute top-28 right-6 z-50 lg:top-28 lg:right-8">
+          <div className="bg-transparent p-2 rounded-lg">
+            <Image
+              src="https://cdn.builder.io/api/v1/image/assets%2Fa70a28525f6f491aaa751610252a199c%2Fee43fae6623544d193ab0c26deca1d95?format=webp&width=800"
+              alt="Donate"
+              width={120}
+              height={60}
+              className="cursor-pointer hover:scale-105 transition-transform duration-300 drop-shadow-lg"
+              onClick={() => {
+                // Add donate functionality here
+                console.log('Donate button clicked');
+                // You can add a link to a donation page or open a modal
+              }}
+            />
+          </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

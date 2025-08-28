@@ -48,6 +48,12 @@ export default function ExecutiveCommitteeClient({ initialMembers }: ExecutiveCo
       ));
     }
     setUploadingMember(null);
+
+    // Show success message
+    console.log('Profile image updated successfully:', imageUrl);
+
+    // Note: The page will be reloaded by the ImageUploadDialog
+    // This ensures the latest data is fetched from the server
   };
 
   const openEditForm = (member: ExecutiveCommitteeTeamMemberDTO) => {
@@ -81,6 +87,51 @@ export default function ExecutiveCommitteeClient({ initialMembers }: ExecutiveCo
         >
           <FaPlus /> Add Member
         </button>
+      </div>
+
+      {/* Image Guidelines Tip Section */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0">
+            <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-medium text-blue-800 mb-2">
+              📸 Profile Image Guidelines
+            </h3>
+            <div className="text-sm text-blue-700 space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="font-medium">Optimal Specifications:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-2">
+                    <li><strong>Dimensions:</strong> 800×1000px (4:5 aspect ratio)</li>
+                    <li><strong>Format:</strong> JPG or WebP</li>
+                    <li><strong>File Size:</strong> Under 200KB</li>
+                    <li><strong>Quality:</strong> 80-85%</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium">Content Guidelines:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-2">
+                    <li><strong>Positioning:</strong> Face centered in upper 60%</li>
+                    <li><strong>Background:</strong> Clean, professional</li>
+                    <li><strong>Lighting:</strong> Even, flattering</li>
+                    <li><strong>Expression:</strong> Professional, approachable</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="mt-3 p-2 bg-blue-100 rounded border border-blue-200">
+                <p className="text-xs">
+                  <strong>Why 4:5 Ratio?</strong> This ensures consistent card heights across all devices and prevents
+                  stretched or distorted images in the "Our Team" section. The portrait format works perfectly with our
+                  responsive grid layout.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Member List */}

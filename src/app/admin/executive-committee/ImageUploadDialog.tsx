@@ -110,23 +110,38 @@ export default function ImageUploadDialog({
       setUploadProgress(10);
 
       // Upload the image using the new function
+      // 🎯 This function now relies ONLY on HTTP status codes for success/failure
       const imageUrl = await uploadTeamMemberProfileImage(
         member.id,
         selectedFile,
         userProfileId || undefined
       );
 
-      if (!imageUrl) {
-        throw new Error('Failed to get image URL from upload response');
+      // Handle different types of successful responses
+      if (!imageUrl || imageUrl === 'upload-successful-no-url' || imageUrl === 'upload-successful-parse-error') {
+        console.log('Upload succeeded but no URL returned. Image may still be uploaded successfully.');
+        // For these cases, we'll treat it as success but show a different message
       }
 
       // Simulate completion progress
       setUploadProgress(100);
 
       // Call success handler with the actual image URL
-      onUploadSuccess(imageUrl);
+      onUploadSuccess(imageUrl || 'upload-successful');
 
+      // Close the dialog
       onClose();
+
+      // Show appropriate success message
+      // 🎯 Success determined by HTTP 2xx status code, not response content
+      if (imageUrl && !imageUrl.startsWith('upload-successful')) {
+        alert('Profile image uploaded successfully! The page will refresh to show the updated image.');
+      } else {
+        alert('Profile image uploaded successfully! The upload completed but we couldn\'t retrieve the image URL. The page will refresh to show the updated image.');
+      }
+
+      // Reload the parent page to reflect the latest data
+      window.location.reload();
     } catch (error) {
       console.error('Upload failed:', error);
       alert(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);

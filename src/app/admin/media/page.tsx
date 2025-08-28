@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { EventMediaDTO } from "@/types";
 import { FaEdit, FaTrashAlt, FaUsers, FaPhotoVideo, FaCalendarAlt } from 'react-icons/fa';
+import AdminNavigation from '@/components/AdminNavigation';
 
 export default function AdminMediaPage() {
   const [mediaList, setMediaList] = useState<EventMediaDTO[]>([]);
@@ -85,20 +86,7 @@ export default function AdminMediaPage() {
 
   return (
     <div className="min-h-screen p-8">
-      <div className="flex justify-center mb-8">
-        <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <Link href="/admin/manage-usage" className="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg shadow-sm px-4 py-4 transition font-semibold text-sm cursor-pointer">
-              <FaUsers className="mb-2 text-2xl" />
-              <span>Manage Users [Usage]</span>
-            </Link>
-            <Link href="/admin" className="flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 text-green-700 rounded-lg shadow-sm px-4 py-4 transition font-semibold text-sm cursor-pointer">
-              <FaCalendarAlt className="mb-2 text-2xl" />
-              Manage Events
-            </Link>
-          </div>
-        </div>
-      </div>
+      <AdminNavigation />
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Manage Media Files</h1>
       {error && <div className="bg-red-50 text-red-500 p-3 rounded mb-4">{error}</div>}
       <div className="border rounded p-4 bg-white shadow-sm min-h-[200px]">

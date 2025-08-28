@@ -1,50 +1,119 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { getCachedApiJwt } from "@/lib/api/jwt";
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { getCachedApiJwt, generateApiJwt } from '@/lib/api/jwt';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const config = {
   api: {
-    bodyParser: false, // Required for file uploads
+    bodyParser: false,
   },
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (!API_BASE_URL) {
-    res.status(500).json({ error: "API base URL not configured" });
-    return;
-  }
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
-  }
-  const token = await getCachedApiJwt();
-  // Forward all query params
-  const params = new URLSearchParams();
-  for (const key in req.query) {
-    const value = req.query[key];
-    if (Array.isArray(value)) value.forEach(v => params.append(key, v));
-    else if (typeof value !== 'undefined') params.append(key, value);
-  }
-  let apiUrl = `${API_BASE_URL}/api/event-medias/upload-multiple`;
-  const qs = params.toString();
-  if (qs) apiUrl += `?${qs}`;
-
-  const fetch = (await import("node-fetch")).default;
-  const headers = { ...req.headers, authorization: `Bearer ${token}` };
-  delete headers["host"];
-  delete headers["connection"];
-  // Sanitize headers
-  const sanitizedHeaders: Record<string, string> = {};
-  for (const [key, value] of Object.entries(headers)) {
-    if (Array.isArray(value)) sanitizedHeaders[key] = value.join("; ");
-    else if (typeof value === "string") sanitizedHeaders[key] = value;
-  }
-  const apiRes = await fetch(apiUrl, {
-    method: "POST",
-    headers: sanitizedHeaders,
-    body: req,
+async function fetchWithJwtRetry(apiUrl: string, options: any = {}, debugLabel = '') {
+  let token = await getCachedApiJwt();
+  let response = await fetch(apiUrl, {
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+    },
   });
-  res.status(apiRes.status);
-  apiRes.body.pipe(res);
+
+  if (response.status === 401) {
+    token = await generateApiJwt();
+    response = await fetch(apiUrl, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
+  return response;
+}
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    if (!API_BASE_URL) {
+      res.status(500).json({ error: "API base URL not configured" });
+      return;
+    }
+
+    if (req.method !== 'POST') {
+      res.setHeader('Allow', ['POST']);
+      res.status(405).end(`Method ${req.method} Not Allowed`);
+      return;
+    }
+
+    // Get JWT token
+    let token = await getCachedApiJwt();
+    if (!token) {
+      token = await generateApiJwt();
+    }
+
+    // Construct the backend API URL
+    const apiUrl = `${API_BASE_URL}/api/event-medias/upload-multiple`;
+
+    // Use node-fetch for proper multipart form handling
+    const fetch = (await import("node-fetch")).default;
+
+    // Copy headers from request, but sanitize them
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${token}`,
+    };
+
+    // Only copy content-type and content-length if they exist
+    if (req.headers['content-type']) {
+      headers['content-type'] = req.headers['content-type'];
+    }
+    if (req.headers['content-length']) {
+      headers['content-length'] = req.headers['content-length'];
+    }
+
+    // Forward the request to the backend
+    const apiRes = await fetch(apiUrl, {
+      method: 'POST',
+      headers: headers,
+      body: req, // Forward the raw request stream
+    });
+
+    // Check response status and handle accordingly
+    if (apiRes.status >= 200 && apiRes.status < 300) {
+      // Success - pipe the response
+      console.log('✅ Proxy: Backend upload successful - HTTP status:', apiRes.status);
+      res.status(apiRes.status);
+
+      // Copy response headers
+      for (const [key, value] of Object.entries(apiRes.headers.raw())) {
+        if (key.toLowerCase() !== 'content-encoding' && key.toLowerCase() !== 'transfer-encoding') {
+          res.setHeader(key, value);
+        }
+      }
+
+      apiRes.body.pipe(res);
+    } else {
+      // Error - return structured error response
+      console.error('❌ Proxy: Backend upload failed - HTTP status:', apiRes.status);
+
+      // Drain the error response to prevent processing
+      try {
+        apiRes.body.resume();
+      } catch (drainError) {
+        console.warn('Warning: Could not drain error response body:', drainError);
+      }
+
+      res.status(apiRes.status >= 400 ? apiRes.status : 500);
+      res.setHeader('Content-Type', 'application/json');
+      res.json({
+        error: 'Upload failed',
+        status: apiRes.status,
+        message: `Upload operation failed with HTTP status ${apiRes.status}`,
+        success: false
+      });
+    }
+  } catch (err) {
+    console.error('Proxy error:', err);
+    res.status(500).json({ error: 'Internal server error', details: String(err) });
+  }
 }

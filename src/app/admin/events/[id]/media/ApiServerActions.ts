@@ -1,6 +1,6 @@
 "use server";
 import { fetchWithJwtRetry } from '@/lib/proxyHandler';
-import { getTenantId } from '@/lib/env';
+import { getTenantId, getAppUrl } from '@/lib/env';
 import type { EventMediaDTO } from '@/types';
 import { withTenantId } from '@/lib/withTenantId';
 
@@ -114,34 +114,64 @@ export async function uploadMedia(eventId: number, {
   files,
   isTeamMemberProfileImage = false // Default to false for regular event media
 }: MediaUploadParams) {
-  const formData = new FormData();
-  // For now, handle single file upload per new API schema
-  if (files.length > 0) {
-    formData.append('file', files[0]); // Changed from 'files' to 'file' per new API schema
+  // Validate required fields
+  if (!title || title.trim() === '') {
+    throw new Error('Title is required');
   }
 
-  const params = new URLSearchParams();
-  params.append('eventId', String(eventId));
-  params.append('eventFlyer', String(eventFlyer));
-  params.append('isEventManagementOfficialDocument', String(isEventManagementOfficialDocument));
-  params.append('isHeroImage', String(isHeroImage));
-  params.append('isActiveHeroImage', String(isActiveHeroImage));
-  params.append('isFeaturedImage', String(isFeaturedImage));
-  params.append('isPublic', String(isPublic));
-  params.append('isTeamMemberProfileImage', String(isTeamMemberProfileImage)); // Always include this parameter
-  params.append('title', title); // Required parameter
-  params.append('description', description);
-  params.append('tenantId', getTenantId()); // Required parameter
+  if (!files || files.length === 0) {
+    throw new Error('At least one file is required');
+  }
 
-  const url = `${API_BASE_URL}/api/proxy/event-medias/upload?${params.toString()}`;
-  const res = await fetchWithJwtRetry(url, {
+  const formData = new FormData();
+
+  // Append each file with the 'files' parameter (plural as expected by backend)
+  files.forEach(file => {
+    formData.append('files', file);
+  });
+
+  // Append other parameters as form data (not query params)
+  formData.append('eventId', String(eventId));
+  formData.append('eventFlyer', String(eventFlyer));
+  formData.append('isEventManagementOfficialDocument', String(isEventManagementOfficialDocument));
+  formData.append('isHeroImage', String(isHeroImage));
+  formData.append('isActiveHeroImage', String(isActiveHeroImage));
+  formData.append('isFeaturedImage', String(isFeaturedImage));
+  formData.append('isPublic', String(isPublic));
+  formData.append('isTeamMemberProfileImage', String(isTeamMemberProfileImage));
+  formData.append('tenantId', getTenantId());
+
+  // Append title and description for each file (backend expects arrays)
+  files.forEach(() => {
+    formData.append('titles', title);
+    formData.append('descriptions', description || '');
+  });
+
+  if (userProfileId) {
+    formData.append('upLoadedById', String(userProfileId));
+  }
+
+  if (altText) {
+    formData.append('altText', altText);
+  }
+
+  if (displayOrder !== undefined) {
+    formData.append('displayOrder', String(displayOrder));
+  }
+
+  // Use the proxy endpoint (not direct backend call)
+  const url = `${getAppUrl()}/api/proxy/event-medias/upload-multiple`;
+
+  const res = await fetch(url, {
     method: 'POST',
     body: formData,
   });
+
   if (!res.ok) {
     const err = await res.text();
     throw new Error(err);
   }
+
   return await res.json();
 }
 

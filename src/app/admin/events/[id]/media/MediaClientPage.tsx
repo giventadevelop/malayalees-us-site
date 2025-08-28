@@ -132,6 +132,7 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
   const [isTooltipHovered, setIsTooltipHovered] = useState(false);
   const [tooltipType, setTooltipType] = useState<'officialDocs' | 'uploadedMedia' | null>(null);
   const uploadedMediaSectionRef = useRef<HTMLDivElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
   // Helper to infer eventMediaType from file extension
@@ -150,12 +151,53 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
     setFiles(e.target.files);
   };
 
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const droppedFiles = e.dataTransfer.files;
+    if (droppedFiles && droppedFiles.length > 0) {
+      setFiles(droppedFiles);
+      // Also update the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.files = droppedFiles;
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!files || !eventId) {
-      setMessage("Please select files and ensure event ID is present.");
+
+    // Validate required fields before upload
+    if (!title.trim()) {
+      setMessage("Title is required. Please provide a title for your media files.");
       return;
     }
+
+    if (!files || files.length === 0) {
+      setMessage("Please select at least one file to upload.");
+      return;
+    }
+
+    if (!eventId) {
+      setMessage("Event ID is missing. Please ensure you're on the correct event page.");
+      return;
+    }
+
     setUploading(true);
     setProgress(0);
     setMessage(null);
@@ -520,13 +562,55 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       {/* Upload form */}
       <div ref={uploadFormDivRef} className="mt-8 mb-8 p-6 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
         <div className="text-xl font-bold mb-4">Media File Upload Form</div>
+
+        {/* Hero Image Specifications Tip */}
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-blue-800 mb-2">📸 Hero Image Specifications</h3>
+              <div className="text-sm text-blue-700 space-y-2">
+                <p><strong>For Hero Images:</strong> Use 800×1200px (2:3 aspect ratio) for optimal display in the charity theme hero section.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                  <div>
+                    <p className="font-medium text-blue-800">Optimal Dimensions:</p>
+                    <ul className="text-xs space-y-1 mt-1">
+                      <li>• <strong>Desktop:</strong> 800×1200px (2:3 ratio)</li>
+                      <li>• <strong>Mobile:</strong> 600×900px (2:3 ratio)</li>
+                      <li>• <strong>Format:</strong> WebP preferred, JPG acceptable</li>
+                      <li>• <strong>Quality:</strong> 80-85%</li>
+                      <li>• <strong>File Size:</strong> Under 300KB</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-medium text-blue-800">Content Guidelines:</p>
+                    <ul className="text-xs space-y-1 mt-1">
+                      <li>• Main subject in upper 60% of frame</li>
+                      <li>• Text readable at 50% scale</li>
+                      <li>• High contrast for overlay visibility</li>
+                      <li>• Professional, culturally relevant style</li>
+                    </ul>
+                  </div>
+                </div>
+                <p className="text-xs text-blue-600 mt-2 italic">These specifications ensure your hero images look perfect across all devices and maintain the professional appearance of the charity theme page.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
-            placeholder="Title"
+            placeholder="Title *"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 w-full"
+            className={`border rounded px-3 py-2 w-full ${title.trim() ? 'border-gray-300' : 'border-red-300 bg-red-50'
+              }`}
+            required
           />
           <textarea
             placeholder="Description"
@@ -535,12 +619,47 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
             className="border border-gray-300 rounded px-3 py-2 w-full"
             rows={2}
           />
-          <div className="flex flex-col md:flex-row gap-4 items-start mt-2 mb-2">
-            <label className="relative cursor-pointer max-w-xs">
-              <span className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded shadow-sm border border-blue-700 transition-colors inline-block text-center w-auto min-w-[120px] flex items-center justify-center gap-2">
-                <FaFolderOpen className="w-5 h-5 mr-1" />
-                Choose Files
-              </span>
+          <div className="flex flex-col gap-4 mt-2 mb-2">
+            {/* Drag and Drop Area */}
+            <div
+              className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDragOver
+                  ? 'border-blue-500 bg-blue-50'
+                  : files && files.length > 0
+                    ? 'border-green-400 bg-green-50'
+                    : 'border-gray-300 bg-gray-50'
+                }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <div className="space-y-4">
+                {isDragOver ? (
+                  <div className="text-blue-600">
+                    <FaUpload className="w-12 h-12 mx-auto mb-2" />
+                    <p className="text-lg font-semibold">Drop files here to upload</p>
+                  </div>
+                ) : files && files.length > 0 ? (
+                  <div className="text-green-600">
+                    <FaPhotoVideo className="w-12 h-12 mx-auto mb-2" />
+                    <p className="text-lg font-semibold">{files.length} file(s) selected</p>
+                    <div className="flex flex-wrap justify-center gap-2 mt-4">
+                      {Array.from(files).map((file, idx) => (
+                        <span key={idx} className="bg-green-100 border border-green-300 rounded px-2 py-1 text-xs truncate max-w-xs" title={file.name}>
+                          {file.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-gray-500">
+                    <FaFolderOpen className="w-12 h-12 mx-auto mb-2" />
+                    <p className="text-lg font-semibold mb-2">Drag & drop files here</p>
+                    <p className="text-sm">or click the button below to browse</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Hidden file input */}
               <input
                 type="file"
                 multiple
@@ -549,14 +668,24 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
                 className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                 accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.svg"
               />
-            </label>
-            {files && files.length > 0 && (
-              <div className="flex-1 flex flex-wrap items-center gap-2 ml-4 min-w-0">
-                {Array.from(files).map((file, idx) => (
-                  <span key={idx} className="bg-gray-100 border border-gray-300 rounded px-2 py-1 text-xs truncate max-w-xs" title={file.name}>{file.name}</span>
-                ))}
-              </div>
-            )}
+            </div>
+
+            {/* Choose Files Button */}
+            <div className="flex justify-center">
+              <label className="relative cursor-pointer">
+                <span className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded shadow-sm border border-blue-700 transition-colors inline-block text-center min-w-[160px] flex items-center justify-center gap-2">
+                  <FaFolderOpen className="w-5 h-5" />
+                  Browse Files
+                </span>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.svg"
+                />
+              </label>
+            </div>
           </div>
           <div className="custom-grid-table mt-2 mb-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
             <div className="custom-grid-cell">
@@ -669,11 +798,11 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
           </div>
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded shadow-sm border border-blue-700 transition-colors flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded shadow-sm border border-blue-700 transition-colors flex items-center gap-2 disabled:bg-blue-300 disabled:cursor-not-allowed"
             disabled={uploading}
           >
             <FaUpload className="w-5 h-5" />
-            {uploading ? 'Uploading...' : 'Upload'}
+            {uploading ? 'Uploading...' : 'Upload Images'}
           </button>
           {message && (
             <div className={`mt-4 text-2xl font-extrabold italic drop-shadow-sm tracking-wide ${message.includes('successful') ? 'text-green-600' : 'text-blue-700'}`}

@@ -9,6 +9,17 @@ export const config = {
   },
 };
 
+/**
+ * Proxy handler for event media uploads
+ *
+ * 🎯 CRITICAL: This handler checks HTTP status codes before processing responses.
+ * - 2xx status codes (200-299) = Success → Pipe response body
+ * - Any other status code = Failure → Return simple error JSON (NO piping)
+ *
+ * This prevents issues with null responses or malformed JSON from backend errors.
+ * The backend may return a 500 error with a null EventMediaDTO result, but we avoid
+ * piping it to prevent getId() calls on null objects.
+ */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (!API_BASE_URL) {
@@ -60,8 +71,48 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       body: req,
     });
 
-    res.status(apiRes.status);
-    apiRes.body.pipe(res);
+          // 🎯 CRITICAL: Check HTTP status code before processing response
+      // This prevents issues with null responses or malformed JSON from backend errors
+      // IMPORTANT: For error responses, DO NOT pipe the body to avoid getId() calls on null EventMediaDTO objects
+
+    if (apiRes.status >= 200 && apiRes.status < 300) {
+      // ✅ Success: Pipe the response body back to client
+      console.log('✅ Proxy: Backend upload successful - HTTP status:', apiRes.status);
+      res.status(apiRes.status);
+      
+      // Copy headers from backend response
+      for (const [key, value] of Object.entries(apiRes.headers.raw())) {
+        if (key.toLowerCase() !== 'content-encoding' && key.toLowerCase() !== 'transfer-encoding') {
+          res.setHeader(key, value);
+        }
+      }
+      
+      apiRes.body.pipe(res);
+    } else {
+      // ❌ Failure: DO NOT pipe error response body to avoid null pointer exceptions
+      console.error('❌ Proxy: Backend upload failed - HTTP status:', apiRes.status);
+
+      // CRITICAL: Consume and discard the error response body to prevent any processing
+      // This ensures no getId() calls are made on potentially null objects
+      try {
+        // Drain the response stream without processing the content
+        apiRes.body.resume();
+      } catch (drainError) {
+        console.warn('Warning: Could not drain error response body:', drainError);
+      }
+
+      // For error responses, return only a simple structured error message
+      // DO NOT pipe or process the response body as it may contain null objects
+      res.status(apiRes.status >= 400 ? apiRes.status : 500);
+      res.setHeader('Content-Type', 'application/json');
+      res.json({
+        error: 'Upload failed',
+        status: apiRes.status,
+        message: `Upload operation failed with HTTP status ${apiRes.status}`,
+        // DO NOT include backend error details to prevent null object processing
+        success: false
+      });
+    }
   } catch (err) {
     console.error('Proxy error:', err);
     res.status(500).json({ error: 'Internal server error', details: String(err) });
