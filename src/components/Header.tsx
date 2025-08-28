@@ -57,10 +57,16 @@ type HeaderProps = {
 const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
   if (!href.startsWith('#')) return;
 
-  const isOnCharityTheme = typeof window !== 'undefined' && window.location.pathname === '/charity-theme';
-  if (!isOnCharityTheme) return;
-
   e.preventDefault();
+
+  // If we're not on the home page, navigate there first
+  if (typeof window !== 'undefined' && window.location.pathname !== '/' && window.location.pathname !== '/charity-theme') {
+    // Navigate to home page with hash
+    window.location.href = `/${href}`;
+    return;
+  }
+
+  // If we're on the home page, scroll to section
   const targetId = href.substring(1);
   const targetElement = document.getElementById(targetId);
   if (targetElement) {
@@ -117,7 +123,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
 
     const scrollToHashWithOffset = (behavior: ScrollBehavior = 'smooth') => {
       const hash = window.location.hash;
-      if (!hash || window.location.pathname !== '/charity-theme') return;
+      if (!hash || (window.location.pathname !== '/' && window.location.pathname !== '/charity-theme')) return;
       const targetId = hash.replace('#', '');
       const targetElement = document.getElementById(targetId);
       if (!targetElement) return;
@@ -125,7 +131,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
       window.scrollTo({ top: Math.max(0, targetPosition), behavior });
     };
 
-    if (window.location.pathname === '/charity-theme' && window.location.hash) {
+    if ((window.location.pathname === '/' || window.location.pathname === '/charity-theme') && window.location.hash) {
       requestAnimationFrame(() => scrollToHashWithOffset('auto'));
       const timeout = setTimeout(() => scrollToHashWithOffset('auto'), 300);
       return () => clearTimeout(timeout);
@@ -139,7 +145,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
   // Update active state based on current route
   const updatedNavItems = navItems.map(item => ({
     ...item,
-    active: item.href === pathname || (item.href === '/' && pathname === '/charity-theme')
+    active: item.href === pathname || (item.href === '/' && (pathname === '/charity-theme' || pathname === '/'))
   }));
 
   return (
@@ -149,7 +155,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
           <div className="flex items-center justify-between h-20">
             {/* Left side - Unite India Text Logo */}
             <div className="flex items-center">
-              <Link href="/charity-theme" className="flex items-center">
+              <Link href="/" className="flex items-center">
                 <div className="text-left">
                   <div className="text-2xl font-bold text-purple-600 leading-tight">
                     Unite India
@@ -292,7 +298,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                       </div>
                     )}
 
-                    <UserButton afterSignOutUrl="/charity-theme" />
+                    <UserButton afterSignOutUrl="/" />
                   </>
                 )}
               </div>
@@ -381,14 +387,14 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
         <div className="flex flex-col h-full">
           {/* Mobile Menu Header */}
           <div className="flex items-center justify-between p-6">
-            <div className="text-left">
+            <Link href="/" className="text-left">
               <div className="text-lg font-bold text-purple-600 leading-tight">
                 Unite India
               </div>
               <div className="text-[10px] font-medium text-purple-500 uppercase tracking-wider">
                 A NONPROFIT CORPORATION
               </div>
-            </div>
+            </Link>
             <button
               onClick={closeMobileMenu}
               className="
@@ -529,7 +535,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                   )}
 
                   <div className="flex justify-center pt-4">
-                    <UserButton afterSignOutUrl="/charity-theme" />
+                    <UserButton afterSignOutUrl="/" />
                   </div>
                 </>
               )}
