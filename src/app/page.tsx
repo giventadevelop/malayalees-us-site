@@ -1,13 +1,13 @@
 'use client';
 
 import React from 'react';
-import HeroSection from '../components/charity-sections/HeroSection';
-import ServicesSection from '../components/charity-sections/ServicesSection';
-import AboutSection from '../components/charity-sections/AboutSection';
-import CausesSection from '../components/charity-sections/CausesSection';
-import TeamSection from '../components/charity-sections/TeamSection';
-import ProjectsSection from '../components/charity-sections/ProjectsSection';
-import TestimonialsSection from '../components/charity-sections/TestimonialsSection';
+import HeroSection from '../components/HeroSection';
+import ServicesSection from '../components/ServicesSection';
+import AboutSection from '../components/AboutSection';
+import CausesSection from '../components/CausesSection';
+import TeamSection from '../components/TeamSection';
+import ProjectsSection from '../components/ProjectsSection';
+import TestimonialsSection from '../components/TestimonialsSection';
 
 export default function HomePage() {
   return (
