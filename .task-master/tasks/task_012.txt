@@ -1,14 +1,16 @@
 # Task ID: 12
-# Title: Implement ticket issuance
+# Title: Implement registration management for admins
 # Status: pending
-# Dependencies: 10 ✅
+# Dependencies: 11 ⏱️
 # Priority: medium
-# Description: Create system to issue tickets after successful payment.
+# Description: Create the interface for admins to view and manage event registrations.
 # Details:
-- Update event_ticket_transaction status on successful payment
-- Create records in appropriate tables for issued tickets
-- Generate ticket identifiers/barcodes
-- Prepare ticket data for email delivery
+Develop registration management with:
+- Complete attendee and guest lists
+- Export functionality (CSV/Excel)
+- Search and filtering options
+- Capacity monitoring
+- Waitlist management
 
 # Test Strategy:
-Verify tickets are correctly issued after payment. Check database records for accuracy.
+Test export functionality and verify all registration data is correctly displayed. Test search and filtering options.

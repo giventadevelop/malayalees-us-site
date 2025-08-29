@@ -1,16 +1,16 @@
 # Task ID: 4
-# Title: Build Ticketing Page layout
-# Status: done
-# Dependencies: 1 ✅, 2 ✅
+# Title: Implement event registration API endpoints
+# Status: pending
+# Dependencies: 3 ⏱️
 # Priority: high
-# Description: Create the main ticketing page that displays event details and available ticket types.
+# Description: Create API endpoints for registering for free events and managing registrations.
 # Details:
-- Create page layout with event details section
-- Implement responsive card layout for ticket types
-- Add quantity selectors for each ticket type
-- Include discount code input field
-- Add checkout button
-- Ensure all UI elements follow design guidelines
+Implement:
+- POST /api/events/:id/register for event registration
+- GET /api/events/:id/guest-stats for retrieving guest statistics
+- PUT /api/registrations/:id/guests/:guestId for updating guest information
+
+Include logic for handling both existing and new user profiles.
 
 # Test Strategy:
-Test the layout on multiple screen sizes. Verify all UI elements are displayed correctly and match the design specifications.
+Test registration flow with various scenarios including different guest counts and special requirements. Verify guest statistics are correctly calculated.

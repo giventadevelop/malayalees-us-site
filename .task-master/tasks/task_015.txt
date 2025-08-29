@@ -1,15 +1,16 @@
 # Task ID: 15
-# Title: Create admin reporting views
+# Title: Implement email notifications
 # Status: pending
-# Dependencies: 12 ⏱️, 14 ✅
-# Priority: low
-# Description: Implement reporting interfaces for event organizers to track sales and inventory.
+# Dependencies: 9 ⏱️
+# Priority: medium
+# Description: Create email notification system for registration confirmations and reminders.
 # Details:
-- Create admin dashboard for ticket sales
-- Implement reporting on discount code usage
-- Add inventory tracking and alerts
-- Create transaction history view
-- Add export functionality for reports
+Develop email system with:
+- Registration confirmation emails
+- QR code inclusion in emails
+- Event reminder emails
+- Email templates for different notifications
+- Email delivery tracking
 
 # Test Strategy:
-Verify reports show accurate data. Test with various event scenarios and data volumes.
+Test email delivery to various email providers. Verify content is correctly formatted and QR codes are properly included.

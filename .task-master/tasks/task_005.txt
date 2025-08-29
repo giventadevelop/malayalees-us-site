@@ -1,15 +1,17 @@
 # Task ID: 5
-# Title: Implement ticket selection functionality
-# Status: done
-# Dependencies: 4 ✅
-# Priority: high
-# Description: Add functionality to select ticket quantities and update the UI accordingly.
+# Title: Develop events listing page
+# Status: pending
+# Dependencies: 3 ⏱️
+# Priority: medium
+# Description: Create the events listing page with filtering functionality for free events.
 # Details:
-- Implement quantity selectors for each ticket type
-- Add client-side validation for maximum quantities
-- Update subtotal in real-time as quantities change
-- Disable checkout button when no tickets are selected
-- Follow custom-forms-checkbox-grid.mdc for form elements
+Develop the /events page with:
+- Filters for event type (free, paid, etc.)
+- Date range filter
+- Location filter
+- Search functionality
+- Event cards with clear FREE EVENT badge
+- Registration status indicators
 
 # Test Strategy:
-Test quantity selection with various inputs. Verify real-time updates to subtotal. Test validation for maximum quantities.
+Test filtering functionality and verify free events are properly highlighted. Ensure responsive design works on different screen sizes.

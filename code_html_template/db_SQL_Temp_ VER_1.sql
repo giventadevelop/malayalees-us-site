@@ -6,7 +6,7 @@
 -- Dumped by pg_dump version 17.0
 
 -- Started on 2025-06-08 23:51:02
---SET ROLE giventa_event_management;
+SET ROLE giventa_event_management;
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -29,7 +29,7 @@ SET row_security = off;
 --CREATE DATABASE giventa_event_management WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.utf8';
 
 
---ALTER DATABASE giventa_event_management OWNER TO giventa_event_management;
+ALTER DATABASE giventa_event_management OWNER TO giventa_event_management;
 
 --\connect giventa_event_management
 
@@ -113,14 +113,6 @@ DROP TRIGGER IF EXISTS trg_set_transaction_reference ON public.event_ticket_tran
 -- Drop sequence if exists and recreate
 DROP SEQUENCE IF EXISTS public.sequence_generator CASCADE;
 DROP SEQUENCE IF EXISTS public.discount_code_id_seq CASCADE;
-DROP SEQUENCE IF EXISTS public.event_live_update_attachment_id_seq CASCADE;
-DROP SEQUENCE IF EXISTS public.event_live_update_id_seq CASCADE;
-DROP SEQUENCE IF EXISTS public.event_score_card_detail_id_seq CASCADE;
-DROP SEQUENCE IF EXISTS public.event_score_card_id_seq CASCADE;
-
-
-
-
 
 
 -- ===================================================
@@ -163,6 +155,7 @@ DROP TABLE IF EXISTS public.discount_code CASCADE;
 DROP TABLE IF EXISTS public.communication_campaign CASCADE;
 DROP TABLE IF EXISTS public.email_log CASCADE;
 DROP TABLE IF EXISTS public.whatsapp_log CASCADE;
+DROP TABLE IF EXISTS public.executive_committee_team_members CASCADE;
 
 CREATE FUNCTION public.generate_attendee_qr_code() RETURNS trigger
     LANGUAGE plpgsql
@@ -178,7 +171,7 @@ END;
 $$;
 
 
---ALTER FUNCTION public.generate_attendee_qr_code() OWNER TO giventa_event_management;
+ALTER FUNCTION public.generate_attendee_qr_code() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 272 (class 1255 OID 71151)
@@ -227,7 +220,7 @@ END;
 $$;
 
 
---ALTER FUNCTION public.generate_enhanced_qr_code() OWNER TO giventa_event_management;
+ALTER FUNCTION public.generate_enhanced_qr_code() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 273 (class 1255 OID 71150)
@@ -320,7 +313,7 @@ END;
 $$;
 
 
---ALTER FUNCTION public.manage_ticket_inventory() OWNER TO giventa_event_management;
+ALTER FUNCTION public.manage_ticket_inventory() OWNER TO giventa_event_management;
 
 
 --
@@ -359,7 +352,7 @@ END;
 $$;
 
 
---ALTER FUNCTION public.update_ticket_sold_quantity() OWNER TO giventa_event_management;
+ALTER FUNCTION public.update_ticket_sold_quantity() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 271 (class 1255 OID 70264)
@@ -376,7 +369,7 @@ END;
 $$;
 
 
---ALTER FUNCTION public.update_updated_at_column() OWNER TO giventa_event_management;
+ALTER FUNCTION public.update_updated_at_column() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 254 (class 1255 OID 71141)
@@ -402,7 +395,7 @@ END;
 $$;
 
 
---ALTER FUNCTION public.validate_event_dates() OWNER TO giventa_event_management;
+ALTER FUNCTION public.validate_event_dates() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 257 (class 1255 OID 71147)
@@ -426,7 +419,7 @@ END;
 $$;
 
 
---ALTER FUNCTION public.validate_event_dates_alt1() OWNER TO giventa_event_management;
+ALTER FUNCTION public.validate_event_dates_alt1() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 258 (class 1255 OID 71148)
@@ -450,7 +443,7 @@ END;
 $$;
 
 
---ALTER FUNCTION public.validate_event_dates_alt2() OWNER TO giventa_event_management;
+ALTER FUNCTION public.validate_event_dates_alt2() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 270 (class 1255 OID 71149)
@@ -491,7 +484,7 @@ END;
 $$;
 
 
---ALTER FUNCTION public.validate_event_details() OWNER TO giventa_event_management;
+ALTER FUNCTION public.validate_event_details() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 224 (class 1259 OID 82754)
@@ -506,7 +499,7 @@ CREATE SEQUENCE public.sequence_generator
     CACHE 1;
 
 
---ALTER SEQUENCE public.sequence_generator OWNER TO giventa_event_management;
+ALTER SEQUENCE public.sequence_generator OWNER TO giventa_event_management;
 
 SET default_tablespace = '';
 
@@ -561,7 +554,7 @@ CREATE TABLE public.user_profile (
 );
 
 
---ALTER TABLE public.user_profile OWNER TO giventa_event_management;
+ALTER TABLE public.user_profile OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3991 (class 0 OID 0)
@@ -586,7 +579,7 @@ CREATE TABLE public.bulk_operation_log (
     success_count integer DEFAULT 0,
     error_count integer DEFAULT 0,
     skipped_count integer DEFAULT 0,
-    operation_details text,
+    operation_details  VARCHAR(16384),
     error_details text,
     execution_time_ms integer,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
@@ -595,7 +588,7 @@ CREATE TABLE public.bulk_operation_log (
 );
 
 
---ALTER TABLE public.bulk_operation_log OWNER TO giventa_event_management;
+ALTER TABLE public.bulk_operation_log OWNER TO giventa_event_management;
 
 --
 -- TOC entry 225 (class 1259 OID 82755)
@@ -620,7 +613,7 @@ CREATE TABLE public.databasechangelog (
 );
 
 
---ALTER TABLE public.databasechangelog OWNER TO giventa_event_management;
+ALTER TABLE public.databasechangelog OWNER TO giventa_event_management;
 
 --
 -- TOC entry 226 (class 1259 OID 82760)
@@ -635,7 +628,7 @@ CREATE TABLE public.databasechangeloglock (
 );
 
 
---ALTER TABLE public.databasechangeloglock OWNER TO giventa_event_management;
+ALTER TABLE public.databasechangeloglock OWNER TO giventa_event_management;
 
 
 --
@@ -687,7 +680,7 @@ CREATE TABLE public.event_details (
 );
 
 
---ALTER TABLE public.event_details OWNER TO giventa_event_management;
+ALTER TABLE public.event_details OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3944 (class 0 OID 0)
@@ -793,7 +786,7 @@ CREATE TABLE public.event_guest_pricing (
 );
 
 
---ALTER TABLE public.event_guest_pricing OWNER TO giventa_event_management;
+ALTER TABLE public.event_guest_pricing OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3955 (class 0 OID 0)
@@ -862,7 +855,7 @@ CREATE TABLE public.event_live_update (
     content_image_url character varying(1024),
     content_video_url character varying(1024),
     content_link_url character varying(1024),
-    metadata jsonb,
+    metadata  VARCHAR(4096),
     display_order integer DEFAULT 0,
     is_default boolean DEFAULT false,
     created_at timestamp without time zone DEFAULT now(),
@@ -871,7 +864,7 @@ CREATE TABLE public.event_live_update (
 );
 
 
---ALTER TABLE public.event_live_update OWNER TO giventa_event_management;
+ALTER TABLE public.event_live_update OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3962 (class 0 OID 0)
@@ -893,13 +886,13 @@ CREATE TABLE public.event_live_update_attachment (
     attachment_type character varying(20),
     attachment_url character varying(1024),
     display_order integer DEFAULT 0,
-    metadata jsonb,
+     metadata  VARCHAR(4096),
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()
 );
 
 
---ALTER TABLE public.event_live_update_attachment OWNER TO giventa_event_management;
+ALTER TABLE public.event_live_update_attachment OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3963 (class 0 OID 0)
@@ -923,7 +916,7 @@ CREATE SEQUENCE public.event_live_update_attachment_id_seq
     CACHE 1;
 
 
---ALTER SEQUENCE public.event_live_update_attachment_id_seq OWNER TO giventa_event_management;
+ALTER SEQUENCE public.event_live_update_attachment_id_seq OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3964 (class 0 OID 0)
@@ -931,7 +924,7 @@ CREATE SEQUENCE public.event_live_update_attachment_id_seq
 -- Name: event_live_update_attachment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: giventa_event_management
 --
 
---ALTER SEQUENCE public.event_live_update_attachment_id_seq OWNED BY public.event_live_update_attachment.id;
+ALTER SEQUENCE public.event_live_update_attachment_id_seq OWNED BY public.event_live_update_attachment.id;
 
 
 --
@@ -947,7 +940,7 @@ CREATE SEQUENCE public.event_live_update_id_seq
     CACHE 1;
 
 
---ALTER SEQUENCE public.event_live_update_id_seq OWNER TO giventa_event_management;
+ALTER SEQUENCE public.event_live_update_id_seq OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3965 (class 0 OID 0)
@@ -955,7 +948,7 @@ CREATE SEQUENCE public.event_live_update_id_seq
 -- Name: event_live_update_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: giventa_event_management
 --
 
---ALTER SEQUENCE public.event_live_update_id_seq OWNED BY public.event_live_update.id;
+ALTER SEQUENCE public.event_live_update_id_seq OWNED BY public.event_live_update.id;
 
 --
 -- TOC entry 235 (class 1259 OID 82890)
@@ -975,7 +968,7 @@ CREATE TABLE public.event_admin (
 );
 
 
---ALTER TABLE public.event_admin OWNER TO giventa_event_management;
+ALTER TABLE public.event_admin OWNER TO giventa_event_management;
 
 --
 -- TOC entry 249 (class 1259 OID 83122)
@@ -988,7 +981,7 @@ CREATE TABLE public.event_admin_audit_log (
     action character varying(255) NOT NULL,
     table_name character varying(255) NOT NULL,
     record_id character varying(255) NOT NULL,
-    changes jsonb,
+    changes VARCHAR(8192) NULL,
     old_values jsonb,
     new_values jsonb,
     ip_address inet,
@@ -999,7 +992,7 @@ CREATE TABLE public.event_admin_audit_log (
 );
 
 
---ALTER TABLE public.event_admin_audit_log OWNER TO giventa_event_management;
+ALTER TABLE public.event_admin_audit_log OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3932 (class 0 OID 0)
@@ -1060,7 +1053,7 @@ CREATE TABLE public.event_attendee (
 );
 
 
---ALTER TABLE public.event_attendee OWNER TO giventa_event_management;
+ALTER TABLE public.event_attendee OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3934 (class 0 OID 0)
@@ -1134,7 +1127,7 @@ CREATE TABLE public.event_attendee_guest (
 );
 
 
---ALTER TABLE public.event_attendee_guest OWNER TO giventa_event_management;
+ALTER TABLE public.event_attendee_guest OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3939 (class 0 OID 0)
@@ -1184,7 +1177,7 @@ CREATE TABLE public.event_calendar_entry (
 );
 
 
---ALTER TABLE public.event_calendar_entry OWNER TO giventa_event_management;
+ALTER TABLE public.event_calendar_entry OWNER TO giventa_event_management;
 
 
 --
@@ -1224,7 +1217,7 @@ CREATE TABLE public.event_media (
     CONSTRAINT check_file_size_positive CHECK (((file_size IS NULL) OR (file_size >= 0)))
 );
 
---ALTER TABLE public.event_media OWNER TO giventa_event_management;
+ALTER TABLE public.event_media OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3966 (class 0 OID 0)
@@ -1259,7 +1252,7 @@ CREATE TABLE public.event_organizer (
 );
 
 
---ALTER TABLE public.event_organizer OWNER TO giventa_event_management;
+ALTER TABLE public.event_organizer OWNER TO giventa_event_management;
 
 --
 -- TOC entry 243 (class 1259 OID 83028)
@@ -1288,7 +1281,7 @@ CREATE TABLE public.event_poll (
 );
 
 
---ALTER TABLE public.event_poll OWNER TO giventa_event_management;
+ALTER TABLE public.event_poll OWNER TO giventa_event_management;
 
 --
 -- TOC entry 244 (class 1259 OID 83045)
@@ -1308,7 +1301,7 @@ CREATE TABLE public.event_poll_option (
 );
 
 
---ALTER TABLE public.event_poll_option OWNER TO giventa_event_management;
+ALTER TABLE public.event_poll_option OWNER TO giventa_event_management;
 
 --
 -- TOC entry 245 (class 1259 OID 83057)
@@ -1329,7 +1322,7 @@ CREATE TABLE public.event_poll_response (
 );
 
 
---ALTER TABLE public.event_poll_response OWNER TO giventa_event_management;
+ALTER TABLE public.event_poll_response OWNER TO giventa_event_management;
 
 --
 -- TOC entry 216 (class 1259 OID 77393)
@@ -1350,7 +1343,7 @@ CREATE TABLE public.event_score_card (
 );
 
 
---ALTER TABLE public.event_score_card OWNER TO giventa_event_management;
+ALTER TABLE public.event_score_card OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3972 (class 0 OID 0)
@@ -1379,7 +1372,7 @@ CREATE TABLE public.event_score_card_detail (
 );
 
 
---ALTER TABLE public.event_score_card_detail OWNER TO giventa_event_management;
+ALTER TABLE public.event_score_card_detail OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3973 (class 0 OID 0)
@@ -1403,7 +1396,7 @@ CREATE SEQUENCE public.event_score_card_detail_id_seq
     CACHE 1;
 
 
---ALTER SEQUENCE public.event_score_card_detail_id_seq OWNER TO giventa_event_management;
+ALTER SEQUENCE public.event_score_card_detail_id_seq OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3974 (class 0 OID 0)
@@ -1411,7 +1404,7 @@ CREATE SEQUENCE public.event_score_card_detail_id_seq
 -- Name: event_score_card_detail_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: giventa_event_management
 --
 
---ALTER SEQUENCE public.event_score_card_detail_id_seq OWNED BY public.event_score_card_detail.id;
+ALTER SEQUENCE public.event_score_card_detail_id_seq OWNED BY public.event_score_card_detail.id;
 
 
 --
@@ -1427,7 +1420,7 @@ CREATE SEQUENCE public.event_score_card_id_seq
     CACHE 1;
 
 
---ALTER SEQUENCE public.event_score_card_id_seq OWNER TO giventa_event_management;
+ALTER SEQUENCE public.event_score_card_id_seq OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3975 (class 0 OID 0)
@@ -1435,7 +1428,7 @@ CREATE SEQUENCE public.event_score_card_id_seq
 -- Name: event_score_card_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: giventa_event_management
 --
 
---ALTER SEQUENCE public.event_score_card_id_seq OWNED BY public.event_score_card.id;
+ALTER SEQUENCE public.event_score_card_id_seq OWNED BY public.event_score_card.id;
 
 
 --
@@ -1469,7 +1462,7 @@ CREATE TABLE public.event_ticket_transaction (
     confirmation_sent_at timestamp without time zone,
     refund_amount numeric(21,2) DEFAULT 0 NULL,
     refund_date timestamp NULL,
-    refund_reason text NULL,
+    refund_reason VARCHAR(2048) NULL,
     stripe_customer_id varchar(255) NULL,
     stripe_payment_status varchar(50) NULL,
     stripe_customer_email varchar(255) NULL,
@@ -1495,7 +1488,7 @@ CREATE TABLE public.event_ticket_transaction (
 );
 
 
---ALTER TABLE public.event_ticket_transaction OWNER TO giventa_event_management;
+ALTER TABLE public.event_ticket_transaction OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3976 (class 0 OID 0)
@@ -1550,7 +1543,7 @@ CREATE TABLE public.event_ticket_type (
 );
 
 
---ALTER TABLE public.event_ticket_type OWNER TO giventa_event_management;
+ALTER TABLE public.event_ticket_type OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3979 (class 0 OID 0)
@@ -1594,7 +1587,7 @@ CREATE TABLE public.event_type_details (
 );
 
 
---ALTER TABLE public.event_type_details OWNER TO giventa_event_management;
+ALTER TABLE public.event_type_details OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3981 (class 0 OID 0)
@@ -1633,7 +1626,7 @@ CREATE TABLE public.qr_code_usage (
 );
 
 
---ALTER TABLE public.qr_code_usage OWNER TO giventa_event_management;
+ALTER TABLE public.qr_code_usage OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3983 (class 0 OID 0)
@@ -1655,7 +1648,7 @@ CREATE TABLE public.rel_event_details__discount_codes (
 );
 
 
---ALTER TABLE public.rel_event_details__discount_codes OWNER TO giventa_event_management;
+ALTER TABLE public.rel_event_details__discount_codes OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3985 (class 0 OID 0)
@@ -1698,7 +1691,7 @@ CREATE TABLE public.tenant_organization (
 );
 
 
---ALTER TABLE public.tenant_organization OWNER TO giventa_event_management;
+ALTER TABLE public.tenant_organization OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3986 (class 0 OID 0)
@@ -1722,9 +1715,9 @@ CREATE TABLE public.tenant_settings (
     enable_whatsapp_integration boolean DEFAULT false,
     enable_email_marketing boolean DEFAULT false,
     whatsapp_api_key character varying(500),
-    email_provider_config text,
-    custom_css text,
-    custom_js text,
+    email_provider_config  VARCHAR(2048),
+    custom_css  VARCHAR(8192),
+    custom_js  VARCHAR(16384),
     max_events_per_month integer,
     max_attendees_per_event integer,
     enable_guest_registration boolean DEFAULT true,
@@ -1743,7 +1736,7 @@ CREATE TABLE public.tenant_settings (
 );
 
 
---ALTER TABLE public.tenant_settings OWNER TO giventa_event_management;
+ALTER TABLE public.tenant_settings OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3988 (class 0 OID 0)
@@ -1768,7 +1761,7 @@ CREATE SEQUENCE public.discount_code_id_seq
     CACHE 1;
 
 
---ALTER SEQUENCE public.discount_code_id_seq OWNER TO giventa_event_management;
+ALTER SEQUENCE public.discount_code_id_seq OWNER TO giventa_event_management;
 
 --
 -- TOC entry 228 (class 1259 OID 82766)
@@ -1796,7 +1789,7 @@ CREATE TABLE public.discount_code (
     COMMENT ON TABLE public.discount_code IS 'Discount codes for ticket purchases, now per event and tenant.';
 
 
---ALTER TABLE public.discount_code OWNER TO giventa_event_management;
+ALTER TABLE public.discount_code OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3927 (class 0 OID 0)
@@ -1835,7 +1828,7 @@ CREATE TABLE public.user_payment_transaction (
 );
 
 
---ALTER TABLE public.user_payment_transaction OWNER TO giventa_event_management;
+ALTER TABLE public.user_payment_transaction OWNER TO giventa_event_management;
 
 
 
@@ -1865,7 +1858,7 @@ CREATE TABLE public.user_task (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
     tenant_id character varying(255),
     title character varying(255) NOT NULL,
-    description text,
+    description  VARCHAR(4096),
     status character varying(255) DEFAULT 'PENDING'::character varying NOT NULL,
     priority character varying(255) DEFAULT 'MEDIUM'::character varying NOT NULL,
     due_date timestamp without time zone,
@@ -1885,8 +1878,40 @@ CREATE TABLE public.user_task (
     CONSTRAINT user_task_progress_percentage_check CHECK (((progress_percentage >= 0) AND (progress_percentage <= 100)))
 );
 
+-- Create the executive_committee_team_members table
+CREATE TABLE public.executive_committee_team_members (
+    id BIGSERIAL PRIMARY KEY,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    designation VARCHAR(255),
+    bio VARCHAR(2048),
+    email VARCHAR(255),
+    priority_order integer,
+    profile_image_url VARCHAR(500),
+    expertise VARCHAR(500),
+    image_background VARCHAR(255),
+    image_style VARCHAR(100),
+    department VARCHAR(100),
+    join_date DATE,
+    is_active BOOLEAN DEFAULT TRUE,
+    linkedin_url VARCHAR(500),
+    twitter_url VARCHAR(500),
+    website_url VARCHAR(500),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 
+-- Create indexes for better performance
+CREATE INDEX idx_exec_team_members_name ON public.executive_committee_team_members(first_name);
+CREATE INDEX idx_exec_team_members_department ON public.executive_committee_team_members(department);
+CREATE INDEX idx_exec_team_members_is_active ON public.executive_committee_team_members(is_active);
+CREATE INDEX idx_exec_team_members_join_date ON public.executive_committee_team_members(join_date);
 
+-- Add comments for documentation
+COMMENT ON TABLE public.executive_committee_team_members IS 'Stores information about executive committee team members';
+COMMENT ON COLUMN public.executive_committee_team_members.expertise IS 'JSON array of skills and expertise areas';
+COMMENT ON COLUMN public.executive_committee_team_members.is_active IS 'Whether the team member is currently active';
 
 
 -- TOC entry 3363 (class 2604 OID 82769)
@@ -2659,7 +2684,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
 --
 
---GRANT USAGE ON SCHEMA public TO giventa_event_management;
+GRANT USAGE ON SCHEMA public TO giventa_event_management;
 
 
 --
@@ -2668,7 +2693,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: SEQUENCE sequence_generator; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,USAGE ON SEQUENCE public.sequence_generator TO giventa_event_management;
+GRANT SELECT,USAGE ON SEQUENCE public.sequence_generator TO giventa_event_management;
 
 
 --
@@ -2677,7 +2702,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE bulk_operation_log; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.bulk_operation_log TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.bulk_operation_log TO giventa_event_management;
 
 
 --
@@ -2686,7 +2711,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE databasechangelog; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.databasechangelog TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.databasechangelog TO giventa_event_management;
 
 
 --
@@ -2695,7 +2720,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE databasechangeloglock; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.databasechangeloglock TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.databasechangeloglock TO giventa_event_management;
 
 
 --
@@ -2704,7 +2729,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE discount_code; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.discount_code TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.discount_code TO giventa_event_management;
 
 
 --
@@ -2713,7 +2738,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: SEQUENCE discount_code_id_seq; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,USAGE ON SEQUENCE public.discount_code_id_seq TO giventa_event_management;
+GRANT SELECT,USAGE ON SEQUENCE public.discount_code_id_seq TO giventa_event_management;
 
 
 --
@@ -2722,7 +2747,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_admin; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_admin TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_admin TO giventa_event_management;
 
 
 --
@@ -2731,7 +2756,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_admin_audit_log; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_admin_audit_log TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_admin_audit_log TO giventa_event_management;
 
 
 --
@@ -2740,7 +2765,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_attendee; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_attendee TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_attendee TO giventa_event_management;
 
 
 --
@@ -2749,7 +2774,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_attendee_guest; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_attendee_guest TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_attendee_guest TO giventa_event_management;
 
 
 --
@@ -2758,7 +2783,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_calendar_entry; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_calendar_entry TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_calendar_entry TO giventa_event_management;
 
 
 --
@@ -2767,7 +2792,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_details; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_details TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_details TO giventa_event_management;
 
 
 
@@ -2777,7 +2802,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_guest_pricing; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_guest_pricing TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_guest_pricing TO giventa_event_management;
 
 
 --
@@ -2786,7 +2811,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_media; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_media TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_media TO giventa_event_management;
 
 
 --
@@ -2795,7 +2820,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_organizer; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_organizer TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_organizer TO giventa_event_management;
 
 
 --
@@ -2804,7 +2829,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_poll; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_poll TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_poll TO giventa_event_management;
 
 
 --
@@ -2813,7 +2838,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_poll_option; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_poll_option TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_poll_option TO giventa_event_management;
 
 
 --
@@ -2822,7 +2847,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_poll_response; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_poll_response TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_poll_response TO giventa_event_management;
 
 
 --
@@ -2831,7 +2856,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_ticket_transaction; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_ticket_transaction TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_ticket_transaction TO giventa_event_management;
 
 
 --
@@ -2840,7 +2865,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_ticket_type; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_ticket_type TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_ticket_type TO giventa_event_management;
 
 
 --
@@ -2849,7 +2874,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE event_type_details; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_type_details TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_type_details TO giventa_event_management;
 
 
 --
@@ -2858,7 +2883,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE qr_code_usage; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.qr_code_usage TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.qr_code_usage TO giventa_event_management;
 
 
 --
@@ -2867,7 +2892,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE tenant_organization; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.tenant_organization TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.tenant_organization TO giventa_event_management;
 
 
 --
@@ -2876,7 +2901,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE tenant_settings; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.tenant_settings TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.tenant_settings TO giventa_event_management;
 
 
 --
@@ -2885,7 +2910,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE user_payment_transaction; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_payment_transaction TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_payment_transaction TO giventa_event_management;
 
 
 --
@@ -2894,7 +2919,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE user_profile; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_profile TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_profile TO giventa_event_management;
 
 
 
@@ -2905,7 +2930,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE user_subscription; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_subscription TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_subscription TO giventa_event_management;
 
 
 --
@@ -2914,7 +2939,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: TABLE user_task; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
---GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_task TO giventa_event_management;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_task TO giventa_event_management;
 
 
 -- Completed on 2025-06-08 23:51:06
@@ -2945,12 +2970,12 @@ CREATE TABLE public.email_log (
     tenant_id character varying(255) NOT NULL,
     recipient_email character varying(255) NOT NULL,
     subject character varying(255),
-    body text,
+    body VARCHAR(32768),
     sent_at timestamp without time zone NOT NULL,
     status character varying(50), -- SENT, FAILED, etc.
     type character varying(50), -- TRANSACTIONAL, BULK
     campaign_id bigint,
-    metadata text,
+    metadata VARCHAR(8192),
     CONSTRAINT email_log_pkey PRIMARY KEY (id),
     CONSTRAINT fk_email_log_campaign FOREIGN KEY (campaign_id) REFERENCES public.communication_campaign(id) ON DELETE SET NULL
 );
@@ -2959,12 +2984,12 @@ CREATE TABLE public.whatsapp_log (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
     tenant_id character varying(255) NOT NULL,
     recipient_phone character varying(50) NOT NULL,
-    message_body text,
+    message_body VARCHAR(4096),
     sent_at timestamp without time zone NOT NULL,
     status character varying(50), -- SENT, FAILED, etc.
     type character varying(50), -- TRANSACTIONAL, BULK
     campaign_id bigint,
-    metadata text,
+    metadata VARCHAR(8192),
     CONSTRAINT whatsapp_log_pkey PRIMARY KEY (id),
     CONSTRAINT fk_whatsapp_log_campaign FOREIGN KEY (campaign_id) REFERENCES public.communication_campaign(id) ON DELETE SET NULL
 );
