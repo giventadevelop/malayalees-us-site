@@ -1,16 +1,15 @@
 # Task ID: 12
-# Title: Implement registration management for admins
+# Title: Implement comment system for poll responses
 # Status: pending
-# Dependencies: 11 ⏱️
+# Dependencies: 4 ⏱️, 7 ⏱️
 # Priority: medium
-# Description: Create the interface for admins to view and manage event registrations.
+# Description: Add support for user comments alongside poll votes.
 # Details:
-Develop registration management with:
-- Complete attendee and guest lists
-- Export functionality (CSV/Excel)
-- Search and filtering options
-- Capacity monitoring
-- Waitlist management
+Build a comment system that:
+- Allows users to add comments with their votes
+- Displays comments in the results view
+- Supports moderation if needed
+- Handles formatting and display of comments
 
 # Test Strategy:
-Test export functionality and verify all registration data is correctly displayed. Test search and filtering options.
+Test comment submission with various content types. Verify that comments are correctly associated with votes and displayed appropriately.

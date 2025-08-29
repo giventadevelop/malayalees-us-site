@@ -1,16 +1,19 @@
 # Task ID: 3
-# Title: Implement API endpoints for event management
-# Status: done
-# Dependencies: 2 ✅
+# Title: Implement Event Poll Options API endpoints
+# Status: pending
+# Dependencies: 1 ⏱️
 # Priority: high
-# Description: Create API endpoints for listing, creating, and retrieving free events.
+# Description: Create the RESTful API endpoints for managing poll options.
 # Details:
-Implement the following endpoints:
-- GET /api/events with filtering for free events
-- GET /api/events/:id for specific event details
-- POST /api/events for creating new free events
+Implement the following endpoints for poll options:
+- GET /api/event-poll-options
+- POST /api/event-poll-options
+- GET /api/event-poll-options/{id}
+- PUT /api/event-poll-options/{id}
+- PATCH /api/event-poll-options/{id}
+- DELETE /api/event-poll-options/{id}
 
 Ensure proper validation and error handling.
 
 # Test Strategy:
-Test each endpoint with valid and invalid requests. Verify correct filtering of free events and proper data validation.
+Test each endpoint with various scenarios including creating options for different polls, updating option text, and changing display order.

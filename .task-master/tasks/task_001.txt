@@ -1,15 +1,16 @@
 # Task ID: 1
-# Title: Set up project structure and environment
-# Status: done
+# Title: Set up database schema
+# Status: pending
 # Dependencies: None
 # Priority: high
-# Description: Initialize the project repository with required configurations and folder structure.
+# Description: Create the database tables for the poll feature as specified in the PRD.
 # Details:
-- Create project repository
-- Set up development environment
-- Configure build tools and dependencies
-- Create folder structure for frontend and backend components
-- Set up version control and branching strategy
+Create the following tables with their respective columns and constraints:
+- event_poll (Main Poll Configuration)
+- event_poll_option (Poll Choices and Options)
+- event_poll_response (User Votes and Responses)
+
+Ensure proper primary keys, foreign keys, and indexes are set up for optimal performance.
 
 # Test Strategy:
-Verify that the project structure is correctly set up and the development environment can be started without errors.
+Verify that all tables are created with the correct structure and relationships. Test with sample data to ensure integrity constraints work properly.

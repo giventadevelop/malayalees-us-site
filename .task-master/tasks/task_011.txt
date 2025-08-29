@@ -1,16 +1,15 @@
 # Task ID: 11
-# Title: Create admin event management dashboard
+# Title: Implement time-based poll activation
 # Status: pending
-# Dependencies: 4 ⏱️
+# Dependencies: 2 ⏱️
 # Priority: medium
-# Description: Develop the admin dashboard for managing free events.
+# Description: Add functionality to automatically activate and deactivate polls based on configured dates.
 # Details:
-Build admin dashboard with:
-- Event summary statistics
-- Registration trends chart
-- Capacity utilization display
-- Guest analytics (age groups, relationships)
-- Special requirements summary
+Create a system that:
+- Automatically activates polls at the specified start date
+- Automatically deactivates polls at the specified end date
+- Prevents voting on inactive polls
+- Shows appropriate messaging for polls not yet active or already ended
 
 # Test Strategy:
-Test dashboard with various event data. Verify charts and statistics are correctly calculated and displayed.
+Test with various date configurations to ensure activation and deactivation work correctly. Verify that users cannot vote on inactive polls.
