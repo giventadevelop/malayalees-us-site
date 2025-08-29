@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log('[PROFILE-RECONCILIATION-API] 🚀 Profile reconciliation endpoint called');
 
+    const headers = await request.headers();
     // Get the authenticated user
     const { userId } = auth();
     if (!userId) {

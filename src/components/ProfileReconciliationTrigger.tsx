@@ -58,6 +58,7 @@ export function ProfileReconciliationTrigger() {
       }
     } catch (error) {
       console.error('[ProfileReconciliationTrigger] ❌ Error during profile reconciliation:', error);
+      console.error('[ProfileReconciliationTrigger] ❌ Error details:', error instanceof Error ? error.stack : error);
       setResult({ error: 'Network error', details: error instanceof Error ? error.message : 'Unknown error' });
     } finally {
       setIsLoading(false);

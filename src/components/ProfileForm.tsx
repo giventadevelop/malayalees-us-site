@@ -55,6 +55,20 @@ interface ProfileFormProps {
   initialProfile?: UserProfileDTO | null;
 }
 
+const DialogBox = ({ message, onClose }: { message: string; onClose: () => void }) => (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white rounded-lg shadow-md p-6 max-w-sm w-full">
+      <p className="text-center text-gray-800 mb-4">{message}</p>
+      <button
+        onClick={onClose}
+        className="w-full bg-blue-500 text-white rounded-xl px-4 py-2 hover:bg-blue-600"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+);
+
 export default function ProfileForm({ initialProfile }: ProfileFormProps) {
   const router = useRouter();
   const { userId } = useAuth();
@@ -94,6 +108,8 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
   const [resubscribeSuccess, setResubscribeSuccess] = useState(false);
   const [resubscribeError, setResubscribeError] = useState<string | null>(null);
   const [profileUpdateSuccess, setProfileUpdateSuccess] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
 
 
 
@@ -139,13 +155,23 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
         setProfileId(result.id);
         setProfileUpdateSuccess(true);
         setError(null);
+        setDialogMessage("Profile saved successfully!");
       } else {
         setError('Failed to save profile. Please try again.');
+        setDialogMessage('Failed to save profile. Please try again.');
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : "Failed to save profile data");
+      setDialogMessage("An error occurred while saving the profile.");
+
+      if (error instanceof Error) {
+        console.error('[ProfileForm] Error during profile save:', error.message);
+      } else {
+        console.error('[ProfileForm] Unknown error during profile save:', error);
+      }
     } finally {
       setLoading(false);
+      setShowDialog(true);
     }
   };
 
@@ -465,6 +491,13 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           {loading ? "Saving..." : "Save Profile"}
         </button>
       </div>
+
+      {showDialog && (
+        <DialogBox
+          message={dialogMessage}
+          onClose={() => setShowDialog(false)}
+        />
+      )}
     </form>
   );
 }
