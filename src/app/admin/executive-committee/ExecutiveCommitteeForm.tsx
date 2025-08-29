@@ -212,12 +212,10 @@ export default function ExecutiveCommitteeForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {/* Image Upload Section */}
       <div className="space-y-4">
-        <label className="block text-sm font-medium text-gray-700">
-          Profile Photo
-        </label>
+        <label className="block font-medium">Profile Photo</label>
         <div className="flex items-center space-x-4">
           <div className="relative">
             {imagePreview ? (
@@ -266,120 +264,100 @@ export default function ExecutiveCommitteeForm({
       {/* Basic Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            First Name *
-          </label>
+          <label className="block font-medium">First Name *</label>
           <input
             type="text"
             {...register('firstName', { required: 'First name is required' })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className={`w-full border rounded p-2 ${errors.firstName ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
           />
           {errors.firstName && (
-            <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
+            <div className="text-red-500 text-sm mt-1">{errors.firstName.message}</div>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Last Name *
-          </label>
+          <label className="block font-medium">Last Name *</label>
           <input
             type="text"
             {...register('lastName', { required: 'Last name is required' })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className={`w-full border rounded p-2 ${errors.lastName ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
           />
           {errors.lastName && (
-            <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
+            <div className="text-red-500 text-sm mt-1">{errors.lastName.message}</div>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Title *
-          </label>
+          <label className="block font-medium">Title *</label>
           <input
             type="text"
             {...register('title', { required: 'Title is required' })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className={`w-full border rounded p-2 ${errors.title ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
           />
           {errors.title && (
-            <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+            <div className="text-red-500 text-sm mt-1">{errors.title.message}</div>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Designation
-          </label>
+          <label className="block font-medium">Designation</label>
           <input
             type="text"
             {...register('designation')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Department
-          </label>
+          <label className="block font-medium">Department</label>
           <input
             type="text"
             {...register('department')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Join Date
-          </label>
+          <label className="block font-medium">Join Date</label>
           <input
             type="date"
             {...register('joinDate')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Priority Order
-          </label>
+          <label className="block font-medium">Priority Order</label>
           <input
             type="number"
             {...register('priorityOrder', { valueAsNumber: true })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Email
-          </label>
+          <label className="block font-medium">Email</label>
           <input
             type="email"
             {...register('email')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
       </div>
 
       {/* Bio and Expertise */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Bio
-        </label>
+        <label className="block font-medium">Bio</label>
         <textarea
           {...register('bio')}
           rows={4}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+          className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
           placeholder="Brief biography of the team member..."
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Expertise
-        </label>
+        <label className="block font-medium">Expertise</label>
         <div className="space-y-2">
           <p className="text-xs text-gray-500 mb-3">
             Add expertise areas one by one. Examples: Leadership, Strategic Planning, Finance, Marketing, Team Building
@@ -390,7 +368,7 @@ export default function ExecutiveCommitteeForm({
                 type="text"
                 value={item}
                 onChange={(e) => handleExpertiseChange(index, e.target.value)}
-                className="flex-1 border-gray-300 rounded-md shadow-sm focus:border-teal-500 focus:ring-teal-500 px-3 py-2"
+                className="flex-1 border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
                 placeholder="e.g., Leadership"
               />
               {expertiseItems.length > 1 && (
@@ -423,25 +401,21 @@ export default function ExecutiveCommitteeForm({
       {/* Image Styling */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Image Background
-          </label>
+          <label className="block font-medium">Image Background</label>
           <input
             type="text"
             {...register('imageBackground')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
             placeholder="e.g., teal, blue, gradient"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Image Style
-          </label>
+          <label className="block font-medium">Image Style</label>
           <input
             type="text"
             {...register('imageStyle')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
             placeholder="e.g., modern, classic, corporate"
           />
         </div>
@@ -450,37 +424,31 @@ export default function ExecutiveCommitteeForm({
       {/* Social Links */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            LinkedIn URL
-          </label>
+          <label className="block font-medium">LinkedIn URL</label>
           <input
             type="url"
             {...register('linkedinUrl')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
             placeholder="https://linkedin.com/in/..."
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Twitter URL
-          </label>
+          <label className="block font-medium">Twitter URL</label>
           <input
             type="url"
             {...register('twitterUrl')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
             placeholder="https://twitter.com/..."
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Website URL
-          </label>
+          <label className="block font-medium">Website URL</label>
           <input
             type="url"
             {...register('websiteUrl')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+            className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
             placeholder="https://..."
           />
         </div>
@@ -503,14 +471,14 @@ export default function ExecutiveCommitteeForm({
         <button
           type="button"
           onClick={onCancel}
-          className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md transition-colors"
+          className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
           disabled={isSubmitting}
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-md flex items-center gap-2 transition-colors disabled:opacity-50"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2 transition-colors disabled:opacity-50"
           disabled={isSubmitting}
         >
           {isSubmitting ? (

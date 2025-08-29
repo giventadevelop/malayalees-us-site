@@ -1,6 +1,6 @@
 # Task ID: 1
 # Title: Set up project structure and environment
-# Status: pending
+# Status: done
 # Dependencies: None
 # Priority: high
 # Description: Initialize the project repository with required configurations and folder structure.

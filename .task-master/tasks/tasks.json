@@ -12,7 +12,7 @@
       "id": 1,
       "title": "Set up project structure and environment",
       "description": "Initialize the project repository with required configurations and folder structure.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [],
       "priority": "high",
       "details": "- Create project repository\n- Set up development environment\n- Configure build tools and dependencies\n- Create folder structure for frontend and backend components\n- Set up version control and branching strategy",
@@ -22,7 +22,7 @@
       "id": 2,
       "title": "Design and create database schema",
       "description": "Implement the database schema for free event registration system as specified in the PRD.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         1
       ],
@@ -34,7 +34,7 @@
       "id": 3,
       "title": "Implement API endpoints for event management",
       "description": "Create API endpoints for listing, creating, and retrieving free events.",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         2
       ],

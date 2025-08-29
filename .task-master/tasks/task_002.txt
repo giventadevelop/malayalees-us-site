@@ -1,7 +1,7 @@
 # Task ID: 2
 # Title: Design and create database schema
-# Status: pending
-# Dependencies: 1 ⏱️
+# Status: done
+# Dependencies: 1 ✅
 # Priority: high
 # Description: Implement the database schema for free event registration system as specified in the PRD.
 # Details:
