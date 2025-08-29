@@ -13,7 +13,9 @@ export async function POST(request: NextRequest) {
   try {
     console.log('[PROFILE-RECONCILIATION-API] 🚀 Profile reconciliation endpoint called');
 
+    // Fix for Next.js 15+: await headers() before using
     const headers = await request.headers();
+
     // Get the authenticated user
     const { userId } = auth();
     if (!userId) {

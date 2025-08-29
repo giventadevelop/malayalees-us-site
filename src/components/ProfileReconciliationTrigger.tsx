@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import { ErrorDialog } from './ErrorDialog';
 
 /**
  * Component that automatically triggers profile reconciliation after authentication
@@ -12,6 +13,8 @@ export function ProfileReconciliationTrigger() {
   const [hasTriggered, setHasTriggered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
 
   useEffect(() => {
     // Only trigger once per session and only when user is signed in
@@ -53,13 +56,23 @@ export function ProfileReconciliationTrigger() {
         }
       } else {
         const errorData = await response.text();
-        console.error('[ProfileReconciliationTrigger] ❌ Profile reconciliation failed:', response.status, errorData);
+        // Handle 500 errors gracefully without console logging
+        if (response.status >= 500) {
+          setErrorDetails(errorData);
+          setShowErrorDialog(true);
+          // Only log non-500 errors to avoid console spam
+        } else {
+          console.error('[ProfileReconciliationTrigger] ❌ Profile reconciliation failed:', response.status, errorData);
+        }
         setResult({ error: `HTTP ${response.status}`, details: errorData });
       }
     } catch (error) {
-      console.error('[ProfileReconciliationTrigger] ❌ Error during profile reconciliation:', error);
-      console.error('[ProfileReconciliationTrigger] ❌ Error details:', error instanceof Error ? error.stack : error);
+      // Handle network errors gracefully without console logging
       setResult({ error: 'Network error', details: error instanceof Error ? error.message : 'Unknown error' });
+
+      // Show error dialog for network errors
+      setErrorDetails(error instanceof Error ? error.message : 'Unknown error');
+      setShowErrorDialog(true);
     } finally {
       setIsLoading(false);
     }
@@ -67,5 +80,17 @@ export function ProfileReconciliationTrigger() {
 
   // This component doesn't render anything visible
   // It just runs the reconciliation logic in the background
-  return null;
+  return (
+    <>
+      {/* Error Dialog for Backend Errors */}
+      <ErrorDialog
+        open={showErrorDialog}
+        onClose={() => setShowErrorDialog(false)}
+        title="Some unexpected error has occurred"
+        message="Please try back again later."
+        details={errorDetails || undefined}
+        showRetry={false}
+      />
+    </>
+  );
 }

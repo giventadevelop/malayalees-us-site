@@ -32,7 +32,7 @@ export function Modal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-40"
+      className="fixed inset-0 z-[9999] flex items-start justify-center bg-black bg-opacity-40 pt-20"
       onClick={handleBackdropClick}
     >
       <div
