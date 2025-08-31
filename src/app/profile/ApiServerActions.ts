@@ -89,6 +89,56 @@ export async function fetchUserProfileServer(userId: string): Promise<UserProfil
 
     if (user) {
       try {
+        // NEW: First check if a user with the same userId already exists
+        console.log('[Profile Server] 🔍 Checking if user with userId already exists:', userId);
+        const userIdCheckUrl = `${baseUrl}/api/proxy/user-profiles/by-user/${userId}`;
+        const userIdCheckResponse = await fetch(userIdCheckUrl, {
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store'
+        });
+
+        if (userIdCheckResponse.ok) {
+          // User with this userId already exists - update instead of create
+          console.log('[Profile Server] ✅ Found existing profile by userId, updating instead of creating');
+          const existingProfile = await userIdCheckResponse.json();
+
+          // Prepare update payload with current Clerk user data
+          const updatePayload: Partial<UserProfileDTO> = {
+            id: existingProfile.id,
+            userId: userId,
+            updatedAt: new Date().toISOString()
+          };
+
+          // Update names if they're empty or different from Clerk data
+          if (user.firstName && (!existingProfile.firstName || existingProfile.firstName.trim() === '' || existingProfile.firstName === 'Pending')) {
+            updatePayload.firstName = user.firstName;
+          }
+
+          if (user.lastName && (!existingProfile.lastName || existingProfile.lastName.trim() === '' || existingProfile.lastName === 'User')) {
+            updatePayload.lastName = user.lastName;
+          }
+
+          // Update the existing profile
+          const updateResponse = await fetch(`${baseUrl}/api/proxy/user-profiles/${existingProfile.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/merge-patch+json' },
+            body: JSON.stringify(updatePayload),
+          });
+
+          if (updateResponse.ok) {
+            const updatedProfile = await updateResponse.json();
+            console.log('[Profile Server] ✅ Profile updated successfully instead of creating new one');
+            return updatedProfile;
+          } else {
+            console.error('[Profile Server] ❌ Failed to update existing profile:', updateResponse.status);
+            // Fall back to returning the existing profile
+            return existingProfile;
+          }
+        }
+
+        // If no existing profile by userId, proceed with creation
+        console.log('[Profile Server] ℹ️ No existing profile by userId, proceeding with creation');
+
         const createPayload = {
           userId: userId,
           email: user.emailAddresses?.[0]?.emailAddress || 'pending@example.com',
@@ -141,6 +191,27 @@ export async function fetchUserProfileServer(userId: string): Promise<UserProfil
           const errorText = await createResponse.text();
           console.error('[Profile Server] ❌ Step 3 failed: Profile creation failed:', createResponse.status, errorText);
 
+          // NEW: Handle duplicate key constraint violation gracefully
+          if (createResponse.status === 500 && errorText.includes('duplicate key value violates unique constraint "ux_user_profile__user_id"')) {
+            console.log('[Profile Server] ℹ️ Duplicate userId detected, attempting to fetch existing profile');
+
+            // Try to fetch the existing profile that caused the constraint violation
+            try {
+              const existingProfileResponse = await fetch(`${baseUrl}/api/proxy/user-profiles/by-user/${userId}`, {
+                headers: { 'Content-Type': 'application/json' },
+                cache: 'no-store'
+              });
+
+              if (existingProfileResponse.ok) {
+                const existingProfile = await existingProfileResponse.json();
+                console.log('[Profile Server] ✅ Retrieved existing profile after duplicate constraint violation');
+                return existingProfile;
+              }
+            } catch (fetchError) {
+              console.error('[Profile Server] ❌ Failed to fetch existing profile after duplicate constraint:', fetchError);
+            }
+          }
+
           // Try to parse error details
           try {
             const errorData = JSON.parse(errorText);
@@ -151,6 +222,26 @@ export async function fetchUserProfileServer(userId: string): Promise<UserProfil
         }
       } catch (createError) {
         console.error('[Profile Server] ❌ Step 3 failed: Error creating profile:', createError);
+
+        // NEW: Handle specific constraint violation errors
+        if (createError instanceof Error && createError.message.includes('duplicate key value violates unique constraint')) {
+          console.log('[Profile Server] ℹ️ Duplicate constraint detected, attempting to fetch existing profile');
+
+          try {
+            const existingProfileResponse = await fetch(`${baseUrl}/api/proxy/user-profiles/by-user/${userId}`, {
+              headers: { 'Content-Type': 'application/json' },
+              cache: 'no-store'
+            });
+
+            if (existingProfileResponse.ok) {
+              const existingProfile = await existingProfileResponse.json();
+              console.log('[Profile Server] ✅ Retrieved existing profile after duplicate constraint error');
+              return existingProfile;
+            }
+          } catch (fetchError) {
+            console.error('[Profile Server] ❌ Failed to fetch existing profile after duplicate constraint error:', fetchError);
+          }
+        }
       }
     }
 

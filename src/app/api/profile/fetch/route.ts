@@ -10,29 +10,53 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
+    console.log('[PROFILE-FETCH-API] 🚀 Profile fetch endpoint called');
+    
     // Verify authentication
     const { userId } = auth();
+    console.log('[PROFILE-FETCH-API] 🔐 Auth check result:', { userId: userId || 'null' });
+    
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.log('[PROFILE-FETCH-API] ❌ No userId from auth(), returning 401');
+      return NextResponse.json({ error: 'Unauthorized - No user ID found' }, { status: 401 });
     }
 
     // Get userId from request body (for verification)
-    const body = await request.json();
-    const requestedUserId = body.userId;
+    let requestedUserId: string;
+    try {
+      const body = await request.json();
+      requestedUserId = body.userId;
+      console.log('[PROFILE-FETCH-API] 📝 Request body userId:', requestedUserId);
+    } catch (parseError) {
+      console.error('[PROFILE-FETCH-API] ❌ Failed to parse request body:', parseError);
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
 
     // Ensure user can only fetch their own profile
     if (userId !== requestedUserId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      console.log('[PROFILE-FETCH-API] ❌ User ID mismatch:', { 
+        authUserId: userId, 
+        requestedUserId: requestedUserId 
+      });
+      return NextResponse.json({ error: 'Forbidden - User ID mismatch' }, { status: 403 });
     }
+
+    console.log('[PROFILE-FETCH-API] ✅ Authentication verified, fetching profile for userId:', userId);
 
     // Fetch profile using existing server action
     const profile = await fetchUserProfileServer(userId);
-
-    return NextResponse.json(profile);
+    
+    if (profile) {
+      console.log('[PROFILE-FETCH-API] ✅ Profile fetched successfully');
+      return NextResponse.json(profile);
+    } else {
+      console.log('[PROFILE-FETCH-API] ℹ️ No profile found, returning null');
+      return NextResponse.json(null);
+    }
   } catch (error) {
-    console.error('[PROFILE-FETCH-API] Error fetching profile:', error);
+    console.error('[PROFILE-FETCH-API] ❌ Error fetching profile:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

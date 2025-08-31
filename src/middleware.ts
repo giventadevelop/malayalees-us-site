@@ -50,7 +50,8 @@ export default authMiddleware({
     "/api/stripe/get-session",
     "/api/payment/(.*)",
     "/api/checkout/(.*)",
-    "/api/billing/(.*)"
+    "/api/billing/(.*)",
+    "/api/profile/(.*)"
   ],
 
   // Debug mode for development

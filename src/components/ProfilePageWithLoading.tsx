@@ -35,6 +35,8 @@ export default function ProfilePageWithLoading() {
       setShowErrorDialog(false);
       setErrorDetails(null);
 
+      console.log('[ProfilePageWithLoading] 🔍 Fetching profile for user:', user.id);
+
       // Call the server action through an API endpoint
       const response = await fetch('/api/profile/fetch', {
         method: 'POST',
@@ -46,12 +48,22 @@ export default function ProfilePageWithLoading() {
 
       if (response.ok) {
         const profileData = await response.json();
+        console.log('[ProfilePageWithLoading] ✅ Profile fetched successfully');
         setProfile(profileData);
       } else {
         const errorText = await response.text();
-        const errorMessage = response.status === 500
-          ? 'There is some unexpected error happened. Please try back again later.'
-          : 'Failed to load profile';
+        console.error('[ProfilePageWithLoading] ❌ Profile fetch failed:', response.status, errorText);
+        
+        let errorMessage: string;
+        
+        if (response.status === 401) {
+          errorMessage = 'Authentication error. Please try refreshing the page or signing in again.';
+          console.log('[ProfilePageWithLoading] 🔄 401 error detected, this might be a session timing issue');
+        } else if (response.status === 500) {
+          errorMessage = 'There is some unexpected error happened. Please try back again later.';
+        } else {
+          errorMessage = 'Failed to load profile';
+        }
 
         setError(errorMessage);
         setErrorDetails(errorText);
@@ -60,9 +72,20 @@ export default function ProfilePageWithLoading() {
         if (response.status >= 500) {
           setShowErrorDialog(true);
         }
+        
+        // For 401 errors, try to retry once after a short delay
+        if (response.status === 401) {
+          console.log('[ProfilePageWithLoading] 🔄 Retrying profile fetch after 401 error...');
+          setTimeout(() => {
+            if (user) {
+              console.log('[ProfilePageWithLoading] 🔄 Retry attempt for user:', user.id);
+              fetchProfile();
+            }
+          }, 1000); // Wait 1 second before retry
+        }
       }
     } catch (err) {
-      console.error('Error fetching profile:', err);
+      console.error('[ProfilePageWithLoading] ❌ Error fetching profile:', err);
       const errorMessage = 'There is some unexpected error happened. Please try back again later.';
       setError(errorMessage);
       setErrorDetails(err instanceof Error ? err.message : 'Unknown error');
