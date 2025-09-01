@@ -145,8 +145,8 @@ export default function ProfilePageWithLoading() {
           <p className="text-gray-600 mt-2">Manage your account information and preferences.</p>
         </div>
 
-        {/* Profile Reconciliation Trigger Component */}
-        <ProfileReconciliationTrigger />
+        {/* Profile Reconciliation Trigger Component - Temporarily disabled to prevent 401 errors */}
+        {/* <ProfileReconciliationTrigger /> */}
 
         {/* Show subtle message if profile data failed to load due to auth issues */}
         {!profile && lastResponseStatus === 401 && (

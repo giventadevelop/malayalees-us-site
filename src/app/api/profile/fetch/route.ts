@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     console.log('[PROFILE-FETCH-API] 🚀 Profile fetch endpoint called');
 
     // Verify authentication using Clerk
-    const { userId } = auth();
+    const { userId } = await auth();
     console.log('[PROFILE-FETCH-API] 🔐 Auth check result:', { userId: userId || 'null' });
 
     if (!userId) {

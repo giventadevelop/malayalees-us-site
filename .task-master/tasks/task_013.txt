@@ -1,15 +1,16 @@
 # Task ID: 13
-# Title: Implement caching strategy
+# Title: Implement guest analytics for admins
 # Status: pending
-# Dependencies: 2 ⏱️, 3 ⏱️, 4 ⏱️, 8 ⏱️
+# Dependencies: 12 ⏱️
 # Priority: low
-# Description: Optimize performance with appropriate caching mechanisms.
+# Description: Create analytics visualizations for guest data.
 # Details:
-Implement caching for:
-- Frequently accessed poll data
-- Poll results calculations
-- Static content and assets
-- Consider Redis or similar for distributed caching
+Develop analytics with:
+- Age group distribution pie chart
+- Relationship breakdown bar chart
+- Special requirements summary table
+- Registration patterns analysis
+- Data for capacity planning
 
 # Test Strategy:
-Measure performance improvements with caching enabled vs. disabled. Verify that cache invalidation works correctly when data is updated.
+Verify charts correctly represent the underlying data. Test with various event sizes and guest distributions.

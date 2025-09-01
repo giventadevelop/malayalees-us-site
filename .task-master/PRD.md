@@ -1,317 +1,449 @@
-# Poll Feature Product Requirements Document (PRD)
+# Free Event Registration System - Specialized Requirements
 
-## Executive Summary
+**Version:** 1.0
+**Date:** January 2025
+**Focus:** Free Events (Picnics, Community Gatherings, etc.)
+**Status:** Draft
 
-The Poll Feature is a comprehensive event engagement system that allows event organizers to create, manage, and analyze polls for their events. This feature enhances attendee participation and provides valuable insights through real-time voting and response analysis.
+## Overview
 
-## Product Overview
+This document focuses specifically on the requirements for **free event registration** where no payment is required. This includes community picnics, member gatherings, open house events, and other free community activities.
 
-The Poll Feature enables event organizers to create interactive polls with multiple question types, collect responses from attendees, and analyze results in real-time. It supports both simple yes/no questions and complex multi-choice polls with customizable options.
+## Key Characteristics of Free Events
 
-## Business Requirements
+### 1. **No Payment Required**
+- Registration is completely free
+- No ticket types or pricing
+- No payment processing integration needed
+- Immediate confirmation upon registration
 
-- **Enhanced Event Engagement**: Increase attendee participation through interactive polling
-- **Real-time Feedback**: Collect immediate feedback during events
-- **Data-Driven Decisions**: Provide organizers with actionable insights
-- **Brand Enhancement**: Improve event experience and community building
+### 2. **Guest Management Focus**
+- Primary attendee + multiple guests
+- Age-based guest categorization
+- Special requirements collection
+- Guest relationship tracking
 
-## Functional Requirements
+### 3. **Access Control Options**
+- **Member-Only Events**: Restricted to existing user profiles
+- **Open Events**: Anyone can register (create temporary profiles)
 
-### Core Poll Features
-- **Poll Creation**: Admins can create polls with titles, descriptions, and multiple options
-- **Dynamic Options**: Support for 2-10 poll options with customizable text
-- **Response Collection**: Capture user votes with optional comments
-- **Real-time Results**: Display live voting results to participants
-- **Anonymous Voting**: Option for anonymous responses to encourage participation
+## Database Tables for Free Events
 
-### Advanced Features
-- **Multiple Choice Support**: Allow users to select multiple options when configured
-- **Response Limits**: Control maximum responses per user per poll
-- **Time-based Activation**: Set start and end dates for poll availability
-- **Results Visibility Control**: Configure who can see poll results
-- **Comment System**: Allow users to add comments with their votes
-
-## Technical Requirements
-
-### Database Architecture
-The system uses three main tables:
-
-#### 1. event_poll (Main Poll Configuration)
+### Core Tables Used
 ```sql
-CREATE TABLE public.event_poll (
-    id bigint PRIMARY KEY,
-    tenant_id character varying(255),
-    title character varying(255) NOT NULL,
-    description text,
-    is_active boolean DEFAULT true,
-    is_anonymous boolean DEFAULT false,
-    allow_multiple_choices boolean DEFAULT false,
-    start_date timestamp without time zone NOT NULL,
-    end_date timestamp without time zone,
-    max_responses_per_user integer DEFAULT 1,
-    results_visible_to character varying(50) DEFAULT 'ALL',
-    created_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT now(),
-    event_id bigint,
-    created_by_id bigint
-);
+-- Main event configuration
+event_details (
+  admission_type = 'FREE',
+  is_registration_required = true,
+  allow_guests = true,
+  max_guests_per_attendee = 5,
+  require_guest_approval = false,
+  enable_guest_pricing = false
+)
+
+-- Primary attendee registration
+event_attendee (
+  registration_status = 'CONFIRMED',
+  attendee_type = 'MEMBER' | 'GUEST_USER',
+  is_guest_user = boolean,
+  temporary_profile_id = string
+)
+
+-- Guest registrations
+event_attendee_guest (
+  age_group = 'ADULT' | 'TEEN' | 'CHILD' | 'INFANT',
+  relationship = 'SPOUSE' | 'CHILD' | 'FRIEND' | 'OTHER'
+)
+
+-- User profiles (existing or temporary)
+user_profile (
+  user_id = string (existing user) | null,
+  is_temporary = boolean,
+  profile_type = 'MEMBER' | 'GUEST_USER'
+)
 ```
 
-#### 2. event_poll_option (Poll Choices and Options)
-```sql
-CREATE TABLE public.event_poll_option (
-    id bigint PRIMARY KEY,
-    tenant_id character varying(255),
-    option_text character varying(255) NOT NULL,
-    display_order integer DEFAULT 0,
-    is_active boolean DEFAULT true,
-    created_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT now(),
-    poll_id bigint NOT NULL
-);
+## Registration Workflow for Free Events
+
+### 1. **Event Discovery**
+```
+User visits events page →
+Filter for "Free Events" →
+Select specific event →
+View event details and registration form
 ```
 
-#### 3. event_poll_response (User Votes and Responses)
-```sql
-CREATE TABLE public.event_poll_response (
-    id bigint PRIMARY KEY,
-    tenant_id character varying(255),
-    user_id bigint,
-    poll_id bigint NOT NULL,
-    poll_option_id bigint NOT NULL,
-    comment text,
-    created_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT now()
-);
+### 2. **Access Control Check**
+```
+IF event.is_member_only = true:
+  Require user login/profile
+  Redirect to login if not authenticated
+ELSE:
+  Allow guest registration
+  Create temporary profile if needed
 ```
 
-### API Architecture
-- **RESTful Design**: Standard HTTP methods for CRUD operations
-- **JWT Authentication**: Secure access control for all endpoints
-- **Multi-tenant Support**: Tenant isolation for data security
-- **Standardized Responses**: Consistent JSON response format
+### 3. **Registration Process**
+```
+Primary Attendee Information:
+├── Existing User: Select from profile
+├── New User: Create temporary profile
+└── Basic Info: Name, Email, Phone
 
-### Frontend Architecture
-- **React Components**: Modular, reusable poll components
-- **Real-time Updates**: WebSocket or polling for live results
-- **Responsive Design**: Mobile-first approach for all devices
-- **Accessibility**: WCAG 2.1 AA compliance
+Guest Management:
+├── Add Adults (age 18+)
+├── Add Teens (age 13-17)
+├── Add Children (age 3-12)
+├── Add Infants (age 0-2)
+└── Special Requirements per guest
 
-## API Integration Details
+Confirmation:
+├── No payment required
+├── Immediate confirmation
+├── QR code generation
+└── Email confirmation
+```
 
-### Available Endpoints
+## Frontend Pages for Free Events
 
-The poll feature is fully integrated with the existing backend API infrastructure, providing comprehensive CRUD operations for all poll-related entities.
-
-#### Event Polls (`/api/event-polls`)
-- **GET** `/api/event-polls` - Retrieve all polls with filtering and pagination
-- **POST** `/api/event-polls` - Create a new poll
-- **GET** `/api/event-polls/{id}` - Retrieve a specific poll by ID
-- **PUT** `/api/event-polls/{id}` - Update an existing poll
-- **PATCH** `/api/event-polls/{id}` - Partial update of a poll
-- **DELETE** `/api/event-polls/{id}` - Delete a poll
-- **GET** `/api/event-polls/count` - Get total count of polls
-
-#### Event Poll Options (`/api/event-poll-options`)
-- **GET** `/api/event-poll-options` - Retrieve all poll options with filtering
-- **POST** `/api/event-poll-options` - Create a new poll option
-- **GET** `/api/event-poll-options/{id}` - Retrieve a specific option by ID
-- **PUT** `/api/event-poll-options/{id}` - Update an existing option
-- **PATCH** `/api/event-poll-options/{id}` - Partial update of an option
-- **DELETE** `/api/event-poll-options/{id}` - Delete an option
-
-#### Event Poll Responses (`/api/event-poll-responses`)
-- **GET** `/api/event-poll-responses` - Retrieve all responses with filtering
-- **POST** `/api/event-poll-responses` - Submit a new poll response
-- **GET** `/api/event-poll-responses/{id}` - Retrieve a specific response by ID
-- **PUT** `/api/event-poll-responses/{id}` - Update an existing response
-- **PATCH** `/api/event-poll-responses/{id}` - Partial update of a response
-- **DELETE** `/api/event-poll-responses/{id}` - Delete a response
-
-### Data Transfer Objects (DTOs)
-
-#### EventPollDTO
+### 1. **Events Listing Page** (`/events`)
 ```typescript
-interface EventPollDTO {
-  id?: number;
-  tenantId?: string;
-  title: string;
-  description?: string;
-  isActive?: boolean;
-  isAnonymous?: boolean;
-  allowMultipleChoices?: boolean;
-  startDate: string; // ISO date string
-  endDate?: string; // ISO date string
-  maxResponsesPerUser?: number;
-  resultsVisibleTo?: string;
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
-  eventId?: number;
-  createdById?: number;
+interface EventsListingPage {
+  filters: {
+    eventType: 'all' | 'free' | 'paid' | 'invitation-only';
+    dateRange: DateRange;
+    location: string;
+    search: string;
+  };
+
+  eventCards: EventCard[];
+
+  // Special highlighting for free events
+  freeEventBadge: 'FREE EVENT';
+  registrationStatus: 'Open' | 'Full' | 'Closed';
 }
 ```
 
-#### EventPollOptionDTO
+### 2. **Event Details Page** (`/events/[id]`)
 ```typescript
-interface EventPollOptionDTO {
-  id?: number;
-  tenantId?: string;
-  optionText: string;
-  displayOrder?: number;
-  isActive?: boolean;
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
-  pollId?: number;
+interface EventDetailsPage {
+  eventInfo: EventDetails;
+  registrationForm: RegistrationForm;
+  guestManagement: GuestManagement;
+  capacityStatus: CapacityStatus;
+  specialRequirements: SpecialRequirementsForm;
 }
 ```
 
-#### EventPollResponseDTO
+### 3. **Registration Form Component**
 ```typescript
-interface EventPollResponseDTO {
-  id?: number;
-  tenantId?: string;
-  userId?: number;
-  pollId?: number;
-  pollOptionId?: number;
-  comment?: string;
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
+interface RegistrationForm {
+  // Primary Attendee Section
+  primaryAttendee: {
+    profileSelection: 'existing' | 'new';
+    existingProfile?: UserProfile;
+    newProfile: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone?: string;
+    };
+  };
+
+  // Guest Management Section
+  guests: {
+    adults: GuestInfo[];
+    teens: GuestInfo[];
+    children: GuestInfo[];
+    infants: GuestInfo[];
+  };
+
+  // Special Requirements
+  specialRequirements: {
+    dietary: string[];
+    accessibility: string[];
+    medical: string[];
+    other: string;
+  };
+
+  // Terms and Conditions
+  termsAccepted: boolean;
 }
 ```
 
-### API Integration Workflow
+### 4. **Guest Management Interface**
+```typescript
+interface GuestManagement {
+  // Guest Counter Interface
+  guestCounts: {
+    adults: number;
+    teens: number;
+    children: number;
+    infants: number;
+  };
 
-#### 1. Poll Creation Workflow
-1. **Create Poll**: POST `/api/event-polls` with EventPollDTO
-2. **Add Options**: POST `/api/event-poll-options` for each poll option
-3. **Activate Poll**: PATCH `/api/event-polls/{id}` to set `isActive: true`
+  // Individual Guest Details
+  guestDetails: GuestDetail[];
 
-#### 2. Poll Response Workflow
-1. **Submit Response**: POST `/api/event-poll-responses` with EventPollResponseDTO
-2. **Validate Response**: Backend validates user eligibility and response limits
-3. **Store Response**: Save response with user context and timestamp
+  // Guest Form
+  addGuest: (ageGroup: AgeGroup) => void;
+  removeGuest: (guestId: string) => void;
+  updateGuest: (guestId: string, data: Partial<GuestInfo>) => void;
+}
+```
 
-#### 3. Results Retrieval Workflow
-1. **Get Poll**: GET `/api/event-polls/{id}` for poll configuration
-2. **Get Options**: GET `/api/event-poll-options?pollId.equals={pollId}` for choices
-3. **Get Responses**: GET `/api/event-poll-responses?pollId.equals={pollId}` for votes
-4. **Aggregate Results**: Frontend processes response data for visualization
+## API Endpoints for Free Events
 
-### Query Parameters and Filtering
+### 1. **Event Management**
+```typescript
+// Get free events only
+GET /api/events?admission_type=FREE&is_active=true
 
-All list endpoints support comprehensive filtering using Spring Data REST criteria syntax:
+// Get event details
+GET /api/events/:id
 
-- **Basic Filters**: `id.equals`, `tenantId.equals`, `pollId.equals`
-- **Date Filters**: `startDate.greaterThan`, `endDate.lessThan`
-- **Status Filters**: `isActive.equals`, `isAnonymous.equals`
-- **Text Filters**: `title.contains`, `description.contains`
-- **Pagination**: `page`, `size`, `sort`
+// Create free event
+POST /api/events
+{
+  admission_type: 'FREE',
+  allow_guests: true,
+  max_guests_per_attendee: 5,
+  require_guest_approval: false,
+  is_member_only: false // or true for restricted events
+}
+```
 
-### Authentication and Security
+### 2. **Registration (No Payment)**
+```typescript
+// Register for free event
+POST /api/events/:id/register
+{
+  attendee: {
+    profileType: 'existing' | 'new';
+    existingUserId?: string;
+    newProfile?: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone?: string;
+    };
+    specialRequirements?: string;
+  };
 
-- **JWT Bearer Token**: All endpoints require valid JWT authentication
-- **Tenant Isolation**: Automatic tenant filtering based on user context
-- **User Authorization**: Response endpoints validate user permissions
-- **Rate Limiting**: Prevents abuse through response frequency controls
+  guests: [
+    {
+      firstName: string;
+      lastName: string;
+      ageGroup: 'ADULT' | 'TEEN' | 'CHILD' | 'INFANT';
+      relationship: 'SPOUSE' | 'CHILD' | 'FRIEND' | 'OTHER';
+      specialRequirements?: string;
+    }
+  ];
 
-### Error Handling
+  termsAccepted: boolean;
+}
 
-- **Standard HTTP Status Codes**: 200 (OK), 400 (Bad Request), 401 (Unauthorized), 404 (Not Found), 500 (Internal Server Error)
-- **Validation Errors**: Detailed error messages for invalid DTO data
-- **Business Rule Violations**: Clear feedback for poll-specific constraints
+// Response
+{
+  success: true;
+  registrationId: string;
+  qrCodeData: string;
+  qrCodeUrl: string;
+  confirmationEmail: string;
+  guestCount: number;
+}
+```
 
-## User Experience Requirements
+### 3. **Guest Management**
+```typescript
+// Get guest statistics for event
+GET /api/events/:id/guest-stats
+{
+  totalRegistrations: number;
+  totalAttendees: number;
+  guestBreakdown: {
+    adults: number;
+    teens: number;
+    children: number;
+    infants: number;
+  };
+  capacityUtilization: number;
+  specialRequirements: {
+    dietary: string[];
+    accessibility: string[];
+    medical: string[];
+  };
+}
 
-### Admin Interface
-- **Intuitive Poll Builder**: Drag-and-drop interface for poll creation
-- **Real-time Preview**: See how polls will appear to users
-- **Bulk Operations**: Manage multiple polls simultaneously
-- **Analytics Dashboard**: Comprehensive reporting and insights
+// Update guest information
+PUT /api/registrations/:id/guests/:guestId
+{
+  firstName?: string;
+  lastName?: string;
+  ageGroup?: AgeGroup;
+  relationship?: string;
+  specialRequirements?: string;
+}
+```
 
-### User Interface
-- **Mobile-First Design**: Optimized for mobile devices
-- **Accessible Voting**: Clear, easy-to-use voting interface
-- **Live Results**: Real-time updates without page refresh
-- **Comment System**: Easy way to provide additional feedback
+## Business Rules for Free Events
 
-## Non-Functional Requirements
+### 1. **Registration Rules**
+- **Capacity Limits**: Maximum total attendees (primary + guests)
+- **Guest Limits**: Maximum guests per primary attendee (configurable per event)
+- **Registration Deadline**: Cut-off date for sign-ups
+- **Waitlist Management**: Handle capacity overflow gracefully
 
-### Performance
-- **Response Time**: API responses under 200ms for 95% of requests
-- **Concurrent Users**: Support for 1000+ simultaneous voters
-- **Real-time Updates**: Results update within 2 seconds
+### 2. **Access Control Rules**
+- **Member Events**: Require existing user profile and authentication
+- **Open Events**: Allow temporary profile creation for non-members
+- **Guest Users**: Create minimal profile with basic information
+- **Profile Cleanup**: Archive temporary profiles after event completion
 
-### Scalability
-- **Horizontal Scaling**: Support for multiple server instances
-- **Database Optimization**: Efficient queries for large response datasets
-- **Caching Strategy**: Redis-based caching for frequently accessed data
+### 3. **Guest Management Rules**
+- **Age Groups**: Automatic categorization based on age
+- **Relationship Tracking**: Map guest relationships to primary attendee
+- **Special Requirements**: Collect and track dietary, accessibility, medical needs
+- **Guest Limits**: Enforce per-event guest limits
 
-### Security
-- **Data Encryption**: All sensitive data encrypted at rest
-- **Access Control**: Role-based permissions for poll management
-- **Audit Logging**: Complete trail of all poll-related activities
+## User Experience for Free Events
 
-## Implementation Phases
+### 1. **Simple Registration Flow**
+```
+Step 1: Event Selection
+├── Clear "FREE EVENT" badge
+├── Event details and description
+├── Guest policy information
+└── Registration button
 
-### Phase 1: Core Poll System (Weeks 1-4)
-- Database schema implementation
-- Basic CRUD API endpoints
-- Simple poll creation interface
-- Basic voting functionality
+Step 2: Attendee Information
+├── Profile selection (existing/new)
+├── Basic information collection
+├── Special requirements
+└── Continue to guests
 
-### Phase 2: Advanced Features (Weeks 5-8)
-- Multiple choice support
-- Anonymous voting
-- Time-based activation
-- Comment system
+Step 3: Guest Management
+├── Guest counter interface
+├── Individual guest details
+├── Age group selection
+└── Special requirements per guest
 
-### Phase 3: Analytics & Reporting (Weeks 9-12)
-- Real-time results display
-- Analytics dashboard
-- Export functionality
-- Performance optimization
+Step 4: Confirmation
+├── Registration summary
+├── QR code generation
+├── Email confirmation
+└── Event reminders
+```
 
-## Technical Considerations
+### 2. **Guest Management Interface**
+- **Visual Guest Counter**: Easy addition/removal of guests
+- **Age Group Selection**: Clear categorization (Adult, Teen, Child, Infant)
+- **Relationship Mapping**: Dropdown for guest relationships
+- **Bulk Operations**: Add multiple guests of same type
+- **Special Requirements**: Per-guest special needs collection
 
-### Database Design
-- **Indexing Strategy**: Optimized indexes for poll queries
-- **Partitioning**: Consider table partitioning for large datasets
-- **Backup Strategy**: Regular backups with point-in-time recovery
+### 3. **Mobile Optimization**
+- **Touch-Friendly**: Large buttons and form elements
+- **Progressive Disclosure**: Show relevant fields based on selections
+- **Auto-Save**: Save progress as user fills form
+- **Offline Capability**: Basic form functionality without internet
 
-### API Design
-- **Versioning Strategy**: API versioning for future compatibility
-- **Documentation**: Comprehensive OpenAPI/Swagger documentation
-- **Testing**: Automated API testing with high coverage
+## Admin Features for Free Events
 
-### Frontend Considerations
-- **State Management**: Efficient state management for real-time updates
-- **Component Library**: Reusable poll components
-- **Accessibility**: WCAG 2.1 AA compliance from day one
+### 1. **Event Management Dashboard**
+```typescript
+interface EventManagementDashboard {
+  // Event Overview
+  eventSummary: {
+    totalRegistrations: number;
+    totalAttendees: number;
+    capacityUtilization: number;
+    registrationTrends: ChartData;
+  };
 
-## Risk Assessment
+  // Guest Analytics
+  guestAnalytics: {
+    ageGroupDistribution: PieChart;
+    relationshipBreakdown: BarChart;
+    specialRequirements: SummaryTable;
+  };
 
-### Technical Risks
-- **Performance Issues**: Large response datasets may impact performance
-- **Real-time Updates**: WebSocket implementation complexity
-- **Mobile Compatibility**: Ensuring consistent experience across devices
+  // Registration Management
+  registrations: RegistrationList;
+  waitlist: WaitlistManagement;
+  capacityAlerts: AlertSystem;
+}
+```
 
-### Mitigation Strategies
-- **Performance Testing**: Comprehensive load testing before deployment
-- **Fallback Mechanisms**: Graceful degradation for real-time features
-- **Progressive Enhancement**: Core functionality works without JavaScript
+### 2. **Registration Management**
+- **View All Registrations**: Complete attendee and guest lists
+- **Export Functionality**: CSV/Excel export for event planning
+- **Capacity Monitoring**: Real-time registration counts
+- **Waitlist Management**: Handle overflow registrations
 
-## Success Criteria
+### 3. **Guest Analytics**
+- **Demographics**: Age group and relationship analysis
+- **Special Requirements**: Summary of dietary, accessibility, medical needs
+- **Registration Patterns**: Peak registration times and trends
+- **Capacity Planning**: Data for future event planning
 
-### Quantitative Metrics
-- **User Engagement**: 70% of event attendees participate in polls
-- **Performance**: 95% of API calls respond within 200ms
-- **Uptime**: 99.9% system availability during events
+## Implementation Considerations
 
-### Qualitative Metrics
-- **User Satisfaction**: Positive feedback from event organizers
-- **Ease of Use**: Intuitive interface requiring minimal training
-- **Feature Adoption**: High usage of advanced poll features
+### 1. **Performance Optimization**
+- **Database Indexing**: Optimize queries for free event lookups
+- **Caching**: Cache event details and capacity information
+- **Lazy Loading**: Load guest details on demand
+- **Batch Operations**: Handle multiple guest additions efficiently
+
+### 2. **Security Considerations**
+- **Data Validation**: Validate all guest information
+- **Rate Limiting**: Prevent registration spam
+- **Profile Isolation**: Ensure tenant data separation
+- **Audit Logging**: Track all registration changes
+
+### 3. **Scalability Planning**
+- **Database Design**: Handle large numbers of guest records
+- **API Performance**: Optimize for high registration volumes
+- **Storage Management**: Efficient handling of temporary profiles
+- **Cleanup Processes**: Automated cleanup of expired data
+
+## Success Metrics for Free Events
+
+### 1. **Registration Metrics**
+- **Completion Rate**: > 95% (no payment barrier)
+- **Guest Addition Rate**: > 2.5 guests per primary attendee
+- **Registration Speed**: < 3 minutes for complete registration
+- **Mobile Usage**: > 70% (community events often mobile-first)
+
+### 2. **User Experience Metrics**
+- **Form Abandonment**: < 5%
+- **Guest Management Ease**: User satisfaction > 4.5/5
+- **Mobile Performance**: Page load time < 2 seconds
+- **Error Rate**: < 1% during registration
+
+### 3. **Business Impact Metrics**
+- **Event Participation**: 25% increase in total attendees
+- **Admin Efficiency**: 50% reduction in manual processing
+- **Data Quality**: 90% complete guest information
+- **Community Engagement**: Higher repeat event participation
+
+## Conclusion
+
+The free event registration system provides a streamlined, user-friendly experience for community events where payment is not required. The focus on guest management, flexible access control, and comprehensive analytics makes it ideal for picnics, community gatherings, and other free activities.
+
+The system's simplicity encourages higher participation rates while providing organizers with the data and tools needed for effective event planning and management.
+
+### Key Benefits
+1. **Higher Participation**: No payment barrier increases registration rates
+2. **Better Guest Management**: Comprehensive guest tracking and analytics
+3. **Flexible Access**: Support for both member-only and open events
+4. **Mobile-First Design**: Optimized for community event registration
+5. **Comprehensive Analytics**: Data-driven event planning and improvement
 
 ---
 
-*This PRD serves as the foundation for implementing a comprehensive poll feature that enhances event engagement and provides valuable insights through interactive voting and real-time analytics.*
+**Document Control**
+- **Version**: 1.0
+- **Last Updated**: January 2025
+- **Next Review**: February 2025
+- **Related Documents**: [Main PRD](./PRD.md)
