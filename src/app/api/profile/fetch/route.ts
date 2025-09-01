@@ -11,14 +11,17 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     console.log('[PROFILE-FETCH-API] 🚀 Profile fetch endpoint called');
-    
-    // Verify authentication
+
+    // Verify authentication using Clerk
     const { userId } = auth();
     console.log('[PROFILE-FETCH-API] 🔐 Auth check result:', { userId: userId || 'null' });
-    
+
     if (!userId) {
       console.log('[PROFILE-FETCH-API] ❌ No userId from auth(), returning 401');
-      return NextResponse.json({ error: 'Unauthorized - No user ID found' }, { status: 401 });
+      return NextResponse.json({
+        error: 'Authentication required',
+        message: 'Please sign in to access your profile'
+      }, { status: 401 });
     }
 
     // Get userId from request body (for verification)
@@ -34,9 +37,9 @@ export async function POST(request: NextRequest) {
 
     // Ensure user can only fetch their own profile
     if (userId !== requestedUserId) {
-      console.log('[PROFILE-FETCH-API] ❌ User ID mismatch:', { 
-        authUserId: userId, 
-        requestedUserId: requestedUserId 
+      console.log('[PROFILE-FETCH-API] ❌ User ID mismatch:', {
+        authUserId: userId,
+        requestedUserId: requestedUserId
       });
       return NextResponse.json({ error: 'Forbidden - User ID mismatch' }, { status: 403 });
     }
@@ -45,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     // Fetch profile using existing server action
     const profile = await fetchUserProfileServer(userId);
-    
+
     if (profile) {
       console.log('[PROFILE-FETCH-API] ✅ Profile fetched successfully');
       return NextResponse.json(profile);

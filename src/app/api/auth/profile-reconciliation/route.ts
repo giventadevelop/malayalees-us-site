@@ -13,14 +13,16 @@ export async function POST(request: NextRequest) {
   try {
     console.log('[PROFILE-RECONCILIATION-API] 🚀 Profile reconciliation endpoint called');
 
-    // Fix for Next.js 15+: await headers() before using
-    const headers = await request.headers();
-
     // Get the authenticated user
-    const { userId } = auth();
+    const { userId } = await auth();
+    console.log('[PROFILE-RECONCILIATION-API] 🔍 Auth result:', { userId, hasUserId: !!userId });
+
     if (!userId) {
-      console.log('[PROFILE-RECONCILIATION-API] ❌ No authenticated user found');
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.log('[PROFILE-RECONCILIATION-API] ❌ No authenticated user found - session may not be ready');
+      return NextResponse.json({
+        error: 'Unauthorized',
+        details: 'User session not ready. This is normal during authentication flow.'
+      }, { status: 401 });
     }
 
     console.log('[PROFILE-RECONCILIATION-API] 👤 User authenticated:', userId);

@@ -34,6 +34,8 @@ export default authMiddleware({
     "/api/stripe/(.*)",
     "/api/payment/(.*)",
     "/api/checkout/(.*)",
+    "/api/profile/(.*)",
+    "/api/auth/(.*)",
     "/images/(.*)",
     "/_next/(.*)",
     "/favicon.ico",
@@ -50,8 +52,7 @@ export default authMiddleware({
     "/api/stripe/get-session",
     "/api/payment/(.*)",
     "/api/checkout/(.*)",
-    "/api/billing/(.*)",
-    "/api/profile/(.*)"
+    "/api/billing/(.*)"
   ],
 
   // Debug mode for development

@@ -34,9 +34,7 @@ export async function authenticatedRequest(
 }
 
 export async function getServerAuth() {
-  // First await headers
-  await headers();
-  // Then get auth
+  // Get auth directly - no need to await headers() if not using them
   const session = await auth();
   return session;
 }

@@ -55,28 +55,30 @@ type HeaderProps = {
 };
 
 const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  console.log('[Header] handleSmoothScroll called with:', href);
+
   if (!href.startsWith('#')) return;
 
   e.preventDefault();
+  console.log('[Header] Preventing default and handling hash navigation');
 
   // If we're not on the home page, navigate there first
-  if (typeof window !== 'undefined' && window.location.pathname !== '/' && window.location.pathname !== '/charity-theme') {
+  if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+    console.log('[Header] Not on home page, navigating to:', `/${href}`);
     // Navigate to home page with hash
     window.location.href = `/${href}`;
     return;
   }
 
-  // If we're on the home page, scroll to section
+  // If we're on the home page, update the URL hash and let the page handle scrolling
   const targetId = href.substring(1);
-  const targetElement = document.getElementById(targetId);
-  if (targetElement) {
-    const headerHeight = 80;
-    const targetPosition = targetElement.offsetTop - headerHeight - 20;
-    window.scrollTo({
-      top: targetPosition,
-      behavior: 'smooth'
-    });
-  }
+  console.log('[Header] On home page, updating hash to:', targetId);
+
+  // Update the URL hash
+  window.history.pushState(null, '', href);
+
+  // Trigger a hashchange event to let the page component handle the scrolling
+  window.dispatchEvent(new HashChangeEvent('hashchange'));
 };
 
 export default function Header({ hideMenuItems = false, variant = 'charity' }: HeaderProps) {

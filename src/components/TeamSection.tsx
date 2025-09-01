@@ -95,7 +95,7 @@ const TeamSection: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="py-24 bg-gradient-to-br from-gray-50 to-white">
+      <div id="team-section" className="py-24 bg-gradient-to-br from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-20">
             <div className="flex items-center space-x-3 mb-6">
@@ -137,7 +137,7 @@ const TeamSection: React.FC = () => {
   }
 
   return (
-    <div className="py-24 bg-gradient-to-br from-gray-50 to-white">
+    <div id="team-section" className="py-24 bg-gradient-to-br from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mb-20 flex flex-col lg:flex-row justify-between items-start lg:items-end space-y-6 lg:space-y-0">

@@ -19,6 +19,7 @@ export default function ProfilePageWithLoading() {
   const [error, setError] = useState<string | null>(null);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
+  const [lastResponseStatus, setLastResponseStatus] = useState<number | null>(null);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -35,8 +36,6 @@ export default function ProfilePageWithLoading() {
       setShowErrorDialog(false);
       setErrorDetails(null);
 
-      console.log('[ProfilePageWithLoading] 🔍 Fetching profile for user:', user.id);
-
       // Call the server action through an API endpoint
       const response = await fetch('/api/profile/fetch', {
         method: 'POST',
@@ -46,35 +45,21 @@ export default function ProfilePageWithLoading() {
         body: JSON.stringify({ userId: user.id }),
       });
 
+      // Store the response status for later use
+      setLastResponseStatus(response.status);
+
       if (response.ok) {
         const profileData = await response.json();
-        console.log('[ProfilePageWithLoading] ✅ Profile fetched successfully');
         setProfile(profileData);
       } else {
         const errorText = await response.text();
-        console.error('[ProfilePageWithLoading] ❌ Profile fetch failed:', response.status, errorText);
-        
-        let errorMessage: string;
-        
-        if (response.status === 401) {
-          errorMessage = 'Authentication error. Please try refreshing the page or signing in again.';
-          console.log('[ProfilePageWithLoading] 🔄 401 error detected, this might be a session timing issue');
-        } else if (response.status === 500) {
-          errorMessage = 'There is some unexpected error happened. Please try back again later.';
-        } else {
-          errorMessage = 'Failed to load profile';
-        }
 
-        setError(errorMessage);
-        setErrorDetails(errorText);
-
-        // Show error dialog for 500 errors and other backend errors
-        if (response.status >= 500) {
-          setShowErrorDialog(true);
-        }
-        
-        // For 401 errors, try to retry once after a short delay
         if (response.status === 401) {
+          // For 401 errors, just log the error but don't prevent the page from showing
+          console.log('[ProfilePageWithLoading] 🔄 401 error detected, but continuing to show profile form');
+          // Don't set error state for 401s - let the page continue
+
+          // Try to retry once after a short delay
           console.log('[ProfilePageWithLoading] 🔄 Retrying profile fetch after 401 error...');
           setTimeout(() => {
             if (user) {
@@ -82,10 +67,19 @@ export default function ProfilePageWithLoading() {
               fetchProfile();
             }
           }, 1000); // Wait 1 second before retry
+        } else if (response.status === 500) {
+          const errorMessage = 'There is some unexpected error happened. Please try back again later.';
+          setError(errorMessage);
+          setErrorDetails(errorText);
+          setShowErrorDialog(true);
+        } else {
+          const errorMessage = 'Failed to load profile';
+          setError(errorMessage);
+          setErrorDetails(errorText);
         }
       }
     } catch (err) {
-      console.error('[ProfilePageWithLoading] ❌ Error fetching profile:', err);
+      console.error('Error fetching profile:', err);
       const errorMessage = 'There is some unexpected error happened. Please try back again later.';
       setError(errorMessage);
       setErrorDetails(err instanceof Error ? err.message : 'Unknown error');
@@ -154,7 +148,16 @@ export default function ProfilePageWithLoading() {
         {/* Profile Reconciliation Trigger Component */}
         <ProfileReconciliationTrigger />
 
-        <ProfileForm initialProfile={profile} />
+        {/* Show subtle message if profile data failed to load due to auth issues */}
+        {!profile && lastResponseStatus === 401 && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-800 text-sm">
+              🔄 Profile data is being loaded. If you continue to see this message, please refresh the page.
+            </p>
+          </div>
+        )}
+
+        <ProfileForm initialProfile={profile || undefined} />
       </div>
 
       {/* Error Dialog for Backend Errors - Rendered as overlay */}

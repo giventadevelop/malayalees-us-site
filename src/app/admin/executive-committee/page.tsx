@@ -5,7 +5,8 @@ import { fetchExecutiveCommitteeMembers } from './ApiServerActions';
 import AdminNavigation from '@/components/AdminNavigation';
 
 export default async function ExecutiveCommitteePage() {
-  const { userId } = auth();
+  // Fix for Next.js 15+: await auth() before using
+  const { userId } = await auth();
 
   if (!userId) {
     redirect('/sign-in');

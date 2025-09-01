@@ -6,7 +6,7 @@
 -- Dumped by pg_dump version 17.0
 
 -- Started on 2025-06-08 23:51:02
-SET ROLE giventa_event_management;
+--SET ROLE giventa_event_management;
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -29,7 +29,7 @@ SET row_security = off;
 --CREATE DATABASE giventa_event_management WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.utf8';
 
 
-ALTER DATABASE giventa_event_management OWNER TO giventa_event_management;
+-- ALTER DATABASE giventa_event_management OWNER TO giventa_event_management;
 
 --\connect giventa_event_management
 
@@ -171,7 +171,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.generate_attendee_qr_code() OWNER TO giventa_event_management;
+-- ALTER FUNCTION public.generate_attendee_qr_code() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 272 (class 1255 OID 71151)
@@ -220,7 +220,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.generate_enhanced_qr_code() OWNER TO giventa_event_management;
+-- ALTER FUNCTION public.generate_enhanced_qr_code() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 273 (class 1255 OID 71150)
@@ -313,7 +313,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.manage_ticket_inventory() OWNER TO giventa_event_management;
+-- ALTER FUNCTION public.manage_ticket_inventory() OWNER TO giventa_event_management;
 
 
 --
@@ -352,7 +352,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_ticket_sold_quantity() OWNER TO giventa_event_management;
+-- ALTER FUNCTION public.update_ticket_sold_quantity() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 271 (class 1255 OID 70264)
@@ -369,7 +369,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_updated_at_column() OWNER TO giventa_event_management;
+-- ALTER FUNCTION public.update_updated_at_column() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 254 (class 1255 OID 71141)
@@ -395,7 +395,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.validate_event_dates() OWNER TO giventa_event_management;
+-- ALTER FUNCTION public.validate_event_dates() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 257 (class 1255 OID 71147)
@@ -419,7 +419,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.validate_event_dates_alt1() OWNER TO giventa_event_management;
+-- ALTER FUNCTION public.validate_event_dates_alt1() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 258 (class 1255 OID 71148)
@@ -443,7 +443,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.validate_event_dates_alt2() OWNER TO giventa_event_management;
+-- ALTER FUNCTION public.validate_event_dates_alt2() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 270 (class 1255 OID 71149)
@@ -484,7 +484,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.validate_event_details() OWNER TO giventa_event_management;
+-- ALTER FUNCTION public.validate_event_details() OWNER TO giventa_event_management;
 
 --
 -- TOC entry 224 (class 1259 OID 82754)
@@ -499,7 +499,7 @@ CREATE SEQUENCE public.sequence_generator
     CACHE 1;
 
 
-ALTER SEQUENCE public.sequence_generator OWNER TO giventa_event_management;
+-- ALTER SEQUENCE public.sequence_generator OWNER TO giventa_event_management;
 
 SET default_tablespace = '';
 
@@ -514,34 +514,34 @@ SET default_table_access_method = heap;
 
 CREATE TABLE public.user_profile (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    user_id character varying(255) NOT NULL,
-    first_name character varying(255),
-    last_name character varying(255),
-    email character varying(255),
-    phone character varying(255),
-    address_line_1 character varying(255),
-    address_line_2 character varying(255),
-    city character varying(255),
-    state character varying(255),
-    zip_code character varying(255),
-    country character varying(255),
-    notes text,
-    family_name character varying(255),
-    city_town character varying(255),
-    district character varying(255),
-    educational_institution character varying(255),
-    profile_image_url character varying(1024),
-    is_email_subscribed BOOLEAN,
-    email_subscription_token VARCHAR(255),
-    is_email_subscription_token_used BOOLEAN,
-    user_status character varying(50),
-    user_role character varying(50),
-    reviewed_by_admin_at timestamp without time zone,
-    reviewed_by_admin_id bigint,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    CONSTRAINT check_email_format CHECK (((email IS NULL) OR ((email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text))),
+tenant_id character varying(255),
+user_id character varying(255) NOT NULL,
+first_name character varying(255),
+last_name character varying(255),
+email character varying(255),
+phone character varying(255),
+address_line_1 character varying(255),
+address_line_2 character varying(255),
+city character varying(255),
+state character varying(255),
+zip_code character varying(255),
+country character varying(255),
+notes text,
+family_name character varying(255),
+city_town character varying(255),
+district character varying(255),
+educational_institution character varying(255),
+profile_image_url character varying(1024),
+is_email_subscribed BOOLEAN,
+email_subscription_token VARCHAR(255),
+is_email_subscription_token_used BOOLEAN,
+user_status character varying(50),
+user_role character varying(50),
+reviewed_by_admin_at timestamp without time zone,
+reviewed_by_admin_id bigint,
+created_at timestamp without time zone DEFAULT now() NOT NULL,
+updated_at timestamp without time zone DEFAULT now() NOT NULL,
+CONSTRAINT check_email_format CHECK (((email IS NULL) OR ((email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text))),
     request_id character varying(255) UNIQUE,
     request_reason text,
     status character varying(50),
@@ -554,7 +554,7 @@ CREATE TABLE public.user_profile (
 );
 
 
-ALTER TABLE public.user_profile OWNER TO giventa_event_management;
+-- ALTER TABLE public.user_profile OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3991 (class 0 OID 0)
@@ -588,7 +588,7 @@ CREATE TABLE public.bulk_operation_log (
 );
 
 
-ALTER TABLE public.bulk_operation_log OWNER TO giventa_event_management;
+-- ALTER TABLE public.bulk_operation_log OWNER TO giventa_event_management;
 
 --
 -- TOC entry 225 (class 1259 OID 82755)
@@ -613,7 +613,7 @@ CREATE TABLE public.databasechangelog (
 );
 
 
-ALTER TABLE public.databasechangelog OWNER TO giventa_event_management;
+-- ALTER TABLE public.databasechangelog OWNER TO giventa_event_management;
 
 --
 -- TOC entry 226 (class 1259 OID 82760)
@@ -628,7 +628,7 @@ CREATE TABLE public.databasechangeloglock (
 );
 
 
-ALTER TABLE public.databasechangeloglock OWNER TO giventa_event_management;
+-- ALTER TABLE public.databasechangeloglock OWNER TO giventa_event_management;
 
 
 --
@@ -680,7 +680,7 @@ CREATE TABLE public.event_details (
 );
 
 
-ALTER TABLE public.event_details OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_details OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3944 (class 0 OID 0)
@@ -786,7 +786,7 @@ CREATE TABLE public.event_guest_pricing (
 );
 
 
-ALTER TABLE public.event_guest_pricing OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_guest_pricing OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3955 (class 0 OID 0)
@@ -864,7 +864,7 @@ CREATE TABLE public.event_live_update (
 );
 
 
-ALTER TABLE public.event_live_update OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_live_update OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3962 (class 0 OID 0)
@@ -892,7 +892,7 @@ CREATE TABLE public.event_live_update_attachment (
 );
 
 
-ALTER TABLE public.event_live_update_attachment OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_live_update_attachment OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3963 (class 0 OID 0)
@@ -916,7 +916,7 @@ CREATE SEQUENCE public.event_live_update_attachment_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.event_live_update_attachment_id_seq OWNER TO giventa_event_management;
+-- ALTER SEQUENCE public.event_live_update_attachment_id_seq OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3964 (class 0 OID 0)
@@ -940,7 +940,7 @@ CREATE SEQUENCE public.event_live_update_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.event_live_update_id_seq OWNER TO giventa_event_management;
+-- ALTER SEQUENCE public.event_live_update_id_seq OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3965 (class 0 OID 0)
@@ -968,7 +968,7 @@ CREATE TABLE public.event_admin (
 );
 
 
-ALTER TABLE public.event_admin OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_admin OWNER TO giventa_event_management;
 
 --
 -- TOC entry 249 (class 1259 OID 83122)
@@ -992,7 +992,7 @@ CREATE TABLE public.event_admin_audit_log (
 );
 
 
-ALTER TABLE public.event_admin_audit_log OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_admin_audit_log OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3932 (class 0 OID 0)
@@ -1009,33 +1009,33 @@ COMMENT ON TABLE public.event_admin_audit_log IS 'Comprehensive audit logging fo
 
 CREATE TABLE public.event_attendee (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    event_id bigint NOT NULL,
-    user_id bigint,
-    registration_status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
-    registration_date timestamp without time zone DEFAULT now() NOT NULL,
-    confirmation_date timestamp without time zone,
-    cancellation_date timestamp without time zone,
-    cancellation_reason text,
-    attendee_type character varying(50) DEFAULT 'MEMBER'::character varying,
-    special_requirements text,
-    dietary_restrictions text,
-    accessibility_needs text,
-    emergency_contact_name character varying(255),
-    emergency_contact_phone character varying(50),
-    emergency_contact_relationship character varying(100),
-    total_number_of_guests integer,
-    number_of_guests_checked_in integer,
-    check_in_status character varying(20) DEFAULT 'NOT_CHECKED_IN'::character varying,
-    check_in_time timestamp without time zone,
-    check_out_time timestamp without time zone,
-    attendance_rating integer,
-    feedback text,
-    notes text,
-    qr_code_data character varying(1000),
-    qr_code_generated boolean DEFAULT false,
-    qr_code_generated_at timestamp without time zone,
-    registration_source character varying(100) DEFAULT 'DIRECT'::character varying,
+tenant_id character varying(255),
+event_id bigint NOT NULL,
+user_id bigint,
+registration_status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
+registration_date timestamp without time zone DEFAULT now() NOT NULL,
+confirmation_date timestamp without time zone,
+cancellation_date timestamp without time zone,
+cancellation_reason text,
+attendee_type character varying(50) DEFAULT 'MEMBER'::character varying,
+special_requirements text,
+dietary_restrictions text,
+accessibility_needs text,
+emergency_contact_name character varying(255),
+emergency_contact_phone character varying(50),
+emergency_contact_relationship character varying(100),
+total_number_of_guests integer,
+number_of_guests_checked_in integer,
+check_in_status character varying(20) DEFAULT 'NOT_CHECKED_IN'::character varying,
+check_in_time timestamp without time zone,
+check_out_time timestamp without time zone,
+attendance_rating integer,
+feedback text,
+notes text,
+qr_code_data character varying(1000),
+qr_code_generated boolean DEFAULT false,
+qr_code_generated_at timestamp without time zone,
+registration_source character varying(100) DEFAULT 'DIRECT'::character varying,
     waitlist_position integer,
     priority_score integer DEFAULT 0,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
@@ -1053,7 +1053,7 @@ CREATE TABLE public.event_attendee (
 );
 
 
-ALTER TABLE public.event_attendee OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_attendee OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3934 (class 0 OID 0)
@@ -1098,24 +1098,24 @@ COMMENT ON COLUMN public.event_attendee.qr_code_generated_at IS 'Timestamp when 
 
 CREATE TABLE public.event_attendee_guest (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    primary_attendee_id bigint NOT NULL,
-    age_group character varying(20) NOT NULL,
-    relationship character varying(20),
-    special_requirements text,
-    dietary_restrictions text,
-    accessibility_needs text,
-    registration_status character varying(20) DEFAULT 'PENDING'::character varying,
-    check_in_status character varying(20) DEFAULT 'NOT_CHECKED_IN'::character varying,
-    check_in_time timestamp without time zone,
-    check_out_time timestamp without time zone,
-    approval_status character varying(50) DEFAULT 'PENDING'::character varying,
-    approved_by_id bigint,
-    approved_at timestamp without time zone,
-    rejection_reason text,
-    pricing_tier character varying(100),
-    fee_amount numeric(21,2) DEFAULT 0,
-    payment_status character varying(50) DEFAULT 'PENDING'::character varying,
+tenant_id character varying(255),
+primary_attendee_id bigint NOT NULL,
+age_group character varying(20) NOT NULL,
+relationship character varying(20),
+special_requirements text,
+dietary_restrictions text,
+accessibility_needs text,
+registration_status character varying(20) DEFAULT 'PENDING'::character varying,
+check_in_status character varying(20) DEFAULT 'NOT_CHECKED_IN'::character varying,
+check_in_time timestamp without time zone,
+check_out_time timestamp without time zone,
+approval_status character varying(50) DEFAULT 'PENDING'::character varying,
+approved_by_id bigint,
+approved_at timestamp without time zone,
+rejection_reason text,
+pricing_tier character varying(100),
+fee_amount numeric(21,2) DEFAULT 0,
+payment_status character varying(50) DEFAULT 'PENDING'::character varying,
     notes text,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
@@ -1127,7 +1127,7 @@ CREATE TABLE public.event_attendee_guest (
 );
 
 
-ALTER TABLE public.event_attendee_guest OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_attendee_guest OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3939 (class 0 OID 0)
@@ -1163,11 +1163,11 @@ COMMENT ON COLUMN public.event_attendee_guest.relationship IS 'Relationship to p
 
 CREATE TABLE public.event_calendar_entry (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    calendar_provider character varying(255) NOT NULL,
-    external_event_id character varying(255),
-    calendar_link character varying(2048) NOT NULL,
-    sync_status character varying(50) DEFAULT 'PENDING'::character varying,
+tenant_id character varying(255),
+calendar_provider character varying(255) NOT NULL,
+external_event_id character varying(255),
+calendar_link character varying(2048) NOT NULL,
+sync_status character varying(50) DEFAULT 'PENDING'::character varying,
     last_sync_at timestamp without time zone,
     sync_error_message text,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
@@ -1177,7 +1177,7 @@ CREATE TABLE public.event_calendar_entry (
 );
 
 
-ALTER TABLE public.event_calendar_entry OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_calendar_entry OWNER TO giventa_event_management;
 
 
 --
@@ -1217,7 +1217,7 @@ CREATE TABLE public.event_media (
     CONSTRAINT check_file_size_positive CHECK (((file_size IS NULL) OR (file_size >= 0)))
 );
 
-ALTER TABLE public.event_media OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_media OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3966 (class 0 OID 0)
@@ -1235,24 +1235,24 @@ COMMENT ON COLUMN public.event_media.pre_signed_url IS 'Pre-signed URL for tempo
 
 CREATE TABLE public.event_organizer (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    title character varying(255) NOT NULL,
-    designation character varying(255),
-    contact_email character varying(255),
-    contact_phone character varying(255),
-    is_primary boolean DEFAULT false,
-    display_order integer DEFAULT 0,
-    bio text,
-    profile_image_url character varying(1024),
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    event_id bigint,
-    organizer_id bigint,
-    CONSTRAINT check_contact_email_format CHECK (((contact_email IS NULL) OR ((contact_email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text)))
+tenant_id character varying(255),
+title character varying(255) NOT NULL,
+designation character varying(255),
+contact_email character varying(255),
+contact_phone character varying(255),
+is_primary boolean DEFAULT false,
+display_order integer DEFAULT 0,
+bio text,
+profile_image_url character varying(1024),
+created_at timestamp without time zone DEFAULT now() NOT NULL,
+updated_at timestamp without time zone DEFAULT now() NOT NULL,
+event_id bigint,
+organizer_id bigint,
+CONSTRAINT check_contact_email_format CHECK (((contact_email IS NULL) OR ((contact_email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text)))
 );
 
 
-ALTER TABLE public.event_organizer OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_organizer OWNER TO giventa_event_management;
 
 --
 -- TOC entry 243 (class 1259 OID 83028)
@@ -1261,16 +1261,16 @@ ALTER TABLE public.event_organizer OWNER TO giventa_event_management;
 
 CREATE TABLE public.event_poll (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    title character varying(255) NOT NULL,
-    description text,
-    is_active boolean DEFAULT true,
-    is_anonymous boolean DEFAULT false,
-    allow_multiple_choices boolean DEFAULT false,
-    start_date timestamp without time zone NOT NULL,
-    end_date timestamp without time zone,
-    max_responses_per_user integer DEFAULT 1,
-    results_visible_to character varying(50) DEFAULT 'ALL'::character varying,
+tenant_id character varying(255),
+title character varying(255) NOT NULL,
+description text,
+is_active boolean DEFAULT true,
+is_anonymous boolean DEFAULT false,
+allow_multiple_choices boolean DEFAULT false,
+start_date timestamp without time zone NOT NULL,
+end_date timestamp without time zone,
+max_responses_per_user integer DEFAULT 1,
+results_visible_to character varying(50) DEFAULT 'ALL'::character varying,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL,
     event_id bigint,
@@ -1281,7 +1281,7 @@ CREATE TABLE public.event_poll (
 );
 
 
-ALTER TABLE public.event_poll OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_poll OWNER TO giventa_event_management;
 
 --
 -- TOC entry 244 (class 1259 OID 83045)
@@ -1301,7 +1301,7 @@ CREATE TABLE public.event_poll_option (
 );
 
 
-ALTER TABLE public.event_poll_option OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_poll_option OWNER TO giventa_event_management;
 
 --
 -- TOC entry 245 (class 1259 OID 83057)
@@ -1322,7 +1322,7 @@ CREATE TABLE public.event_poll_response (
 );
 
 
-ALTER TABLE public.event_poll_response OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_poll_response OWNER TO giventa_event_management;
 
 --
 -- TOC entry 216 (class 1259 OID 77393)
@@ -1343,7 +1343,7 @@ CREATE TABLE public.event_score_card (
 );
 
 
-ALTER TABLE public.event_score_card OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_score_card OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3972 (class 0 OID 0)
@@ -1372,7 +1372,7 @@ CREATE TABLE public.event_score_card_detail (
 );
 
 
-ALTER TABLE public.event_score_card_detail OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_score_card_detail OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3973 (class 0 OID 0)
@@ -1396,7 +1396,7 @@ CREATE SEQUENCE public.event_score_card_detail_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.event_score_card_detail_id_seq OWNER TO giventa_event_management;
+-- ALTER SEQUENCE public.event_score_card_detail_id_seq OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3974 (class 0 OID 0)
@@ -1420,7 +1420,7 @@ CREATE SEQUENCE public.event_score_card_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.event_score_card_id_seq OWNER TO giventa_event_management;
+-- ALTER SEQUENCE public.event_score_card_id_seq OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3975 (class 0 OID 0)
@@ -1439,48 +1439,48 @@ ALTER SEQUENCE public.event_score_card_id_seq OWNED BY public.event_score_card.i
 
 CREATE TABLE public.event_ticket_transaction (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    transaction_reference varchar(255) GENERATED ALWAYS AS ('TKTN' || id::text) STORED,
-    email character varying(255) NOT NULL,
-    first_name character varying(255),
-    last_name character varying(255),
-    phone character varying(255),
-    quantity INTEGER NOT NULL,
-    price_per_unit numeric(21,2) NOT NULL,
-    total_amount numeric(21,2) NOT NULL,
-    tax_amount numeric(21,2) DEFAULT 0,
-    platform_fee_amount numeric(21,2) DEFAULT 0,
-    discount_code_id bigint,
-    discount_amount numeric(21,2) DEFAULT 0,
-    final_amount numeric(21,2) NOT NULL,
-    status character varying(255) DEFAULT 'PENDING'::character varying NOT NULL,
-    payment_method character varying(100),
-    payment_reference character varying(255),
-    stripe_checkout_session_id character varying(255),
-    stripe_payment_intent_id character varying(255),
-    purchase_date timestamp without time zone NOT NULL,
-    confirmation_sent_at timestamp without time zone,
-    refund_amount numeric(21,2) DEFAULT 0 NULL,
-    refund_date timestamp NULL,
-    refund_reason VARCHAR(2048) NULL,
-    stripe_customer_id varchar(255) NULL,
-    stripe_payment_status varchar(50) NULL,
-    stripe_customer_email varchar(255) NULL,
-    stripe_payment_currency varchar(10) NULL,
-    stripe_amount_discount numeric(21,2) NULL,
-    stripe_amount_tax numeric(21,2) NULL,
-    stripe_fee_amount  numeric(21,2) NULL,
-    qr_code_image_url character varying(2048),
-    event_id bigint,
-    user_id bigint,
-    created_at timestamp DEFAULT now() NOT NULL,
-    updated_at timestamp DEFAULT now() NOT NULL,
-    number_of_guests_checked_in integer,
-    check_in_status character varying(20) DEFAULT 'NOT_CHECKED_IN'::character varying,
-    check_in_time timestamp without time zone,
-    check_out_time timestamp without time zone,
+tenant_id character varying(255),
+transaction_reference varchar(255) GENERATED ALWAYS AS ('TKTN' || id::text) STORED,
+email character varying(255) NOT NULL,
+first_name character varying(255),
+last_name character varying(255),
+phone character varying(255),
+quantity INTEGER NOT NULL,
+price_per_unit numeric(21,2) NOT NULL,
+total_amount numeric(21,2) NOT NULL,
+tax_amount numeric(21,2) DEFAULT 0,
+platform_fee_amount numeric(21,2) DEFAULT 0,
+discount_code_id bigint,
+discount_amount numeric(21,2) DEFAULT 0,
+final_amount numeric(21,2) NOT NULL,
+status character varying(255) DEFAULT 'PENDING'::character varying NOT NULL,
+payment_method character varying(100),
+payment_reference character varying(255),
+stripe_checkout_session_id character varying(255),
+stripe_payment_intent_id character varying(255),
+purchase_date timestamp without time zone NOT NULL,
+confirmation_sent_at timestamp without time zone,
+refund_amount numeric(21,2) DEFAULT 0 NULL,
+refund_date timestamp NULL,
+refund_reason VARCHAR(2048) NULL,
+stripe_customer_id varchar(255) NULL,
+stripe_payment_status varchar(50) NULL,
+stripe_customer_email varchar(255) NULL,
+stripe_payment_currency varchar(10) NULL,
+stripe_amount_discount numeric(21,2) NULL,
+stripe_amount_tax numeric(21,2) NULL,
+stripe_fee_amount  numeric(21,2) NULL,
+qr_code_image_url character varying(2048),
+event_id bigint,
+user_id bigint,
+created_at timestamp DEFAULT now() NOT NULL,
+updated_at timestamp DEFAULT now() NOT NULL,
+number_of_guests_checked_in integer,
+check_in_status character varying(20) DEFAULT 'NOT_CHECKED_IN'::character varying,
+check_in_time timestamp without time zone,
+check_out_time timestamp without time zone,
 
-    CONSTRAINT check_email_format_transaction CHECK (((email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text)),
+CONSTRAINT check_email_format_transaction CHECK (((email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text)),
     CONSTRAINT check_transaction_amounts CHECK (((total_amount >= (0)::numeric) AND (tax_amount >= (0)::numeric) AND (discount_amount >= (0)::numeric) AND (refund_amount >= (0)::numeric) AND (final_amount >= (0)::numeric))),
     CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE,
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.user_profile(id) ON DELETE SET null,
@@ -1488,7 +1488,7 @@ CREATE TABLE public.event_ticket_transaction (
 );
 
 
-ALTER TABLE public.event_ticket_transaction OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_ticket_transaction OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3976 (class 0 OID 0)
@@ -1543,7 +1543,7 @@ CREATE TABLE public.event_ticket_type (
 );
 
 
-ALTER TABLE public.event_ticket_type OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_ticket_type OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3979 (class 0 OID 0)
@@ -1573,21 +1573,21 @@ CREATE TABLE public.event_ticket_transaction_item (
 
 CREATE TABLE public.event_type_details (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    name character varying(255) NOT NULL,
-    description text,
-    color character varying(7) DEFAULT '#3B82F6'::character varying,
-    icon character varying(100),
-    is_active boolean DEFAULT true,
-    display_order integer DEFAULT 0,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    CONSTRAINT check_color_format CHECK (((color)::text ~* '^#[0-9A-Fa-f]{6}$'::text)),
+tenant_id character varying(255),
+name character varying(255) NOT NULL,
+description text,
+color character varying(7) DEFAULT '#3B82F6'::character varying,
+icon character varying(100),
+is_active boolean DEFAULT true,
+display_order integer DEFAULT 0,
+created_at timestamp without time zone DEFAULT now() NOT NULL,
+updated_at timestamp without time zone DEFAULT now() NOT NULL,
+CONSTRAINT check_color_format CHECK (((color)::text ~* '^#[0-9A-Fa-f]{6}$'::text)),
     CONSTRAINT event_type_details_pkey PRIMARY KEY (id)
 );
 
 
-ALTER TABLE public.event_type_details OWNER TO giventa_event_management;
+-- ALTER TABLE public.event_type_details OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3981 (class 0 OID 0)
@@ -1605,10 +1605,10 @@ COMMENT ON TABLE public.event_type_details IS 'Event type classifications with v
 
 CREATE TABLE public.qr_code_usage (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    attendee_id bigint NOT NULL,
-    qr_code_data character varying(1000) NOT NULL,
-    qr_code_type character varying(50) DEFAULT 'CHECK_IN'::character varying,
+tenant_id character varying(255),
+attendee_id bigint NOT NULL,
+qr_code_data character varying(1000) NOT NULL,
+qr_code_type character varying(50) DEFAULT 'CHECK_IN'::character varying,
     generated_at timestamp without time zone DEFAULT now() NOT NULL,
     expires_at timestamp without time zone,
     used_at timestamp without time zone,
@@ -1626,7 +1626,7 @@ CREATE TABLE public.qr_code_usage (
 );
 
 
-ALTER TABLE public.qr_code_usage OWNER TO giventa_event_management;
+-- ALTER TABLE public.qr_code_usage OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3983 (class 0 OID 0)
@@ -1648,7 +1648,7 @@ CREATE TABLE public.rel_event_details__discount_codes (
 );
 
 
-ALTER TABLE public.rel_event_details__discount_codes OWNER TO giventa_event_management;
+-- ALTER TABLE public.rel_event_details__discount_codes OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3985 (class 0 OID 0)
@@ -1691,7 +1691,7 @@ CREATE TABLE public.tenant_organization (
 );
 
 
-ALTER TABLE public.tenant_organization OWNER TO giventa_event_management;
+-- ALTER TABLE public.tenant_organization OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3986 (class 0 OID 0)
@@ -1736,7 +1736,7 @@ CREATE TABLE public.tenant_settings (
 );
 
 
-ALTER TABLE public.tenant_settings OWNER TO giventa_event_management;
+-- ALTER TABLE public.tenant_settings OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3988 (class 0 OID 0)
@@ -1761,7 +1761,7 @@ CREATE SEQUENCE public.discount_code_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.discount_code_id_seq OWNER TO giventa_event_management;
+-- ALTER SEQUENCE public.discount_code_id_seq OWNER TO giventa_event_management;
 
 --
 -- TOC entry 228 (class 1259 OID 82766)
@@ -1770,26 +1770,26 @@ ALTER SEQUENCE public.discount_code_id_seq OWNER TO giventa_event_management;
 
 CREATE TABLE public.discount_code (
     id bigint PRIMARY KEY DEFAULT nextval('public.discount_code_id_seq'::regclass),
-    code character varying(50) NOT NULL,
-    description character varying(255),
-    discount_type character varying(20) DEFAULT 'PERCENT'::character varying NOT NULL,
-    discount_value numeric(10,2) NOT NULL,
-    max_uses integer,
-    uses_count integer DEFAULT 0,
-    valid_from timestamp without time zone,
-    valid_to timestamp without time zone,
-    is_active boolean DEFAULT true,
-    created_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT now(),
-    event_id bigint NOT NULL,
-    tenant_id character varying(255) NOT NULL,
-    CONSTRAINT fk_discount_code_event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
-    );
+code character varying(50) NOT NULL,
+description character varying(255),
+discount_type character varying(20) DEFAULT 'PERCENT'::character varying NOT NULL,
+discount_value numeric(10,2) NOT NULL,
+max_uses integer,
+uses_count integer DEFAULT 0,
+valid_from timestamp without time zone,
+valid_to timestamp without time zone,
+is_active boolean DEFAULT true,
+created_at timestamp without time zone DEFAULT now(),
+updated_at timestamp without time zone DEFAULT now(),
+event_id bigint NOT NULL,
+tenant_id character varying(255) NOT NULL,
+CONSTRAINT fk_discount_code_event FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE
+);
 
-    COMMENT ON TABLE public.discount_code IS 'Discount codes for ticket purchases, now per event and tenant.';
+COMMENT ON TABLE public.discount_code IS 'Discount codes for ticket purchases, now per event and tenant.';
 
 
-ALTER TABLE public.discount_code OWNER TO giventa_event_management;
+-- ALTER TABLE public.discount_code OWNER TO giventa_event_management;
 
 --
 -- TOC entry 3927 (class 0 OID 0)
@@ -1805,15 +1805,15 @@ COMMENT ON TABLE public.discount_code IS 'Discount codes for ticket purchases';
 
 CREATE TABLE public.user_payment_transaction (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255) NOT NULL,
-    transaction_type character varying(20) NOT NULL,
-    amount numeric(21,2) NOT NULL,
-    currency character varying(3) DEFAULT 'USD'::character varying NOT NULL,
-    stripe_payment_intent_id character varying(255),
-    stripe_transfer_group character varying(255),
-    platform_fee_amount numeric(21,2) DEFAULT 0,
-    tenant_amount numeric(21,2) DEFAULT 0,
-    status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
+tenant_id character varying(255) NOT NULL,
+transaction_type character varying(20) NOT NULL,
+amount numeric(21,2) NOT NULL,
+currency character varying(3) DEFAULT 'USD'::character varying NOT NULL,
+stripe_payment_intent_id character varying(255),
+stripe_transfer_group character varying(255),
+platform_fee_amount numeric(21,2) DEFAULT 0,
+tenant_amount numeric(21,2) DEFAULT 0,
+status character varying(20) DEFAULT 'PENDING'::character varying NOT NULL,
     processing_fee numeric(21,2) DEFAULT 0,
     metadata jsonb,
     external_transaction_id character varying(255),
@@ -1828,7 +1828,7 @@ CREATE TABLE public.user_payment_transaction (
 );
 
 
-ALTER TABLE public.user_payment_transaction OWNER TO giventa_event_management;
+-- ALTER TABLE public.user_payment_transaction OWNER TO giventa_event_management;
 
 
 
@@ -1856,11 +1856,11 @@ CREATE TABLE public.user_subscription (
 
 CREATE TABLE public.user_task (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    title character varying(255) NOT NULL,
-    description  VARCHAR(4096),
-    status character varying(255) DEFAULT 'PENDING'::character varying NOT NULL,
-    priority character varying(255) DEFAULT 'MEDIUM'::character varying NOT NULL,
+tenant_id character varying(255),
+title character varying(255) NOT NULL,
+description  VARCHAR(4096),
+status character varying(255) DEFAULT 'PENDING'::character varying NOT NULL,
+priority character varying(255) DEFAULT 'MEDIUM'::character varying NOT NULL,
     due_date timestamp without time zone,
     completed boolean DEFAULT false NOT NULL,
     completion_date timestamp without time zone,
@@ -2274,11 +2274,11 @@ CREATE TRIGGER generate_enhanced_qr_code_trigger BEFORE INSERT OR UPDATE ON publ
 -- Name: event_ticket_transaction manage_ticket_inventory_trigger; Type: TRIGGER; Schema: public; Owner: giventa_event_management
 --
 
-      CREATE TRIGGER manage_ticket_inventory_trigger
-       AFTER INSERT OR UPDATE OR DELETE
-       ON public.event_ticket_transaction_item
-       FOR EACH ROW
-       EXECUTE FUNCTION public.manage_ticket_inventory();
+  CREATE TRIGGER manage_ticket_inventory_trigger
+   AFTER INSERT OR UPDATE OR DELETE
+   ON public.event_ticket_transaction_item
+   FOR EACH ROW
+   EXECUTE FUNCTION public.manage_ticket_inventory();
 
 
 --
@@ -2952,28 +2952,28 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.us
 
 CREATE TABLE public.communication_campaign (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255) NOT NULL,
-    name character varying(255) NOT NULL,
-    type character varying(50), -- EMAIL, WHATSAPP
-    description character varying(1000),
-    created_by_id bigint,
-    created_at timestamp without time zone NOT NULL,
-    scheduled_at timestamp without time zone,
-    sent_at timestamp without time zone,
-    status character varying(50), -- DRAFT, SCHEDULED, SENT, FAILED
+tenant_id character varying(255) NOT NULL,
+name character varying(255) NOT NULL,
+type character varying(50), -- EMAIL, WHATSAPP
+description character varying(1000),
+created_by_id bigint,
+created_at timestamp without time zone NOT NULL,
+scheduled_at timestamp without time zone,
+sent_at timestamp without time zone,
+status character varying(50), -- DRAFT, SCHEDULED, SENT, FAILED
     CONSTRAINT communication_campaign_pkey PRIMARY KEY (id),
     CONSTRAINT fk_communication_campaign_created_by FOREIGN KEY (created_by_id) REFERENCES public.user_profile(id) ON DELETE SET NULL
 );
 
 CREATE TABLE public.email_log (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255) NOT NULL,
-    recipient_email character varying(255) NOT NULL,
-    subject character varying(255),
-    body VARCHAR(32768),
-    sent_at timestamp without time zone NOT NULL,
-    status character varying(50), -- SENT, FAILED, etc.
-    type character varying(50), -- TRANSACTIONAL, BULK
+tenant_id character varying(255) NOT NULL,
+recipient_email character varying(255) NOT NULL,
+subject character varying(255),
+body VARCHAR(32768),
+sent_at timestamp without time zone NOT NULL,
+status character varying(50), -- SENT, FAILED, etc.
+type character varying(50), -- TRANSACTIONAL, BULK
     campaign_id bigint,
     metadata VARCHAR(8192),
     CONSTRAINT email_log_pkey PRIMARY KEY (id),
@@ -2982,12 +2982,12 @@ CREATE TABLE public.email_log (
 
 CREATE TABLE public.whatsapp_log (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255) NOT NULL,
-    recipient_phone character varying(50) NOT NULL,
-    message_body VARCHAR(4096),
-    sent_at timestamp without time zone NOT NULL,
-    status character varying(50), -- SENT, FAILED, etc.
-    type character varying(50), -- TRANSACTIONAL, BULK
+tenant_id character varying(255) NOT NULL,
+recipient_phone character varying(50) NOT NULL,
+message_body VARCHAR(4096),
+sent_at timestamp without time zone NOT NULL,
+status character varying(50), -- SENT, FAILED, etc.
+type character varying(50), -- TRANSACTIONAL, BULK
     campaign_id bigint,
     metadata VARCHAR(8192),
     CONSTRAINT whatsapp_log_pkey PRIMARY KEY (id),

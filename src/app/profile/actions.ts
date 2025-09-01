@@ -5,6 +5,207 @@ import { getAppUrl, getTenantId } from '@/lib/env';
 import { getCachedApiJwt, generateApiJwt } from '@/lib/api/jwt';
 import type { UserProfileDTO } from '@/types';
 
+/**
+ * Server action to trigger profile reconciliation after authentication
+ * This ensures mobile payment profiles get updated with proper Clerk user data
+ */
+export async function triggerProfileReconciliationServer() {
+  try {
+    console.log('[PROFILE-RECONCILIATION-SERVER] 🚀 Profile reconciliation server action called');
+
+    // Get the authenticated user
+    const { userId } = await auth();
+    console.log('[PROFILE-RECONCILIATION-SERVER] 🔍 Auth result:', { userId, hasUserId: !!userId });
+
+    if (!userId) {
+      console.log('[PROFILE-RECONCILIATION-SERVER] ❌ No authenticated user found');
+      return {
+        success: false,
+        error: 'Unauthorized',
+        details: 'User not authenticated'
+      };
+    }
+
+    console.log('[PROFILE-RECONCILIATION-SERVER] 👤 User authenticated:', userId);
+
+    // Get API base URL
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!apiBaseUrl) {
+      throw new Error('API base URL not configured');
+    }
+
+    // Get JWT token for backend calls
+    let token = await getCachedApiJwt();
+    if (!token) {
+      token = await generateApiJwt();
+    }
+
+    // 1. Fetch Clerk user data to get current names and email
+    const clerkUserResponse = await fetch(`https://api.clerk.dev/v1/users/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!clerkUserResponse.ok) {
+      console.error('[PROFILE-RECONCILIATION-SERVER] ❌ Failed to fetch Clerk user data:', clerkUserResponse.status);
+      return {
+        success: false,
+        error: 'Failed to fetch user data',
+        details: `Clerk API returned ${clerkUserResponse.status}`
+      };
+    }
+
+    const clerkUser = await clerkUserResponse.json();
+    const email = clerkUser.email_addresses?.[0]?.email_address;
+    const firstName = clerkUser.first_name;
+    const lastName = clerkUser.last_name;
+
+    console.log('[PROFILE-RECONCILIATION-SERVER] 📊 Clerk user data:', {
+      userId,
+      email,
+      firstName,
+      lastName
+    });
+
+    if (!email) {
+      console.log('[PROFILE-RECONCILIATION-SERVER] ❌ No email found for user');
+      return {
+        success: false,
+        error: 'No email found for user',
+        details: 'User has no email address'
+      };
+    }
+
+    // 2. Lookup existing profile by email
+    const profileRes = await fetch(`${apiBaseUrl}/api/user-profiles?email.equals=${encodeURIComponent(email)}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!profileRes.ok) {
+      console.log('[PROFILE-RECONCILIATION-SERVER] ❌ Failed to lookup profile by email:', profileRes.status);
+      return {
+        success: false,
+        error: 'Failed to lookup profile',
+        details: `Backend API returned ${profileRes.status}`
+      };
+    }
+
+    const profiles = await profileRes.json();
+    if (!Array.isArray(profiles) || profiles.length === 0) {
+      console.log('[PROFILE-RECONCILIATION-SERVER] ℹ️ No existing profile found by email');
+      return {
+        success: true,
+        message: 'No existing profile found',
+        reconciliationNeeded: false
+      };
+    }
+
+    const existingProfile = profiles[0];
+    console.log('[PROFILE-RECONCILIATION-SERVER] 📋 Found existing profile:', {
+      profileId: existingProfile.id,
+      profileUserId: existingProfile.userId,
+      profileFirstName: existingProfile.firstName,
+      profileLastName: existingProfile.lastName,
+      currentClerkUserId: userId
+    });
+
+    // 3. Check if profile needs reconciliation
+    const needsUserIdUpdate = existingProfile.userId !== userId;
+    const needsNameUpdate = !existingProfile.firstName ||
+                           existingProfile.firstName.trim() === '' ||
+                           !existingProfile.lastName ||
+                           existingProfile.lastName.trim() === '' ||
+                           existingProfile.firstName === 'Pending' ||
+                           existingProfile.lastName === 'User';
+
+    const needsReconciliation = needsUserIdUpdate || needsNameUpdate;
+
+    console.log('[PROFILE-RECONCILIATION-SERVER] 🔍 Reconciliation check:', {
+      needsUserIdUpdate,
+      needsNameUpdate,
+      needsReconciliation
+    });
+
+    if (!needsReconciliation) {
+      console.log('[PROFILE-RECONCILIATION-SERVER] ✅ Profile is already up-to-date');
+      return {
+        success: true,
+        message: 'Profile is up-to-date',
+        reconciliationNeeded: false
+      };
+    }
+
+    // 4. Perform profile reconciliation
+    console.log('[PROFILE-RECONCILIATION-SERVER] 🔄 Starting profile reconciliation');
+
+    const updatePayload: Partial<UserProfileDTO> = {
+      id: existingProfile.id,
+      userId: userId, // Always update to current Clerk user ID
+      updatedAt: new Date().toISOString()
+    };
+
+    // Update names if they're empty or different from Clerk data
+    if (firstName && (!existingProfile.firstName || existingProfile.firstName.trim() === '' || existingProfile.firstName === 'Pending')) {
+      updatePayload.firstName = firstName;
+    }
+
+    if (lastName && (!existingProfile.lastName || existingProfile.lastName.trim() === '' || existingProfile.lastName === 'User')) {
+      updatePayload.lastName = lastName;
+    }
+
+    console.log('[PROFILE-RECONCILIATION-SERVER] 📝 Update payload:', updatePayload);
+
+    // Update the profile
+    const updateRes = await fetch(`${apiBaseUrl}/api/user-profiles/${existingProfile.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/merge-patch+json'
+      },
+      body: JSON.stringify(updatePayload)
+    });
+
+    if (!updateRes.ok) {
+      const errorText = await updateRes.text();
+      console.error('[PROFILE-RECONCILIATION-SERVER] ❌ Profile update failed:', updateRes.status, errorText);
+      return {
+        success: false,
+        error: 'Profile update failed',
+        details: `Backend returned ${updateRes.status}: ${errorText}`
+      };
+    }
+
+    const updatedProfile = await updateRes.json();
+    console.log('[PROFILE-RECONCILIATION-SERVER] ✅ Profile reconciled successfully:', {
+      profileId: updatedProfile.id,
+      newUserId: updatedProfile.userId,
+      newFirstName: updatedProfile.firstName,
+      newLastName: updatedProfile.lastName
+    });
+
+    return {
+      success: true,
+      message: 'Profile reconciled successfully',
+      reconciliationNeeded: true,
+      profile: updatedProfile
+    };
+
+  } catch (error) {
+    console.error('[PROFILE-RECONCILIATION-SERVER] ❌ Error during profile reconciliation:', error);
+    return {
+      success: false,
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
+
 export async function updateUserProfileAction(profileId: number, payload: Partial<UserProfileDTO>): Promise<UserProfileDTO | null> {
   try {
     console.log('[Profile Action] Updating profile:', profileId, 'with payload:', payload);
@@ -32,7 +233,7 @@ export async function updateUserProfileAction(profileId: number, payload: Partia
 
     const response = await fetch(`${apiBaseUrl}/api/user-profiles/${profileId}`, {
       method: 'PATCH',
-      headers: { 
+      headers: {
         'Content-Type': 'application/merge-patch+json',
         'Authorization': `Bearer ${token}`
       },

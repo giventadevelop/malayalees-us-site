@@ -4,7 +4,7 @@ import React from 'react';
 
 const AboutSection: React.FC = () => {
   return (
-    <div className="py-24 bg-white">
+    <div id="about-us" className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
           {/* Left Side - Section Header and Title */}
