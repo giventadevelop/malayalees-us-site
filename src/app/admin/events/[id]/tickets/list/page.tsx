@@ -133,7 +133,7 @@ export default async function TicketListPage({ params, searchParams }: { params:
   const endItemControl = (currentPage - 1) * pageSize + rows.length;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 pt-32 pb-8">
+    <div className="max-w-6xl mx-auto px-4 pb-8" style={{ paddingTop: '180px' }}>
       {/* Concise Event Summary */}
       {eventDetails && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">

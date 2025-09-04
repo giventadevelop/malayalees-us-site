@@ -1,8 +1,8 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
 import { EventMediaDTO, EventDetailsDTO } from "@/types";
-import { FaEdit, FaTrashAlt, FaUpload, FaFolderOpen, FaSpinner, FaUsers, FaPhotoVideo, FaCalendarAlt, FaBan, FaTicketAlt } from 'react-icons/fa';
-import { uploadMediaServer, deleteMediaServer, editMediaServer } from './ApiServerActions';
+import { FaEdit, FaTrashAlt, FaUpload, FaFolderOpen, FaSpinner, FaUsers, FaPhotoVideo, FaCalendarAlt, FaBan, FaTicketAlt, FaTimes } from 'react-icons/fa';
+import { deleteMediaServer, editMediaServer } from './ApiServerActions';
 import { createPortal } from "react-dom";
 import Link from 'next/link';
 
@@ -202,21 +202,66 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
     setProgress(0);
     setMessage(null);
     try {
-      await uploadMediaServer({
-        eventId,
-        files: Array.from(files),
-        title,
-        description,
-        eventFlyer,
-        isEventManagementOfficialDocument,
-        isHeroImage,
-        isActiveHeroImage,
-        isFeaturedImage,
-        isPublic,
-        altText,
-        displayOrder,
-        userProfileId,
+      // Create FormData directly in the component to avoid any Server Action issues
+      const formData = new FormData();
+
+      // Append each file with the 'files' parameter (plural as expected by backend)
+      Array.from(files).forEach(file => {
+        formData.append('files', file);
       });
+
+      // Get tenant ID from environment variable (available on client)
+      const tenantId = process.env.NEXT_PUBLIC_TENANT_ID;
+      if (!tenantId) {
+        throw new Error('NEXT_PUBLIC_TENANT_ID is not set in environment variables');
+      }
+
+      // Get app URL from environment variable (available on client)
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+      // Append other parameters as form data
+      formData.append('eventId', eventId);
+      formData.append('eventFlyer', String(eventFlyer));
+      formData.append('isEventManagementOfficialDocument', String(isEventManagementOfficialDocument));
+      formData.append('isHeroImage', String(isHeroImage));
+      formData.append('isActiveHeroImage', String(isActiveHeroImage));
+      formData.append('isFeaturedImage', String(isFeaturedImage));
+      formData.append('isPublic', String(isPublic));
+      formData.append('isTeamMemberProfileImage', 'false');
+      formData.append('tenantId', tenantId);
+
+      // Append title and description for each file (backend expects arrays)
+      Array.from(files).forEach(() => {
+        formData.append('titles', title);
+        formData.append('descriptions', description || '');
+      });
+
+      if (userProfileId) {
+        formData.append('upLoadedById', String(userProfileId));
+      }
+
+      if (altText) {
+        formData.append('altText', altText);
+      }
+
+      if (displayOrder !== undefined) {
+        formData.append('displayOrder', String(displayOrder));
+      }
+
+      // Use the proxy endpoint directly from client
+      const url = `${appUrl}/api/proxy/event-medias/upload-multiple`;
+
+      const res = await fetch(url, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
+
+      const result = await res.json();
       setMessage("Upload successful!");
       setFiles(null);
       setTitle("");
@@ -377,32 +422,69 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
 
     return createPortal(
       <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Media Details</h2>
+        <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative">
+          {/* Close button in top-right corner */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 w-10 h-10 text-2xl bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all z-10"
+            aria-label="Close dialog"
+          >
+            <FaTimes />
+          </button>
+
+          <h2 className="text-2xl font-bold mb-6 text-gray-800 pr-12">Edit Media Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
 
             {/* Title */}
             <div className="md:col-span-1">
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-              <input type="text" name="title" id="title" value={formData.title || ''} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+              <input
+                type="text"
+                name="title"
+                id="title"
+                value={formData.title || ''}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+              />
             </div>
 
             {/* Display Order */}
             <div className="md:col-span-1">
               <label htmlFor="displayOrder" className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
-              <input type="number" name="displayOrder" id="displayOrder" value={formData.displayOrder || ''} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+              <input
+                type="number"
+                name="displayOrder"
+                id="displayOrder"
+                value={formData.displayOrder || ''}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+              />
             </div>
 
             {/* Description */}
             <div className="md:col-span-2">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <textarea name="description" id="description" value={formData.description || ''} onChange={handleChange} rows={4} className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+              <textarea
+                name="description"
+                id="description"
+                value={formData.description || ''}
+                onChange={handleChange}
+                rows={4}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+              />
             </div>
 
             {/* Alt Text */}
             <div className="md:col-span-2">
               <label htmlFor="altText" className="block text-sm font-medium text-gray-700 mb-1">Alt Text</label>
-              <input type="text" name="altText" id="altText" value={formData.altText || ''} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+              <input
+                type="text"
+                name="altText"
+                id="altText"
+                value={formData.altText || ''}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+              />
             </div>
 
             {/* Featured Video URL */}
@@ -414,31 +496,39 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
                 id="featuredVideoUrl"
                 value={formData.featuredVideoUrl || ''}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
               />
             </div>
 
-            {/* Checkboxes */}
-            <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4">
-              {['eventFlyer', 'isHeroImage', 'isActiveHeroImage', 'isFeaturedImage', 'isPublic', 'isFeaturedVideo'].map(key => (
-                <div key={key} className="flex items-start">
-                  <label htmlFor={key} className="custom-checkbox-container flex items-center text-sm font-medium text-gray-700">
-                    <input
-                      type="checkbox"
-                      name={key}
-                      id={key}
-                      checked={!!formData[key as keyof typeof formData]}
-                      onChange={handleChange}
-                      onClick={handleCheckboxClick}
-                      className="hidden"
-                    />
-                    <span className="custom-checkbox-visual"></span>
-                    <span className="ml-2">
+            {/* Checkboxes - Using proper UI style guide implementation */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-4">Media Options</label>
+              <div className="custom-grid-table mt-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+                {['eventFlyer', 'isHeroImage', 'isActiveHeroImage', 'isFeaturedImage', 'isPublic', 'isFeaturedVideo'].map(key => (
+                  <label key={key} className="flex flex-col items-center">
+                    <span className="relative flex items-center justify-center">
+                      <input
+                        type="checkbox"
+                        name={key}
+                        className="custom-checkbox"
+                        checked={!!formData[key as keyof typeof formData]}
+                        onChange={handleChange}
+                        onClick={handleCheckboxClick}
+                      />
+                      <span className="custom-checkbox-tick">
+                        {formData[key as keyof typeof formData] && (
+                          <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l5 5L19 7" />
+                          </svg>
+                        )}
+                      </span>
+                    </span>
+                    <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">
                       {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                     </span>
                   </label>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* Buttons */}
@@ -446,7 +536,8 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2 rounded-md text-teal-600 bg-teal-50 hover:bg-teal-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors flex items-center gap-2"
+                className="bg-teal-100 hover:bg-teal-200 text-teal-800 px-4 py-2 rounded-md flex items-center gap-2"
+                disabled={isSubmitting}
               >
                 <FaBan />
                 Cancel
@@ -455,10 +546,10 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
                 type="button"
                 onClick={handleSaveClick}
                 disabled={isSubmitting}
-                className="px-6 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 transition-colors flex items-center gap-2"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
                 {isSubmitting ? <FaSpinner className="animate-spin" /> : <FaFolderOpen />}
-                Save Changes
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>
@@ -623,10 +714,10 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
             {/* Drag and Drop Area */}
             <div
               className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDragOver
-                  ? 'border-blue-500 bg-blue-50'
-                  : files && files.length > 0
-                    ? 'border-green-400 bg-green-50'
-                    : 'border-gray-300 bg-gray-50'
+                ? 'border-blue-500 bg-blue-50'
+                : files && files.length > 0
+                  ? 'border-green-400 bg-green-50'
+                  : 'border-gray-300 bg-gray-50'
                 }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}

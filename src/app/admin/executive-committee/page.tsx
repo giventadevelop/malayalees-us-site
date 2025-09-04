@@ -20,7 +20,7 @@ export default async function ExecutiveCommitteePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8" style={{ paddingTop: '118px' }}>
+    <div className="container mx-auto px-4 py-8" style={{ paddingTop: '180px' }}>
       {/* Admin Navigation */}
       <AdminNavigation currentPage="executive-committee" />
 

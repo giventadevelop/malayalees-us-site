@@ -22,47 +22,74 @@ function formatDateInTimezone(dateString: string, timezone: string = 'America/Ne
   }
 }
 
-// Tooltip component (reuse from MediaClientPage)
-function MediaDetailsTooltip({ media, anchorRect, onClose, onTooltipMouseEnter, onTooltipMouseLeave, tooltipType }: { media: EventMediaDTO | null, anchorRect: DOMRect | null, onClose: () => void, onTooltipMouseEnter: () => void, onTooltipMouseLeave: () => void, tooltipType: 'officialDocs' | 'uploadedMedia' | null }) {
+// Tooltip component with improved functionality
+function MediaDetailsTooltip({ media, anchorRect, onClose, onTooltipMouseEnter, onTooltipMouseLeave, tooltipType, serialNumber }: {
+  media: EventMediaDTO | null,
+  anchorRect: DOMRect | null,
+  onClose: () => void,
+  onTooltipMouseEnter: () => void,
+  onTooltipMouseLeave: () => void,
+  tooltipType: 'officialDocs' | 'uploadedMedia' | null,
+  serialNumber?: number
+}) {
   if (!media || !anchorRect) return null;
   const entries = Object.entries(media).filter(([key]) => key !== 'fileUrl' && key !== 'preSignedUrl');
-  const tooltipWidth = 480;
-  const thWidth = 168;
-  // Always show tooltip to the right of the anchor cell, never above the columns
-  const spacing = 8;
+  const tooltipWidth = 600; // Increased width
+  const thWidth = 200; // Increased column width
+  const spacing = 16; // Increased spacing
+
+  // Mobile responsive positioning
+  const isMobile = window.innerWidth <= 768;
   let top = anchorRect.top;
   let left = anchorRect.right + spacing;
+
+  // Mobile positioning - center the tooltip
+  if (isMobile) {
+    left = Math.max(spacing, (window.innerWidth - tooltipWidth) / 2);
+    top = Math.max(spacing, anchorRect.top - 50);
+  } else {
+    // Desktop positioning - to the right of the anchor
+    if (left + tooltipWidth > window.innerWidth) {
+      left = anchorRect.left - tooltipWidth - spacing;
+    }
+  }
+
   // Clamp position to stay within the viewport
-  const estimatedHeight = 300;
+  const estimatedHeight = 400; // Increased height
   if (top + estimatedHeight > window.innerHeight) {
     top = window.innerHeight - estimatedHeight - spacing;
   }
   if (top < spacing) {
     top = spacing;
   }
+  if (left < spacing) {
+    left = spacing;
+  }
   if (left + tooltipWidth > window.innerWidth) {
     left = window.innerWidth - tooltipWidth - spacing;
   }
+
   const style: React.CSSProperties = {
     position: 'fixed',
     top,
     left,
     zIndex: 9999,
-    width: tooltipWidth,
-    maxWidth: 480,
-    maxHeight: 320,
+    width: isMobile ? Math.min(tooltipWidth, window.innerWidth - 32) : tooltipWidth,
+    maxWidth: isMobile ? '90vw' : 600,
+    maxHeight: isMobile ? '70vh' : 500, // Increased height
     overflowY: 'auto',
     pointerEvents: 'auto',
     background: '#fff',
-    borderWidth: 1,
+    borderWidth: 2,
     borderStyle: 'solid',
-    borderColor: '#cbd5e1',
-    borderRadius: 12,
-    boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
-    fontSize: 15,
-    padding: 16,
-    paddingBottom: 16,
+    borderColor: '#3b82f6', // Blue border for better visibility
+    borderRadius: 16,
+    boxShadow: '0 8px 32px rgba(0,0,0,0.2)', // Enhanced shadow
+    fontSize: 16, // Increased font size
+    padding: 20, // Increased padding
+    paddingBottom: 20,
   };
+
   return createPortal(
     <div
       className="admin-tooltip"
@@ -71,27 +98,62 @@ function MediaDetailsTooltip({ media, anchorRect, onClose, onTooltipMouseEnter, 
       onMouseEnter={onTooltipMouseEnter}
       onMouseLeave={onTooltipMouseLeave}
     >
-      {/* Sticky, always-visible close button */}
-      <div className="sticky top-0 right-0 z-10 bg-white flex justify-end">
+      {/* Header with close button and hint */}
+      <div className="sticky top-0 right-0 z-10 bg-white flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
+        <div className="flex items-center gap-3">
+          {serialNumber && (
+            <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+              #{serialNumber}
+            </div>
+          )}
+          <span className="text-sm text-gray-600 font-medium">
+            Click the × button to close this dialog
+          </span>
+        </div>
         <button
           onClick={onClose}
           className="w-10 h-10 text-2xl bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all"
           aria-label="Close tooltip"
         >
-          &times;
+          <FaTimes />
         </button>
       </div>
+
       <table className="admin-tooltip-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
         <tbody>
           {entries.map(([key, value]) => (
-            <tr key={key}>
-              <th style={{ textAlign: 'left', width: thWidth, minWidth: thWidth, maxWidth: thWidth, fontWeight: 600, wordBreak: 'break-word', whiteSpace: 'normal', boxSizing: 'border-box' }}>{key}</th>
-              <td style={{ textAlign: 'left', width: 'auto' }}>{
-                typeof value === 'boolean' ? (value ? 'Yes' : 'No') :
-                  value instanceof Date ? value.toLocaleString() :
-                    (key.toLowerCase().includes('date') || key.toLowerCase().includes('at')) && value ? formatDateInTimezone(value, 'America/New_York') :
-                      value === null || value === undefined || value === '' ? <span className="text-gray-400 italic">(empty)</span> : String(value)
-              }</td>
+            <tr key={key} className="border-b border-gray-100">
+              <th style={{
+                textAlign: 'left',
+                width: thWidth,
+                minWidth: thWidth,
+                maxWidth: thWidth,
+                fontWeight: 600,
+                wordBreak: 'break-word',
+                whiteSpace: 'normal',
+                boxSizing: 'border-box',
+                padding: '12px 16px 12px 0',
+                fontSize: '14px',
+                color: '#374151'
+              }}>
+                {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+              </th>
+              <td style={{
+                textAlign: 'left',
+                width: 'auto',
+                padding: '12px 0',
+                fontSize: '14px',
+                color: '#6b7280'
+              }}>
+                {typeof value === 'boolean' ? (
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {value ? 'Yes' : 'No'}
+                  </span>
+                ) : value instanceof Date ? value.toLocaleString() :
+                  (key.toLowerCase().includes('date') || key.toLowerCase().includes('at')) && value ? formatDateInTimezone(value, 'America/New_York') :
+                    value === null || value === undefined || value === '' ? <span className="text-gray-400 italic">(empty)</span> : String(value)
+                }
+              </td>
             </tr>
           ))}
         </tbody>
@@ -346,13 +408,17 @@ export default function EventMediaListPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [eventFlyerOnly, setEventFlyerOnly] = useState(false);
+  const [serialNumberInput, setSerialNumberInput] = useState('');
   const totalPages = Math.ceil(totalCount / pageSize);
 
-  const [activeTooltip, setActiveTooltip] = useState<{ media: EventMediaDTO, type: 'officialDocs' | 'uploadedMedia' } | null>(null);
+  const [activeTooltip, setActiveTooltip] = useState<{ media: EventMediaDTO, type: 'officialDocs' | 'uploadedMedia', serialNumber: number } | null>(null);
   const [tooltipAnchorRect, setTooltipAnchorRect] = useState<DOMRect | null>(null);
   const [isTooltipHovered, setIsTooltipHovered] = useState(false);
   const [isCellHovered, setIsCellHovered] = useState(false);
+  const [isTooltipClosed, setIsTooltipClosed] = useState(false);
   const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const mediaGridRef = useRef<HTMLDivElement>(null);
+  const pageTopRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -379,20 +445,19 @@ export default function EventMediaListPage() {
     return () => clearTimeout(timer);
   }, [eventId, page, pageSize, searchTerm, eventFlyerOnly]);
 
-  function handleCellMouseEnter(media: EventMediaDTO, e: React.MouseEvent<HTMLTableCellElement>, type: 'officialDocs' | 'uploadedMedia') {
+  function handleCellMouseEnter(media: EventMediaDTO, e: React.MouseEvent<HTMLTableCellElement>, type: 'officialDocs' | 'uploadedMedia', serialNumber: number) {
+    // Don't show tooltip if it was recently closed
+    if (isTooltipClosed) return;
+
     if (tooltipTimeoutRef.current) clearTimeout(tooltipTimeoutRef.current);
     setIsCellHovered(true);
     setTooltipAnchorRect(e.currentTarget.getBoundingClientRect());
-    setActiveTooltip({ media, type });
+    setActiveTooltip({ media, type, serialNumber });
   }
 
   function handleCellMouseLeave() {
     setIsCellHovered(false);
-    tooltipTimeoutRef.current = setTimeout(() => {
-      if (!isTooltipHovered) {
-        setActiveTooltip(null);
-      }
-    }, 200);
+    // Don't auto-close tooltip - only close on button click
   }
 
   function handleTooltipMouseEnter() {
@@ -401,7 +466,77 @@ export default function EventMediaListPage() {
 
   function handleTooltipMouseLeave() {
     setIsTooltipHovered(false);
+    // Don't auto-close tooltip - only close on button click
+  }
+
+  function handleCloseTooltip() {
     setActiveTooltip(null);
+    setTooltipAnchorRect(null);
+    setIsTooltipHovered(false);
+    setIsCellHovered(false);
+    setIsTooltipClosed(true);
+
+    // Scroll to the top of the page to move away from the tooltip area
+    if (pageTopRef.current) {
+      pageTopRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
+      });
+    } else {
+      // Fallback: scroll to top of window
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    // Reset the closed state after a delay to allow tooltips again
+    setTimeout(() => {
+      setIsTooltipClosed(false);
+    }, 1500); // 1.5 second delay before allowing tooltips again
+  }
+
+  const handleScrollToSerialNumber = () => {
+    const serialNumber = parseInt(serialNumberInput, 10);
+    if (isNaN(serialNumber) || serialNumber < 1) {
+      alert('Please enter a valid serial number (1 or greater)');
+      return;
+    }
+
+    // Calculate which page the serial number is on
+    const targetPage = Math.floor((serialNumber - 1) / pageSize);
+
+    if (targetPage !== page) {
+      // If the serial number is on a different page, navigate to that page first
+      setPage(targetPage);
+      // Wait for the page to load, then scroll to the specific item
+      setTimeout(() => {
+        scrollToSerialNumberOnPage(serialNumber);
+      }, 500);
+    } else {
+      // If on the same page, scroll directly to the item
+      scrollToSerialNumberOnPage(serialNumber);
+    }
+  }
+
+  const scrollToSerialNumberOnPage = (serialNumber: number) => {
+    // Find the element with the specific serial number
+    const targetElement = document.querySelector(`[data-serial-number="${serialNumber}"]`);
+    if (targetElement) {
+      targetElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest'
+      });
+      // Highlight the element briefly
+      targetElement.classList.add('ring-4', 'ring-blue-500', 'ring-opacity-50');
+      setTimeout(() => {
+        targetElement.classList.remove('ring-4', 'ring-blue-500', 'ring-opacity-50');
+      }, 3000);
+    } else {
+      alert(`Serial number #${serialNumber} not found on the current page. Please check the number and try again.`);
+    }
   }
 
   const handleEditClick = (media: EventMediaDTO) => {
@@ -469,7 +604,7 @@ export default function EventMediaListPage() {
   const endItem = Math.min((page + 1) * pageSize, totalCount);
 
   return (
-    <div className="w-[80%] mx-auto py-8" style={{ paddingTop: '118px' }}>
+    <div ref={pageTopRef} className="w-[80%] mx-auto py-8" style={{ paddingTop: '118px' }}>
       <div className="mb-8">
         <div className="bg-white rounded-lg shadow-md p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 justify-items-center mx-auto max-w-6xl">
@@ -512,87 +647,146 @@ export default function EventMediaListPage() {
 
       <EventDetailsTable event={eventDetails} />
 
-      <div className="mb-8 bg-white p-4 rounded-lg shadow-md flex items-center gap-4">
-        <input
-          type="text"
-          placeholder="Search by media title..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <label className="flex items-center gap-2 cursor-pointer">
-          <span className="relative flex items-center justify-center">
+      <div className="mb-8 bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Search Media</h2>
+
+        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+          {/* Search by title */}
+          <div className="flex-grow">
+            <label htmlFor="search-input" className="block text-sm font-medium text-gray-700 mb-1">
+              Search by Title
+            </label>
             <input
-              type="checkbox"
-              className="custom-checkbox"
-              checked={eventFlyerOnly}
-              onChange={(e) => setEventFlyerOnly(e.target.checked)}
-              onClick={(e) => e.stopPropagation()}
+              id="search-input"
+              type="text"
+              placeholder="Enter media title to search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <span className="custom-checkbox-tick">
-              {eventFlyerOnly && (
-                <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l5 5L19 7" />
-                </svg>
-              )}
-            </span>
-          </span>
-          <span className="text-sm font-medium text-gray-700 select-none">Event Flyers Only</span>
-        </label>
+          </div>
+
+          {/* Scroll to serial number */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div>
+              <label htmlFor="serial-input" className="block text-sm font-medium text-gray-700 mb-1">
+                Go to Serial #
+              </label>
+              <input
+                id="serial-input"
+                type="number"
+                placeholder="e.g., 5"
+                value={serialNumberInput}
+                onChange={(e) => setSerialNumberInput(e.target.value)}
+                className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                min="1"
+              />
+            </div>
+            <button
+              onClick={handleScrollToSerialNumber}
+              className="mt-6 sm:mt-0 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <FaUsers />
+              Go to Image
+            </button>
+          </div>
+
+          {/* Event flyers filter */}
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <span className="relative flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  className="custom-checkbox"
+                  checked={eventFlyerOnly}
+                  onChange={(e) => setEventFlyerOnly(e.target.checked)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <span className="custom-checkbox-tick">
+                  {eventFlyerOnly && (
+                    <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l5 5L19 7" />
+                    </svg>
+                  )}
+                </span>
+              </span>
+              <span className="text-sm font-medium text-gray-700 select-none">Event Flyers Only</span>
+            </label>
+          </div>
+        </div>
       </div>
 
-      <div className="mb-4 text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
-        Mouse over an image to see the full details. Use the × button to close the tooltip.
+      <div className={`mb-4 text-sm border rounded-lg px-4 py-3 ${isTooltipClosed ? 'text-orange-700 bg-orange-50 border-orange-200' : 'text-blue-700 bg-blue-50 border-blue-200'}`}>
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">{isTooltipClosed ? '⏳' : '💡'} Tip:</span>
+          <span>
+            {isTooltipClosed
+              ? 'Tooltips temporarily disabled. Please wait a moment before hovering over images again.'
+              : 'Mouse over an image to see full details. Click the × button to close the tooltip dialog.'
+            }
+          </span>
+        </div>
       </div>
 
       {loading && <div className="text-center p-8">Loading media...</div>}
       {!loading && sortedMedia.length === 0 && <div className="text-center p-8">No media found for this event.</div>}
       {!loading && sortedMedia.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {sortedMedia.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col justify-between">
-              <div>
-                <div
-                  className="relative h-48 bg-gray-200 cursor-pointer"
-                  onMouseEnter={(e) => handleCellMouseEnter(item, e as any, 'uploadedMedia')}
-                  onMouseLeave={handleCellMouseLeave}
-                >
-                  {item.fileUrl && (
-                    <img
-                      src={item.fileUrl.startsWith('http') ? item.fileUrl : `https://placehold.co/600x400?text=${item.title}`}
-                      alt={item.altText || item.title || ''}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null;
-                        target.src = `https://placehold.co/600x400?text=No+Image`;
-                      }}
-                    />
-                  )}
+        <div ref={mediaGridRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {sortedMedia.map((item, index) => {
+            const serialNumber = page * pageSize + index + 1;
+            return (
+              <div
+                key={item.id}
+                data-serial-number={serialNumber}
+                className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col justify-between"
+              >
+                <div>
+                  <div
+                    className="relative h-48 bg-gray-200 cursor-pointer"
+                    onMouseEnter={(e) => handleCellMouseEnter(item, e as any, 'uploadedMedia', serialNumber)}
+                    onMouseLeave={handleCellMouseLeave}
+                  >
+                    {/* Serial number overlay */}
+                    <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 rounded-full text-sm font-bold z-10 shadow-lg">
+                      #{serialNumber}
+                    </div>
+                    {item.fileUrl && (
+                      <img
+                        src={item.fileUrl.startsWith('http') ? item.fileUrl : `https://placehold.co/600x400?text=${item.title}`}
+                        alt={item.altText || item.title || ''}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = `https://placehold.co/600x400?text=No+Image`;
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-lg truncate" title={item.title || ''}>{item.title}</h3>
+                    <p className="text-gray-600 text-sm h-10 overflow-hidden" title={item.description || ''}>{item.description}</p>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg truncate" title={item.title || ''}>{item.title}</h3>
-                  <p className="text-gray-600 text-sm h-10 overflow-hidden" title={item.description || ''}>{item.description}</p>
+                <div className="p-4 pt-0 flex justify-end space-x-2">
+                  <button
+                    onClick={() => handleEditClick(item)}
+                    className="text-blue-500 hover:text-blue-700 p-2 rounded-full"
+                    aria-label="Edit Media"
+                  >
+                    <FaEdit size={20} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item)}
+                    className="text-red-500 hover:text-red-700 p-2 rounded-full"
+                    aria-label="Delete Media"
+                  >
+                    <FaTrashAlt size={20} />
+                  </button>
                 </div>
               </div>
-              <div className="p-4 pt-0 flex justify-end space-x-2">
-                <button
-                  onClick={() => handleEditClick(item)}
-                  className="text-blue-500 hover:text-blue-700 p-2 rounded-full"
-                  aria-label="Edit Media"
-                >
-                  <FaEdit size={20} />
-                </button>
-                <button
-                  onClick={() => handleDelete(item)}
-                  className="text-red-500 hover:text-red-700 p-2 rounded-full"
-                  aria-label="Delete Media"
-                >
-                  <FaTrashAlt size={20} />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -664,10 +858,11 @@ export default function EventMediaListPage() {
       <MediaDetailsTooltip
         media={activeTooltip?.media || null}
         anchorRect={tooltipAnchorRect}
-        onClose={() => setActiveTooltip(null)}
+        onClose={handleCloseTooltip}
         onTooltipMouseEnter={handleTooltipMouseEnter}
         onTooltipMouseLeave={handleTooltipMouseLeave}
         tooltipType={activeTooltip?.type || null}
+        serialNumber={activeTooltip?.serialNumber}
       />
     </div>
   );

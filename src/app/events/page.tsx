@@ -51,14 +51,32 @@ export default function EventsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [heroImageUrl, setHeroImageUrl] = useState<string>("/images/default_placeholder_hero_image.jpeg");
   const [fetchError, setFetchError] = useState(false);
+  const [showPastEvents, setShowPastEvents] = useState(false);
 
   useEffect(() => {
     async function fetchEvents() {
       setLoading(true);
       setFetchError(false);
       try {
-        // Fetch paginated events
-        const eventsRes = await fetch(`/api/proxy/event-details?sort=startDate,asc&page=${page}&size=${EVENTS_PAGE_SIZE}`);
+        // Build query parameters based on date filter
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        const queryParams = new URLSearchParams({
+          sort: showPastEvents ? 'startDate,desc' : 'startDate,asc',
+          page: page.toString(),
+          size: EVENTS_PAGE_SIZE.toString()
+        });
+
+        // Add date filtering based on toggle
+        if (showPastEvents) {
+          // Show events that ended before today
+          queryParams.append('endDate.lessThan', today);
+        } else {
+          // Show events that start today or later (future events including today)
+          queryParams.append('startDate.greaterThanOrEqual', today);
+        }
+
+        // Fetch paginated events with date filtering
+        const eventsRes = await fetch(`/api/proxy/event-details?${queryParams.toString()}`);
         if (!eventsRes.ok) throw new Error('Failed to fetch events');
         const events: EventDetailsDTO[] = await eventsRes.json();
         let eventList = Array.isArray(events) ? events : [events];
@@ -82,11 +100,11 @@ export default function EventsPage() {
         setTotalPages(1);
 
         // Hero image logic: earliest upcoming event within 3 months
-        const today = new Date();
+        const currentDate = new Date();
         const threeMonthsFromNow = new Date();
-        threeMonthsFromNow.setMonth(today.getMonth() + 3);
+        threeMonthsFromNow.setMonth(currentDate.getMonth() + 3);
         const upcoming = eventsWithMedia
-          .filter(e => e.startDate && new Date(e.startDate) >= today && e.thumbnailUrl)
+          .filter(e => e.startDate && new Date(e.startDate) >= currentDate && e.thumbnailUrl)
           .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
         if (upcoming.length > 0) {
           const nextEvent = upcoming[0];
@@ -106,7 +124,7 @@ export default function EventsPage() {
       }
     }
     fetchEvents();
-  }, [page]);
+  }, [page, showPastEvents]);
 
   // Helper to generate Google Calendar URL
   function toGoogleCalendarDate(date: string, time: string) {
@@ -464,7 +482,40 @@ export default function EventsPage() {
 
       {/* Event List */}
       <div className="max-w-5xl mx-auto p-6" style={{ paddingTop: '60px' }}>
-        <h1 className="text-3xl font-bold mb-6 text-center">All Events</h1>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-6">All Events</h1>
+
+          {/* Event Filter Toggle */}
+          <div className="flex justify-center items-center gap-4 mb-6">
+            <span className={`text-lg font-medium ${!showPastEvents ? 'text-blue-600' : 'text-gray-500'}`}>
+              Future Events
+            </span>
+            <button
+              onClick={() => {
+                setShowPastEvents(!showPastEvents);
+                setPage(0); // Reset to first page when switching
+              }}
+              className="relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              style={{ backgroundColor: showPastEvents ? '#3b82f6' : '#d1d5db' }}
+            >
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${showPastEvents ? 'translate-x-7' : 'translate-x-1'
+                  }`}
+              />
+            </button>
+            <span className={`text-lg font-medium ${showPastEvents ? 'text-blue-600' : 'text-gray-500'}`}>
+              Past Events
+            </span>
+          </div>
+
+          {/* Filter Description */}
+          <p className="text-gray-600 text-sm">
+            {showPastEvents
+              ? 'Showing past events (events that have already ended)'
+              : 'Showing future events (including events happening today)'
+            }
+          </p>
+        </div>
         {loading ? (
           <div className="flex justify-center items-center min-h-[200px]">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
@@ -515,14 +566,23 @@ export default function EventsPage() {
                     <div className="w-full">
                       {/* Mobile Layout - Stacked */}
                       <div className="block sm:hidden">
-                        <h2 className="text-2xl font-bold text-blue-700 mb-3">
-                          {event.title}
-                        </h2>
-                        {/* Buy Tickets Link for Mobile */}
+                        <div className="flex items-center gap-3 mb-3">
+                          <h2 className="text-2xl font-bold text-blue-700">
+                            {event.title}
+                          </h2>
+                          {showPastEvents && (
+                            <span className="px-3 py-1 bg-gray-500 text-white text-sm font-medium rounded-full">
+                              Past Event
+                            </span>
+                          )}
+                        </div>
+                        {/* Buy Tickets Link for Mobile - Only show for future events */}
                         {(() => {
-                          const today = new Date();
+                          if (showPastEvents) return null; // Don't show buy tickets for past events
+
+                          const currentDate = new Date();
                           const eventDate = event.startDate ? new Date(event.startDate) : null;
-                          const isUpcoming = eventDate && eventDate >= today;
+                          const isUpcoming = eventDate && eventDate >= currentDate;
 
                           if (!isUpcoming) return null;
 
@@ -551,17 +611,26 @@ export default function EventsPage() {
                       <div className="hidden sm:grid sm:grid-cols-2 sm:gap-8 sm:items-start">
                         {/* Left Column - Event Details */}
                         <div>
-                          <h2 className="text-2xl font-bold text-blue-700 mb-3">
-                            {event.title}
-                          </h2>
+                          <div className="flex items-center gap-3 mb-3">
+                            <h2 className="text-2xl font-bold text-blue-700">
+                              {event.title}
+                            </h2>
+                            {showPastEvents && (
+                              <span className="px-3 py-1 bg-gray-500 text-white text-sm font-medium rounded-full">
+                                Past Event
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         {/* Right Column - Buy Tickets Button */}
                         <div className="flex justify-center">
                           {(() => {
-                            const today = new Date();
+                            if (showPastEvents) return null; // Don't show buy tickets for past events
+
+                            const currentDate = new Date();
                             const eventDate = event.startDate ? new Date(event.startDate) : null;
-                            const isUpcoming = eventDate && eventDate >= today;
+                            const isUpcoming = eventDate && eventDate >= currentDate;
 
                             if (!isUpcoming) return null;
 
@@ -616,11 +685,13 @@ export default function EventsPage() {
                         </div>
                       )}
 
-                      {/* Calendar Link with Better Icon */}
+                      {/* Calendar Link with Better Icon - Only show for future events */}
                       {(() => {
-                        const today = new Date();
+                        if (showPastEvents) return null; // Don't show calendar link for past events
+
+                        const currentDate = new Date();
                         const eventDate = event.startDate ? new Date(event.startDate) : null;
-                        const isUpcoming = eventDate && eventDate >= today;
+                        const isUpcoming = eventDate && eventDate >= currentDate;
                         if (!isUpcoming) return null;
                         const start = toGoogleCalendarDate(event.startDate, event.startTime);
                         const end = toGoogleCalendarDate(event.endDate, event.endTime);

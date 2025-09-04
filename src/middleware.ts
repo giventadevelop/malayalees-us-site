@@ -55,6 +55,10 @@ export default authMiddleware({
     "/api/billing/(.*)"
   ],
 
+  // Clock skew tolerance to handle system clock differences
+  // Use very high tolerance for development to prevent authentication issues
+  clockSkewInSeconds: process.env.NODE_ENV === 'development' ? 300 : 30,
+
   // Debug mode for development
   debug: true,
 

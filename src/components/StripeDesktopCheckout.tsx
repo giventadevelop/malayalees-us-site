@@ -102,14 +102,10 @@ function InnerDesktopCheckout({ cart, eventId, email, discountCodeId, clientSecr
       }
 
       console.log('[DESKTOP ECE] Elements validation successful, confirming payment...');
-      const returnUrl = typeof window !== 'undefined' ? `${window.location.origin}/event/success` : '/event/success';
-
       const result = await stripe.confirmPayment({
         elements,
         clientSecret,
-        confirmParams: {
-          return_url: returnUrl, // absolute URL for redirect-based wallets (Link, 3DS)
-        },
+        redirect: 'if_required', // Use redirect: 'if_required' instead of return_url
       });
 
       if ((result as any)?.error) {
@@ -132,6 +128,16 @@ function InnerDesktopCheckout({ cart, eventId, email, discountCodeId, clientSecr
         alert(errorMessage);
       } else {
         console.log("[DESKTOP ECE] Payment confirmed successfully:", result);
+
+        // Extract Payment Intent ID from result and redirect to success page
+        const paymentIntent = (result as any)?.paymentIntent;
+        if (paymentIntent?.id) {
+          console.log("[DESKTOP ECE] Redirecting to success page with Payment Intent ID:", paymentIntent.id);
+          window.location.href = `/event/success?pi=${encodeURIComponent(paymentIntent.id)}`;
+        } else {
+          console.warn("[DESKTOP ECE] No Payment Intent ID found in result, redirecting without parameters");
+          window.location.href = '/event/success';
+        }
       }
     } catch (e: any) {
       console.error("[DESKTOP ECE] confirmPayment threw:", e);
@@ -203,121 +209,121 @@ function InnerDesktopCheckout({ cart, eventId, email, discountCodeId, clientSecr
       <div className="relative">
         {/* @ts-ignore - element may lack TS in some versions */}
         <ExpressCheckoutElement
-        onConfirm={async () => {
-          // CRITICAL: Call elements.submit() first for validation
-          if (!elements) {
-            console.error('[DESKTOP ECE] Elements not available for validation');
-            alert("Payment system not ready. Please refresh the page and try again.");
-            return;
-          }
-
-          try {
-            console.log('[DESKTOP ECE] Express Checkout onConfirm - validating elements...');
-            const { error: submitError } = await elements.submit();
-
-            if (submitError) {
-              // Handle empty error object case (common when no payment method selected)
-              if (!submitError.type && !submitError.message) {
-                console.warn("[DESKTOP ECE] Express Checkout validation failed: No payment method selected");
-                alert("Please select a payment method before proceeding. You can choose from the Link, Cash App, or credit card options below.");
-                return;
-              }
-
-              // Log the actual error details for debugging
-              console.error("[DESKTOP ECE] Express Checkout validation failed:", {
-                type: submitError.type || 'unknown',
-                message: submitError.message || 'No message provided',
-                code: submitError.code || 'No code provided',
-                fullError: submitError
-              });
-
-              // Provide specific error message for validation failures
-              let errorMessage = "Please check your payment details and try again.";
-
-              if (submitError.type === 'validation_error') {
-                if (submitError.message?.includes('payment_method') || submitError.message?.includes('method')) {
-                  errorMessage = "Please select a payment method before proceeding.";
-                } else if (submitError.message?.includes('card')) {
-                  errorMessage = "Please check your card details and try again.";
-                } else {
-                  errorMessage = submitError.message || "Please complete all required fields.";
-                }
-              } else if (submitError.type === 'card_error') {
-                errorMessage = submitError.message || "Card payment failed. Please check your card details.";
-              } else if (submitError.type === 'api_error') {
-                errorMessage = "Payment service error. Please try again.";
-              }
-
-              alert(errorMessage);
+          onConfirm={async () => {
+            // CRITICAL: Call elements.submit() first for validation
+            if (!elements) {
+              console.error('[DESKTOP ECE] Elements not available for validation');
+              alert("Payment system not ready. Please refresh the page and try again.");
               return;
             }
 
-            console.log('[DESKTOP ECE] Elements validation successful for Express Checkout');
-          } catch (e) {
-            console.error("[DESKTOP ECE] Elements validation error for Express Checkout:", e);
-            alert("Payment validation failed. Please try again.");
-            return;
-          }
+            try {
+              console.log('[DESKTOP ECE] Express Checkout onConfirm - validating elements...');
+              const { error: submitError } = await elements.submit();
 
-          // Now proceed with the Express Checkout confirmation
-          await handleConfirm();
-        }}
-        onCancel={handleCancel}
-        onReady={({ availablePaymentMethods }) => {
-          console.log('[DESKTOP ECE] Express Checkout ready');
-          console.log('[DESKTOP ECE] Available payment methods:', availablePaymentMethods);
-          setExpressCheckoutReady(true);
+              if (submitError) {
+                // Handle empty error object case (common when no payment method selected)
+                if (!submitError.type && !submitError.message) {
+                  console.warn("[DESKTOP ECE] Express Checkout validation failed: No payment method selected");
+                  alert("Please select a payment method before proceeding. You can choose from the Link, Cash App, or credit card options below.");
+                  return;
+                }
 
-          // Enhanced debugging for payment methods
-          if (availablePaymentMethods) {
-            console.log('[DESKTOP ECE] === PAYMENT METHODS DEBUG ===');
-            console.log('[DESKTOP ECE] Available methods:', Object.keys(availablePaymentMethods));
+                // Log the actual error details for debugging
+                console.error("[DESKTOP ECE] Express Checkout validation failed:", {
+                  type: submitError.type || 'unknown',
+                  message: submitError.message || 'No message provided',
+                  code: submitError.code || 'No code provided',
+                  fullError: submitError
+                });
 
-            // Check specific payment methods
-            if (availablePaymentMethods.applePay) {
-              console.log('[DESKTOP ECE] ✅ Apple Pay: Available');
-            } else {
-              console.log('[DESKTOP ECE] ❌ Apple Pay: Not available');
-              console.log('[DESKTOP ECE]    - Requires HTTPS in production');
-              console.log('[DESKTOP ECE]    - Requires supported browser (Safari, Chrome on MacOS)');
+                // Provide specific error message for validation failures
+                let errorMessage = "Please check your payment details and try again.";
+
+                if (submitError.type === 'validation_error') {
+                  if (submitError.message?.includes('payment_method') || submitError.message?.includes('method')) {
+                    errorMessage = "Please select a payment method before proceeding.";
+                  } else if (submitError.message?.includes('card')) {
+                    errorMessage = "Please check your card details and try again.";
+                  } else {
+                    errorMessage = submitError.message || "Please complete all required fields.";
+                  }
+                } else if (submitError.type === 'card_error') {
+                  errorMessage = submitError.message || "Card payment failed. Please check your card details.";
+                } else if (submitError.type === 'api_error') {
+                  errorMessage = "Payment service error. Please try again.";
+                }
+
+                alert(errorMessage);
+                return;
+              }
+
+              console.log('[DESKTOP ECE] Elements validation successful for Express Checkout');
+            } catch (e) {
+              console.error("[DESKTOP ECE] Elements validation error for Express Checkout:", e);
+              alert("Payment validation failed. Please try again.");
+              return;
             }
 
-            if (availablePaymentMethods.googlePay) {
-              console.log('[DESKTOP ECE] ✅ Google Pay: Available');
+            // Now proceed with the Express Checkout confirmation
+            await handleConfirm();
+          }}
+          onCancel={handleCancel}
+          onReady={({ availablePaymentMethods }) => {
+            console.log('[DESKTOP ECE] Express Checkout ready');
+            console.log('[DESKTOP ECE] Available payment methods:', availablePaymentMethods);
+            setExpressCheckoutReady(true);
+
+            // Enhanced debugging for payment methods
+            if (availablePaymentMethods) {
+              console.log('[DESKTOP ECE] === PAYMENT METHODS DEBUG ===');
+              console.log('[DESKTOP ECE] Available methods:', Object.keys(availablePaymentMethods));
+
+              // Check specific payment methods
+              if (availablePaymentMethods.applePay) {
+                console.log('[DESKTOP ECE] ✅ Apple Pay: Available');
+              } else {
+                console.log('[DESKTOP ECE] ❌ Apple Pay: Not available');
+                console.log('[DESKTOP ECE]    - Requires HTTPS in production');
+                console.log('[DESKTOP ECE]    - Requires supported browser (Safari, Chrome on MacOS)');
+              }
+
+              if (availablePaymentMethods.googlePay) {
+                console.log('[DESKTOP ECE] ✅ Google Pay: Available');
+              } else {
+                console.log('[DESKTOP ECE] ❌ Google Pay: Not available');
+                console.log('[DESKTOP ECE]    - Requires domain verification in Stripe Dashboard');
+                console.log('[DESKTOP ECE]    - Requires HTTPS in production');
+                console.log('[DESKTOP ECE]    - Requires supported browser (Chrome, Edge, Firefox)');
+              }
+
+              if (availablePaymentMethods.link) {
+                console.log('[DESKTOP ECE] ✅ Link: Available');
+              } else {
+                console.log('[DESKTOP ECE] ❌ Link: Not available');
+              }
+
+              console.log('[DESKTOP ECE] ================================');
             } else {
-              console.log('[DESKTOP ECE] ❌ Google Pay: Not available');
-              console.log('[DESKTOP ECE]    - Requires domain verification in Stripe Dashboard');
-              console.log('[DESKTOP ECE]    - Requires HTTPS in production');
-              console.log('[DESKTOP ECE]    - Requires supported browser (Chrome, Edge, Firefox)');
+              console.log('[DESKTOP ECE] ⚠️ No payment methods available');
+              console.log('[DESKTOP ECE] Check Stripe Dashboard → Settings → Payment methods');
             }
 
-            if (availablePaymentMethods.link) {
-              console.log('[DESKTOP ECE] ✅ Link: Available');
-            } else {
-              console.log('[DESKTOP ECE] ❌ Link: Not available');
-            }
+            // Log available payment methods for debugging
+            console.log('[DESKTOP ECE] Note: Google Pay manifest errors in console are expected if domain not verified in Stripe');
 
-            console.log('[DESKTOP ECE] ================================');
-          } else {
-            console.log('[DESKTOP ECE] ⚠️ No payment methods available');
-            console.log('[DESKTOP ECE] Check Stripe Dashboard → Settings → Payment methods');
-          }
+            // Debug: Check what payment methods are available
+            console.log('[DESKTOP ECE] Available payment methods should include: Apple Pay, Google Pay, Link, Cash App');
+            console.log('[DESKTOP ECE] If only Link/Cash App show, check Stripe domain verification for Google Pay');
+          }}
+          options={{
+            layout: 'horizontal' as any
+          }}
+        />
 
-          // Log available payment methods for debugging
-          console.log('[DESKTOP ECE] Note: Google Pay manifest errors in console are expected if domain not verified in Stripe');
-
-          // Debug: Check what payment methods are available
-          console.log('[DESKTOP ECE] Available payment methods should include: Apple Pay, Google Pay, Link, Cash App');
-          console.log('[DESKTOP ECE] If only Link/Cash App show, check Stripe domain verification for Google Pay');
-        }}
-        options={{
-          layout: 'horizontal' as any
-        }}
-      />
-
-      {/* Custom CSS for Express Checkout button layout */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
+        {/* Custom CSS for Express Checkout button layout */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
           /* Ensure Express Checkout buttons display horizontally */
           .ElementsApp .ExpressCheckoutElement {
             width: 100% !important;
@@ -383,7 +389,7 @@ function InnerDesktopCheckout({ cart, eventId, email, discountCodeId, clientSecr
             overflow: visible !important;
           }
         `
-      }} />
+        }} />
       </div>
 
       {/* PaymentElement Section */}

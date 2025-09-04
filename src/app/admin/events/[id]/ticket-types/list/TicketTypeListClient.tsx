@@ -97,8 +97,8 @@ function TicketTypeDetailsTooltip({ ticketType, anchorRect, onClose }: { ticketT
           <div className="flex justify-between">
             <span className="text-gray-600">Status:</span>
             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ticketType.isActive
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              ? 'bg-green-100 text-green-800'
+              : 'bg-red-100 text-red-800'
               }`}>
               {ticketType.isActive ? 'Active' : 'Inactive'}
             </span>
@@ -123,7 +123,7 @@ interface TicketTypeListClientProps {
 }
 
 export default function TicketTypeListClient({ eventId, eventDetails, ticketTypes: initialTicketTypes }: TicketTypeListClientProps) {
-  const [ticketTypes, setTicketTypes] = useState<EventTicketTypeDTO[]>(initialTicketTypes);
+  const [ticketTypes, setTicketTypes] = useState<EventTicketTypeDTO[]>(initialTicketTypes || []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -280,80 +280,84 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-8 py-8">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Ticket Types for {eventDetails?.title}</h2>
-          <button
-            onClick={handleAddNewClick}
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
-          >
-            <FaPlus /> Add New Ticket Type
-          </button>
-        </div>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-gray-800">Ticket Types for {eventDetails?.title}</h2>
+        <button
+          onClick={handleAddNewClick}
+          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
+        >
+          <FaPlus /> Add New Ticket Type
+        </button>
+      </div>
 
-        {/* Hint message */}
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
-          <div className="flex">
-            <div className="ml-3">
-              <p className="text-sm text-blue-700">
-                <strong>Note:</strong> Ticket types may not be immediately deletable but you can make them inactive by clicking the edit button and unchecking the Active checkbox.
-              </p>
-              <p className="text-sm text-blue-700 mt-2">
-                <strong>Tip:</strong> Hover over the Name, Price, or Available columns to see detailed information about each ticket type.
-              </p>
-            </div>
+      {/* Hint message */}
+      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+        <div className="flex">
+          <div className="ml-3">
+            <p className="text-sm text-blue-700">
+              <strong>Note:</strong> Ticket types may not be immediately deletable but you can make them inactive by clicking the edit button and unchecking the Active checkbox.
+            </p>
+            <p className="text-sm text-blue-700 mt-2">
+              <strong>Tip:</strong> Hover over the Name, Price, or Available columns to see detailed information about each ticket type.
+            </p>
           </div>
         </div>
+      </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Available</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Available</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {ticketTypes && ticketTypes.length > 0 ? ticketTypes.map((ticketType) => (
+              <tr key={ticketType.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
+                  {ticketType.name}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
+                  ${ticketType.price.toFixed(2)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
+                  {ticketType.availableQuantity}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ticketType.isActive
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
+                    }`}>
+                    {ticketType.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center justify-center gap-4">
+                    <button onClick={() => handleEditClick(ticketType)} className="flex flex-col items-center text-blue-600 hover:text-blue-800 focus:outline-none">
+                      <FaEdit className="w-7 h-7" />
+                      <span className="text-[10px] text-gray-600 mt-1 block font-bold">Edit</span>
+                    </button>
+                    <button onClick={() => handleDeleteClick(ticketType)} className="flex flex-col items-center text-red-600 hover:text-red-800 focus:outline-none">
+                      <FaTrashAlt className="w-7 h-7" />
+                      <span className="text-[10px] text-gray-600 mt-1 block font-bold">Delete</span>
+                    </button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {ticketTypes.map((ticketType) => (
-                <tr key={ticketType.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
-                    {ticketType.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
-                    ${ticketType.price.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
-                    {ticketType.availableQuantity}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ticketType.isActive
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                      }`}>
-                      {ticketType.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center justify-center gap-4">
-                      <button onClick={() => handleEditClick(ticketType)} className="flex flex-col items-center text-blue-600 hover:text-blue-800 focus:outline-none">
-                        <FaEdit className="w-7 h-7" />
-                        <span className="text-[10px] text-gray-600 mt-1 block font-bold">Edit</span>
-                      </button>
-                      <button onClick={() => handleDeleteClick(ticketType)} className="flex flex-col items-center text-red-600 hover:text-red-800 focus:outline-none">
-                        <FaTrashAlt className="w-7 h-7" />
-                        <span className="text-[10px] text-gray-600 mt-1 block font-bold">Delete</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            )) : (
+              <tr>
+                <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                  No ticket types found. Click "Add Ticket Type" to create one.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Tooltip component */}

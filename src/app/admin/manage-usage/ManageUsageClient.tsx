@@ -515,7 +515,7 @@ export default function ManageUsageClient({ adminProfile }: { adminProfile: User
   const totalPages = Math.ceil(totalUsers / pageSize) || 1;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ paddingTop: '118px' }}>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ paddingTop: '180px' }}>
       <AdminNavigation />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Manage Users</h1>

@@ -225,6 +225,7 @@ export async function editMediaServer(mediaId: number | string, payload: Partial
   }
 }
 
+// Keep the server action for backward compatibility, but it should not be used for file uploads
 export async function uploadMediaServer(params: {
   eventId: string;
   files: File[];

@@ -3,10 +3,13 @@ import { notFound } from 'next/navigation';
 import { getAppUrl } from '@/lib/env';
 import { formatInTimeZone } from 'date-fns-tz';
 import type { EventDetailsDTO } from '@/types';
+import SuccessClient from './SuccessClient';
 
 interface SuccessPageProps {
   searchParams: {
     eventId?: string;
+    session_id?: string;
+    pi?: string;
   };
 }
 
@@ -49,15 +52,29 @@ function LoadingSkeleton() {
 }
 
 export default async function SuccessPage({ searchParams }: SuccessPageProps) {
-  const eventId = searchParams.eventId ? parseInt(searchParams.eventId) : null;
+  const { eventId, session_id, pi } = searchParams;
 
-  if (!eventId || isNaN(eventId)) {
+  // If session_id or pi parameters are present, use SuccessClient
+  if (session_id || pi) {
+    return (
+      <Suspense fallback={<LoadingSkeleton />}>
+        <SuccessClient
+          session_id={session_id || ''}
+          payment_intent={pi || ''}
+        />
+      </Suspense>
+    );
+  }
+
+  // Legacy flow: require eventId parameter
+  const parsedEventId = eventId ? parseInt(eventId) : null;
+  if (!parsedEventId || isNaN(parsedEventId)) {
     notFound();
   }
 
   return (
     <Suspense fallback={<LoadingSkeleton />}>
-      <SuccessPageContent eventId={eventId} />
+      <SuccessPageContent eventId={parsedEventId} />
     </Suspense>
   );
 }
@@ -70,8 +87,8 @@ async function SuccessPageContent({ eventId }: { eventId: number }) {
   }
 
   const eventDate = formatInTimeZone(
-    eventDetails.startDate, 
-    eventDetails.timezone, 
+    eventDetails.startDate,
+    eventDetails.timezone,
     'EEEE, MMMM d, yyyy (zzz)'
   );
 
@@ -81,7 +98,7 @@ async function SuccessPageContent({ eventId }: { eventId: number }) {
         <div className="text-center">
           <div className="text-green-600 text-6xl mb-4">✓</div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Registration Confirmed!</h1>
-          
+
           <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
             <h2 className="text-xl font-semibold text-green-800 mb-2">
               {eventDetails.title}
