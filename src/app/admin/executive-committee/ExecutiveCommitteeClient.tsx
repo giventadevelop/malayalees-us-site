@@ -152,6 +152,7 @@ export default function ExecutiveCommitteeClient({ initialMembers }: ExecutiveCo
             setEditingMember(null);
           }}
           title={editingMember ? 'Edit Team Member' : 'Add New Team Member'}
+          preventBackdropClose={true}
         >
           <ExecutiveCommitteeForm
             member={editingMember}
@@ -170,6 +171,7 @@ export default function ExecutiveCommitteeClient({ initialMembers }: ExecutiveCo
           open={!!viewingMember}
           onClose={() => setViewingMember(null)}
           title="View Team Member"
+          preventBackdropClose={true}
         >
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -244,6 +246,7 @@ export default function ExecutiveCommitteeClient({ initialMembers }: ExecutiveCo
           open={!!deletingMember}
           onClose={() => setDeletingMember(null)}
           title="Confirm Deletion"
+          preventBackdropClose={true}
         >
           <div className="text-center">
             <p className="text-lg">

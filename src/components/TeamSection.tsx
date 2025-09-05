@@ -63,33 +63,8 @@ const TeamSection: React.FC = () => {
     return '/images/user_profile_loading.webp';
   };
 
-  // Helper function to get CSS classes for last row centering
+  // No longer needed with flexbox layout
   const getLastRowClasses = (index: number, totalMembers: number) => {
-    const itemsPerRow = 4; // Maximum items per row on large screens
-    const fullRows = Math.floor(totalMembers / itemsPerRow);
-    const itemsInLastRow = totalMembers % itemsPerRow;
-    const startOfLastRow = fullRows * itemsPerRow;
-    const isInLastRow = index >= startOfLastRow;
-
-    if (isInLastRow && itemsInLastRow > 0) {
-      if (itemsInLastRow === 1) {
-        return styles.lastRowSingle;
-      } else if (itemsInLastRow === 2) {
-        if (index === startOfLastRow) {
-          return styles.lastRowFirst;
-        } else {
-          return styles.lastRowSecond;
-        }
-      } else if (itemsInLastRow === 3) {
-        if (index === startOfLastRow) {
-          return styles.lastRowFirst;
-        } else if (index === startOfLastRow + 1) {
-          return styles.lastRowThird;
-        } else {
-          return styles.lastRowSecond;
-        }
-      }
-    }
     return '';
   };
 
@@ -165,7 +140,7 @@ const TeamSection: React.FC = () => {
             {teamMembers.map((member, index) => (
               <div
                 key={member.id}
-                className={`${styles.teamCard} group relative bg-white rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 ease-out hover:-translate-y-3 ${getLastRowClasses(index, teamMembers.length)}`}
+                className={`${styles.teamCard} group relative rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 ease-out hover:-translate-y-3 ${getLastRowClasses(index, teamMembers.length)}`}
                 style={{
                   animationDelay: `${index * 150}ms`,
                 }}
@@ -201,7 +176,7 @@ const TeamSection: React.FC = () => {
                 </div>
 
                 {/* Card Content - using flexbox for consistent height */}
-                <div className={`${styles.cardContent} p-8 bg-white flex flex-col`}>
+                <div className={`${styles.cardContent} flex flex-col`}>
                   {/* Name and Title */}
                   <div className="mb-6">
                     <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300">

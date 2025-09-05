@@ -1,91 +1,113 @@
-/* Team Grid with Perfect Equal Distribution and Centering */
+/* Team Grid with Perfect Centering for All Rows */
 .teamGrid {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 2rem;
   width: 100%;
-  max-width: 100%;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 0 auto;
 }
 
-/* Desktop: 4 columns with equal distribution */
+/* Desktop: 4 columns with centered alignment */
 @media (min-width: 1200px) {
   .teamGrid {
-    grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 1fr;
+    max-width: calc(4 * 300px + 3 * 2rem);
   }
 }
 
-/* Large tablet: 3 columns */
+/* Large tablet: 3 columns with centered alignment */
 @media (min-width: 900px) and (max-width: 1199px) {
   .teamGrid {
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 1fr;
+    max-width: calc(3 * 300px + 2 * 2rem);
   }
 }
 
-/* Tablet: 2 columns */
+/* Tablet: 2 columns with centered alignment */
 @media (min-width: 600px) and (max-width: 899px) {
   .teamGrid {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 1fr;
+    max-width: calc(2 * 300px + 1 * 2rem);
   }
 }
 
-/* Mobile: 1 column */
+/* Mobile: 1 column with centered alignment */
 @media (max-width: 599px) {
   .teamGrid {
-    grid-template-columns: 1fr;
-    grid-auto-rows: 1fr;
+    max-width: 320px;
+    flex-direction: column;
+    align-items: center;
   }
 }
 
-/* Team member card - consistent height and width */
+/* Team member card - consistent height and width with centering */
 .teamCard {
-  width: 100%;
-  height: 100%;
-  min-height: 600px;
+  width: 300px;
+  max-width: 300px;
+  height: 700px;
+  /* Fixed height for consistency */
   display: flex;
   flex-direction: column;
-  justify-self: stretch;
-  align-self: stretch;
+  flex-shrink: 0;
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Last row centering for different scenarios */
-.lastRowSingle {
-  grid-column: 2 / 3;
-  /* Center in 4-column layout */
+/* Gradient variations for different cards */
+.teamCard:nth-child(1) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-@media (max-width: 1199px) {
-  .lastRowSingle {
-    grid-column: 2 / 3;
-    /* Center in 3-column layout */
-  }
+.teamCard:nth-child(2) {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 }
 
-@media (max-width: 899px) {
-  .lastRowSingle {
-    grid-column: 1 / 2;
-    /* Center in 2-column layout */
-  }
+.teamCard:nth-child(3) {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
+.teamCard:nth-child(4) {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.teamCard:nth-child(5) {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.teamCard:nth-child(6) {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.teamCard:nth-child(7) {
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+}
+
+.teamCard:nth-child(8) {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+
+/* Card content with proper flex distribution */
+.teamCard .cardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  margin: 4px;
+  border-radius: calc(2rem - 4px);
+  padding: 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* Mobile-specific adjustments */
 @media (max-width: 599px) {
-  .lastRowSingle {
-    grid-column: 1 / 2;
-    /* Center in 1-column layout */
+  .teamCard {
+    width: 100%;
+    max-width: 320px;
+    height: 650px;
+    /* Slightly shorter for mobile */
   }
-}
-
-.lastRowFirst {
-  justify-self: end;
-}
-
-.lastRowSecond {
-  justify-self: start;
-}
-
-.lastRowThird {
-  justify-self: center;
 }
 
 /* Ensure all cards have the same height */

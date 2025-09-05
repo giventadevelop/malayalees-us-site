@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatDateLocal } from '@/lib/date';
 import { useMemo, useState } from 'react';
+import { AspectRatio } from 'radix-ui';
 
 interface EventCardProps {
   event: EventWithMedia;
@@ -65,9 +66,11 @@ export function EventCard({ event, placeholderText }: EventCardProps) {
 
   return (
     <div 
-      className="group cursor-pointer w-[320px] max-w-[calc(100vw-2rem)]"
+      className="group cursor-pointer w-full m-0 p-0"
       style={{
-        borderRadius: '1rem',
+        margin: 0,
+        padding: 0,
+        borderRadius: 0,
         overflow: 'hidden',
         background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
@@ -81,79 +84,80 @@ export function EventCard({ event, placeholderText }: EventCardProps) {
       }}
     >
       <Link href={`/events/${event.id}`} className="block" tabIndex={-1}>
-        {/* Image Container with Rounded Top Corners */}
-        <div 
-          className="relative w-full"
-          style={{
-            height: '320px',
-            borderTopLeftRadius: '1rem',
-            borderTopRightRadius: '1rem',
-            overflow: 'hidden',
-            backgroundColor: '#e5e7eb'
-          }}
-        >
-          {event.thumbnailUrl && !imageError ? (
-            event.thumbnailUrl.includes('s3.amazonaws.com') ? (
-              // Use regular img tag for S3 URLs
-              <img
-                src={event.thumbnailUrl}
-                alt={event.title}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  borderTopLeftRadius: '1rem',
-                  borderTopRightRadius: '1rem',
-                  transition: 'transform 0.3s ease'
-                }}
-                className="group-hover:scale-105"
-                onError={(e) => {
-                  console.error(`Image failed to load for event ${event.id}:`, event.thumbnailUrl, e);
-                  setImageError(true);
-                }}
-                onLoad={() => {
-                  console.log(`Image loaded successfully for event ${event.id}:`, event.thumbnailUrl);
-                }}
-              />
+        {/* Enhanced Image Container with Increased Height - No Padding for Edge-to-Edge */}
+        <div className="w-full m-0 p-0" style={{ margin: 0, padding: 0 }}>
+          <div 
+            className="relative w-full overflow-hidden bg-gray-50"
+            style={{ 
+              height: '400px', // Significantly increased height
+              minHeight: '400px',
+              margin: 0,
+              padding: 0,
+              borderRadius: 0
+            }}
+          >
+            {event.thumbnailUrl && !imageError ? (
+              event.thumbnailUrl.includes('s3.amazonaws.com') ? (
+                // Use regular img tag for S3 URLs with enhanced padding and sizing
+                <div className="w-full h-full p-6 flex items-center justify-center">
+                  <img
+                    src={event.thumbnailUrl}
+                    alt={event.title}
+                    className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300 rounded-xl shadow-lg"
+                    style={{
+                      backgroundColor: 'transparent',
+                      objectFit: 'contain',
+                      objectPosition: 'center'
+                    }}
+                    onError={(e) => {
+                      console.error(`Image failed to load for event ${event.id}:`, event.thumbnailUrl, e);
+                      setImageError(true);
+                    }}
+                    onLoad={() => {
+                      console.log(`Image loaded successfully for event ${event.id}:`, event.thumbnailUrl);
+                    }}
+                  />
+                </div>
+              ) : (
+                // Use Next.js Image for other URLs with enhanced container
+                <div className="relative w-full h-full p-6 flex items-center justify-center">
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={event.thumbnailUrl}
+                      alt={event.title}
+                      fill
+                      className="object-contain group-hover:scale-105 transition-transform duration-300 rounded-xl shadow-lg"
+                      style={{
+                        backgroundColor: 'transparent',
+                        objectFit: 'contain',
+                        objectPosition: 'center'
+                      }}
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      onError={(e) => {
+                        console.error(`Image failed to load for event ${event.id}:`, event.thumbnailUrl, e);
+                        setImageError(true);
+                      }}
+                      onLoad={() => {
+                        console.log(`Image loaded successfully for event ${event.id}:`, event.thumbnailUrl);
+                      }}
+                    />
+                  </div>
+                </div>
+              )
             ) : (
-              // Use Next.js Image for other URLs
-              <Image
-                src={event.thumbnailUrl}
-                alt={event.title}
-                fill
-                style={{
-                  objectFit: 'contain',
-                  borderTopLeftRadius: '1rem',
-                  borderTopRightRadius: '1rem',
-                  transition: 'transform 0.3s ease'
-                }}
-                className="group-hover:scale-105"
-                onError={(e) => {
-                  console.error(`Image failed to load for event ${event.id}:`, event.thumbnailUrl, e);
-                  setImageError(true);
-                }}
-                onLoad={() => {
-                  console.log(`Image loaded successfully for event ${event.id}:`, event.thumbnailUrl);
-                }}
-              />
-            )
-          ) : (
-            <div
-              className="w-full h-full flex items-center justify-center"
-              style={{
-                backgroundColor: 'transparent',
-                borderTopLeftRadius: '1rem',
-                borderTopRightRadius: '1rem'
-              }}
-            >
-              <span className="text-gray-400 text-4xl">📅</span>
-            </div>
-          )}
+              <div className="w-full h-full flex items-center justify-center bg-transparent p-6">
+                <div className="text-center">
+                  <span className="text-gray-400 text-6xl block mb-4">📅</span>
+                  <span className="text-gray-500 text-sm">No Image Available</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         
         {/* Content Section */}
         <div className="p-4 text-center">
-          <h4 className="text-lg font-semibold mb-1">{event.title}</h4>
+          <h4 className="text-lg font-semibold mb-1 line-clamp-2">{event.title}</h4>
           <p className="text-gray-600 mb-3 text-sm line-clamp-2">{event.description}</p>
           <div className="text-yellow-600 font-bold mb-1 text-sm">
             {formatDateLocal(event.startDate)}

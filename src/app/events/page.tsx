@@ -93,20 +93,25 @@ export default function EventsPage() {
         if (searchTitle.trim()) {
           queryParams.append('title.contains', searchTitle.trim());
         }
-        if (searchDateFrom) {
-          queryParams.append('startDate.greaterThanOrEqual', searchDateFrom);
-        }
-        if (searchDateTo) {
-          queryParams.append('startDate.lessThanOrEqual', searchDateTo);
-        }
 
-        // Add date filtering based on toggle
-        if (showPastEvents) {
-          // Show events that ended before today
-          queryParams.append('endDate.lessThan', today);
+        // Handle date filtering - prioritize search date range over toggle
+        if (searchDateFrom || searchDateTo) {
+          // If user has specified date range, use that instead of toggle logic
+          if (searchDateFrom) {
+            queryParams.append('startDate.greaterThanOrEqual', searchDateFrom);
+          }
+          if (searchDateTo) {
+            queryParams.append('startDate.lessThanOrEqual', searchDateTo);
+          }
         } else {
-          // Show events that start today or later (future events including today)
-          queryParams.append('startDate.greaterThanOrEqual', today);
+          // No search date range specified, use toggle logic
+          if (showPastEvents) {
+            // Show events that ended before today
+            queryParams.append('endDate.lessThan', today);
+          } else {
+            // Show events that start today or later (future events including today)
+            queryParams.append('startDate.greaterThanOrEqual', today);
+          }
         }
 
         // Fetch paginated events with date filtering
@@ -208,6 +213,8 @@ export default function EventsPage() {
     setSearchDateTo("");
     setPage(0);
     setIsSearching(false);
+    // Reset to future events when clearing search
+    setShowPastEvents(false);
   };
 
   return (
@@ -654,7 +661,7 @@ export default function EventsPage() {
                 </button>
                 <button
                   onClick={clearSearch}
-                  className="px-6 py-3 bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                  className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                 >
                   <span>🗑️</span>
                   Clear Search
@@ -670,8 +677,13 @@ export default function EventsPage() {
                   {searchTitle && ` Title contains "${searchTitle}"`}
                   {searchTitle && (searchDateFrom || searchDateTo) && ' and'}
                   {searchDateFrom && searchDateTo && ` Date between "${searchDateFrom}" and "${searchDateTo}"`}
-                  {searchDateFrom && !searchDateTo && ` Date from "${searchDateFrom}"`}
+                  {searchDateFrom && !searchDateTo && ` Date from "${searchDateFrom}" onwards`}
                   {!searchDateFrom && searchDateTo && ` Date until "${searchDateTo}"`}
+                  {(searchDateFrom || searchDateTo) && (
+                    <span className="block mt-1 text-xs text-blue-600">
+                      (Date range search overrides Future/Past Events toggle)
+                    </span>
+                  )}
                 </p>
               </div>
             )}
@@ -702,13 +714,14 @@ export default function EventsPage() {
                 >
                   <div className="flex flex-col h-full">
                     {/* Image Section - Top on all screen sizes */}
-                    <div className="relative w-full h-80 rounded-t-2xl overflow-hidden">
+                    <div className="relative w-full h-auto rounded-t-2xl overflow-hidden">
                       {event.thumbnailUrl ? (
                         <Image
                           src={event.thumbnailUrl}
                           alt={event.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          width={800}
+                          height={600}
+                          className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
                           style={{
                             backgroundColor: 'transparent',
                             borderRadius: '1rem 1rem 0 0'
@@ -716,7 +729,7 @@ export default function EventsPage() {
                         />
                       ) : (
                         <div
-                          className="w-full h-full flex items-center justify-center"
+                          className="w-full h-80 flex items-center justify-center"
                           style={{
                             backgroundColor: 'transparent',
                             borderRadius: '1rem 1rem 0 0'
