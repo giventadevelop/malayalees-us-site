@@ -5,6 +5,8 @@ import { FaUpload, FaTimes, FaSpinner, FaImage } from 'react-icons/fa';
 import { useAuth } from '@clerk/nextjs';
 import type { ExecutiveCommitteeTeamMemberDTO } from '@/types/executiveCommitteeTeamMember';
 import { uploadTeamMemberProfileImage } from './ApiServerActions';
+import SuccessDialog from '@/components/SuccessDialog';
+import ErrorDialog from '@/components/ErrorDialog';
 
 interface ImageUploadDialogProps {
   member: ExecutiveCommitteeTeamMemberDTO;
@@ -26,6 +28,10 @@ export default function ImageUploadDialog({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [userProfileId, setUserProfileId] = useState<number | null>(null);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Get user profile ID when component mounts
@@ -53,13 +59,15 @@ export default function ImageUploadDialog({
   const handleFileSelect = (file: File) => {
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file (JPEG, PNG, GIF, etc.)');
+      setErrorMessage('Please select an image file (JPEG, PNG, GIF, etc.)');
+      setShowErrorDialog(true);
       return;
     }
 
     // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
-      alert('File size must be less than 10MB');
+      setErrorMessage('File size must be less than 10MB');
+      setShowErrorDialog(true);
       return;
     }
 
@@ -99,6 +107,11 @@ export default function ImageUploadDialog({
     }
   };
 
+  const handleRefresh = () => {
+    setShowSuccessDialog(false);
+    window.location.reload();
+  };
+
   const handleUpload = async () => {
     if (!selectedFile || !member.id) return;
 
@@ -129,22 +142,23 @@ export default function ImageUploadDialog({
       // Call success handler with the actual image URL
       onUploadSuccess(imageUrl || 'upload-successful');
 
-      // Close the dialog
+      // Close the upload dialog
       onClose();
 
       // Show appropriate success message
       // 🎯 Success determined by HTTP 2xx status code, not response content
       if (imageUrl && !imageUrl.startsWith('upload-successful')) {
-        alert('Profile image uploaded successfully! The page will refresh to show the updated image.');
+        setSuccessMessage('Profile image uploaded successfully!');
       } else {
-        alert('Profile image uploaded successfully! The upload completed but we couldn\'t retrieve the image URL. The page will refresh to show the updated image.');
+        setSuccessMessage('Profile image uploaded successfully! The upload completed but we couldn\'t retrieve the image URL.');
       }
 
-      // Reload the parent page to reflect the latest data
-      window.location.reload();
+      // Show success dialog
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error('Upload failed:', error);
-      alert(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setErrorMessage(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setShowErrorDialog(true);
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -333,6 +347,24 @@ export default function ImageUploadDialog({
           </div>
         </div>
       </div>
+
+      {/* Success Dialog */}
+      <SuccessDialog
+        isOpen={showSuccessDialog}
+        onClose={() => setShowSuccessDialog(false)}
+        title="Upload Successful"
+        message={successMessage}
+        showRefreshButton={true}
+        onRefresh={handleRefresh}
+      />
+
+      {/* Error Dialog */}
+      <ErrorDialog
+        isOpen={showErrorDialog}
+        onClose={() => setShowErrorDialog(false)}
+        title="Upload Failed"
+        message={errorMessage}
+      />
     </div>
   );
 }

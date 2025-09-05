@@ -4,7 +4,10 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaUpload, FaTimes, FaSpinner, FaPlus, FaTrash } from 'react-icons/fa';
 import type { ExecutiveCommitteeTeamMemberDTO, ExecutiveCommitteeTeamMemberFormData } from '@/types/executiveCommitteeTeamMember';
-import { createExecutiveCommitteeMember, updateExecutiveCommitteeMember } from './ApiServerActions';
+import { createExecutiveCommitteeMember, updateExecutiveCommitteeMember, uploadTeamMemberProfileImage } from './ApiServerActions';
+import DragDropImageUpload from '@/components/DragDropImageUpload';
+import SuccessDialog from '@/components/SuccessDialog';
+import ErrorDialog from '@/components/ErrorDialog';
 
 interface ExecutiveCommitteeFormProps {
   member?: ExecutiveCommitteeTeamMemberDTO | null;
@@ -17,11 +20,15 @@ export default function ExecutiveCommitteeForm({
   onSuccess,
   onCancel,
 }: ExecutiveCommitteeFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(member?.profileImageUrl || null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [expertiseItems, setExpertiseItems] = useState<string[]>(['']);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const {
     register,
@@ -112,46 +119,30 @@ export default function ExecutiveCommitteeForm({
     }
   };
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleImageSelect = (file: File) => {
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
-  const removeImage = () => {
+  const handleImageRemove = () => {
     setImageFile(null);
     setImagePreview(null);
   };
 
-  const uploadImage = async (): Promise<string | null> => {
+  const uploadImage = async (memberId: number): Promise<string | null> => {
     if (!imageFile) return member?.profileImageUrl || null;
 
     try {
-      const formData = new FormData();
-      formData.append('file', imageFile);
-      formData.append('type', 'profile');
-      formData.append('entity', 'executive-committee-member');
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      const result = await response.json();
-      return result.url;
+      // Use the actual upload API for team member profile images
+      const imageUrl = await uploadTeamMemberProfileImage(memberId, imageFile);
+      return imageUrl;
     } catch (error) {
       console.error('Image upload failed:', error);
-      return null;
+      throw error;
     }
   };
 
@@ -160,29 +151,15 @@ export default function ExecutiveCommitteeForm({
     setUploadProgress(10);
 
     try {
-      // Handle image upload if there's a new image
-      let profileImageUrl = member?.profileImageUrl;
-      if (imageFile) {
-        // Simulate upload progress
-        setUploadProgress(30);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setUploadProgress(70);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setUploadProgress(100);
-
-        // For now, we'll use a placeholder URL
-        // In a real implementation, you'd upload to your image service
-        profileImageUrl = `https://via.placeholder.com/400x400/teal/white?text=${encodeURIComponent(data.firstName.charAt(0) + data.lastName.charAt(0))}`;
-      }
-
       // Filter out empty expertise items and convert to JSON string for backend
       const filteredExpertise = data.expertise.filter(item => item.trim());
       const expertiseString = filteredExpertise.length > 0 ?
         JSON.stringify(filteredExpertise) : undefined;
 
+      // Step 1: Save member data first (without image)
       const memberData = {
         ...data,
-        profileImageUrl,
+        profileImageUrl: member?.profileImageUrl || undefined, // Keep existing or undefined for new
         joinDate: data.joinDate ? new Date(data.joinDate).toISOString() : undefined,
         expertise: expertiseString
       };
@@ -197,14 +174,49 @@ export default function ExecutiveCommitteeForm({
         result = await createExecutiveCommitteeMember(memberData);
       }
 
-      if (result) {
-        onSuccess(result);
-      } else {
+      if (!result) {
         throw new Error('Failed to save member');
       }
+
+      // Step 2: Upload image if there's a new image file
+      if (imageFile && result.id) {
+        setUploadProgress(30);
+        try {
+          const imageUrl = await uploadImage(result.id);
+          if (imageUrl) {
+            // Update the member with the new image URL
+            const updatedMemberData = {
+              ...memberData,
+              profileImageUrl: imageUrl
+            };
+
+            setUploadProgress(70);
+            const updatedResult = await updateExecutiveCommitteeMember(result.id, updatedMemberData);
+            if (updatedResult) {
+              result = updatedResult;
+            }
+          }
+        } catch (imageError) {
+          console.error('Image upload failed:', imageError);
+          // Don't fail the entire process if image upload fails
+          setErrorMessage('Member saved successfully, but image upload failed. You can upload the image later.');
+          setShowErrorDialog(true);
+        }
+      }
+
+      setUploadProgress(100);
+
+      // Show success message
+      setSuccessMessage('Team member saved successfully!');
+      setShowSuccessDialog(true);
+
+      // Call success handler
+      onSuccess(result);
+
     } catch (error) {
       console.error('Form submission failed:', error);
-      alert('Failed to save member. Please try again.');
+      setErrorMessage(`Failed to save member: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setShowErrorDialog(true);
     } finally {
       setIsSubmitting(false);
       setUploadProgress(0);
@@ -213,53 +225,32 @@ export default function ExecutiveCommitteeForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {/* Image Upload Section */}
-      <div className="space-y-4">
-        <label className="block font-medium">Profile Photo</label>
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            {imagePreview ? (
-              <div className="relative">
-                <img
-                  src={imagePreview}
-                  alt="Profile preview"
-                  className="h-24 w-24 rounded-full object-cover border-2 border-gray-200"
-                />
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                >
-                  <FaTimes className="w-3 h-3" />
-                </button>
-              </div>
-            ) : (
-              <div className="h-24 w-24 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
-                <FaUpload className="w-8 h-8 text-gray-400" />
-              </div>
-            )}
+      {/* Image Guidelines */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+        <div className="flex items-start gap-2">
+          <div className="flex-shrink-0 w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+            <span className="text-blue-600 text-xs font-bold">ℹ</span>
           </div>
-          <div className="flex-1">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              PNG, JPG, GIF up to 10MB. Recommended: 400x400 pixels.
+          <div className="text-sm text-blue-800">
+            <p className="font-medium mb-1">Profile Image Guidelines</p>
+            <p className="text-blue-700">
+              Profile size or dimensions image guidelines are given in the parent page.
+              Please refer to the parent page for the same.
             </p>
           </div>
         </div>
-        {uploadProgress > 0 && uploadProgress < 100 && (
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-teal-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${uploadProgress}%` }}
-            ></div>
-          </div>
-        )}
       </div>
+
+      {/* Drag and Drop Image Upload */}
+      <DragDropImageUpload
+        onFileSelect={handleImageSelect}
+        onFileRemove={handleImageRemove}
+        selectedFile={imageFile}
+        previewUrl={imagePreview}
+        isUploading={isSubmitting && uploadProgress > 0}
+        uploadProgress={uploadProgress}
+        maxSize={10}
+      />
 
       {/* Basic Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -493,6 +484,23 @@ export default function ExecutiveCommitteeForm({
           )}
         </button>
       </div>
+
+      {/* Success Dialog */}
+      <SuccessDialog
+        isOpen={showSuccessDialog}
+        onClose={() => setShowSuccessDialog(false)}
+        title="Success"
+        message={successMessage}
+        showRefreshButton={false}
+      />
+
+      {/* Error Dialog */}
+      <ErrorDialog
+        isOpen={showErrorDialog}
+        onClose={() => setShowErrorDialog(false)}
+        title="Error"
+        message={errorMessage}
+      />
     </form>
   );
 }

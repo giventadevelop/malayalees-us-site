@@ -128,6 +128,7 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [isCheckingCode, setIsCheckingCode] = useState(false);
 
   const [editingTicketType, setEditingTicketType] = useState<EventTicketTypeDTO | null>(null);
   const [deletingTicketType, setDeletingTicketType] = useState<EventTicketTypeDTO | null>(null);
@@ -223,6 +224,20 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
     });
   };
 
+  const checkDuplicateCode = (code: string, excludeId?: number): boolean => {
+    return ticketTypes.some(tt =>
+      tt.code.toLowerCase() === code.toLowerCase() &&
+      tt.id !== excludeId
+    );
+  };
+
+  const checkDuplicateName = (name: string, excludeId?: number): boolean => {
+    return ticketTypes.some(tt =>
+      tt.name.toLowerCase() === name.toLowerCase() &&
+      tt.id !== excludeId
+    );
+  };
+
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
     if (!formData.name?.trim()) newErrors.name = 'Name is required.';
@@ -231,8 +246,80 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
     if (Number(formData.price) <= 0) newErrors.price = 'Price must be greater than zero.';
     if (Number(formData.availableQuantity) <= 0) newErrors.availableQuantity = 'Available quantity must be greater than zero.';
 
+    // Check for duplicate name
+    if (formData.name?.trim()) {
+      const isDuplicateName = checkDuplicateName(formData.name.trim(), editingTicketType?.id);
+      if (isDuplicateName) {
+        newErrors.name = 'A ticket type with this name already exists for this event.';
+      }
+    }
+
+    // Check for duplicate code
+    if (formData.code?.trim()) {
+      const isDuplicate = checkDuplicateCode(formData.code.trim(), editingTicketType?.id);
+      if (isDuplicate) {
+        newErrors.code = 'A ticket type with this code already exists for this event.';
+      }
+    }
+
     setValidationErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNameChange = (value: string) => {
+    setFormData(prev => ({ ...prev, name: value }));
+
+    // Clear existing name error when user starts typing
+    if (validationErrors.name) {
+      setValidationErrors(prev => ({ ...prev, name: '' }));
+    }
+  };
+
+  const handleNameBlur = () => {
+    // Validate name on blur for immediate feedback
+    if (formData.name?.trim()) {
+      setIsCheckingCode(true);
+
+      // Simulate a brief delay for better UX
+      setTimeout(() => {
+        const isDuplicate = checkDuplicateName(formData.name?.trim() || '', editingTicketType?.id);
+        if (isDuplicate) {
+          setValidationErrors(prev => ({
+            ...prev,
+            name: 'A ticket type with this name already exists for this event.'
+          }));
+        }
+        setIsCheckingCode(false);
+      }, 300);
+    }
+  };
+
+  const handleCodeChange = (value: string) => {
+    setFormData(prev => ({ ...prev, code: value }));
+
+    // Clear existing code error when user starts typing
+    if (validationErrors.code) {
+      setValidationErrors(prev => ({ ...prev, code: '' }));
+    }
+  };
+
+  const handleCodeBlur = () => {
+    // Validate code on blur for immediate feedback
+    if (formData.code?.trim()) {
+      setIsCheckingCode(true);
+
+      // Simulate a brief delay for better UX
+      setTimeout(() => {
+        const isDuplicate = checkDuplicateCode(formData.code?.trim() || '', editingTicketType?.id);
+        if (isDuplicate) {
+          setValidationErrors(prev => ({
+            ...prev,
+            code: 'A ticket type with this code already exists for this event.'
+          }));
+        }
+        setIsCheckingCode(false);
+      }, 300);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -311,6 +398,7 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service Fee</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Available</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -324,6 +412,9 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
                   ${ticketType.price.toFixed(2)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
+                  ${(ticketType.serviceFee || 0).toFixed(2)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
                   {ticketType.availableQuantity}
@@ -351,7 +442,7 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
               </tr>
             )) : (
               <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                   No ticket types found. Click "Add Ticket Type" to create one.
                 </td>
               </tr>
@@ -423,26 +514,42 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
 
           <div>
             <label className="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name || ''}
-              onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
-              required
-            />
+            <div className="relative">
+              <input
+                type="text"
+                name="name"
+                value={formData.name || ''}
+                onChange={(e) => handleNameChange(e.target.value)}
+                onBlur={handleNameBlur}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base pr-10"
+                required
+              />
+              {isCheckingCode && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                </div>
+              )}
+            </div>
             {validationErrors.name && <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Code</label>
-            <input
-              type="text"
-              name="code"
-              value={formData.code || ''}
-              onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
-              required
-            />
+            <div className="relative">
+              <input
+                type="text"
+                name="code"
+                value={formData.code || ''}
+                onChange={(e) => handleCodeChange(e.target.value)}
+                onBlur={handleCodeBlur}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base pr-10"
+                required
+              />
+              {isCheckingCode && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                </div>
+              )}
+            </div>
             {validationErrors.code && <p className="text-red-500 text-xs mt-1">{validationErrors.code}</p>}
           </div>
           <div>
@@ -491,11 +598,12 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
               <input
                 type="number"
                 name="serviceFee"
-                value={formData.serviceFee || 0}
+                value={formData.serviceFee ? Number(formData.serviceFee).toFixed(2) : '0.00'}
                 onChange={handleInputChange}
                 className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
                 min="0"
                 step="0.01"
+                placeholder="0.00"
               />
             </div>
           </div>

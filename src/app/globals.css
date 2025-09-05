@@ -181,7 +181,7 @@ body {
   background: #fff;
 }
 
-.event-item {
+/* .event-item {
   background: #f9fafb;
   border-radius: 1rem;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
@@ -197,7 +197,7 @@ body {
   border-radius: 0.75rem;
   overflow: hidden;
   margin-bottom: 1rem;
-}
+} */
 
 .event-title {
   font-size: 1.25rem;
@@ -223,13 +223,13 @@ body {
     padding: 1.5rem;
   }
 
-  .event-item {
+  /* .event-item {
     padding: 1rem;
   }
 
   .event-image {
     height: 8rem;
-  }
+  } */
 
   .hero-section .hero-image-container {
     left: 120px !important;
