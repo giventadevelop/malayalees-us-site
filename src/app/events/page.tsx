@@ -690,8 +690,20 @@ export default function EventsPage() {
           </div>
         </div>
         {loading ? (
-          <div className="flex justify-center items-center min-h-[200px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="relative">
+              <Image
+                src="/images/loading_events.jpg"
+                alt="Loading events..."
+                width={300}
+                height={300}
+                className="rounded-lg shadow-2xl animate-pulse"
+                priority
+              />
+              <div className="absolute inset-0 rounded-lg overflow-hidden">
+                <div className="wavy-animation"></div>
+              </div>
+            </div>
           </div>
         ) : fetchError ? (
           <div className="text-center text-red-600 font-bold py-8">

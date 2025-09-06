@@ -105,6 +105,12 @@ export interface EventDetailsDTO {
   isSportsEvent?: boolean;
   /** Is event live */
   isLive?: boolean;
+  /** Is featured event */
+  isFeaturedEvent: boolean;
+  /** Featured event priority */
+  featuredEventPriority: number;
+  /** Live event priority */
+  liveEventPriority: number;
   /** Created at (ISO date-time) */
   createdAt: string;
   /** Updated at (ISO date-time) */
@@ -158,6 +164,9 @@ export interface EventMediaDTO {
   isFeaturedImage?: boolean;
   isHeroImage?: boolean;
   isActiveHeroImage?: boolean;
+  isHomePageHeroImage: boolean;
+  isFeaturedEventStripImage: boolean;
+  isLiveEventStripImage: boolean;
   eventId?: number;
   uploadedById?: number;
   createdAt: string;

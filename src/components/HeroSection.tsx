@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import type { EventDetailsDTO } from '@/types';
+import type { EventDetailsDTO, EventWithMedia } from '@/types';
 import { getAppUrl } from '@/lib/env';
 
-// Add EventWithMedia type for local use
-interface EventWithMedia extends EventDetailsDTO {
-  thumbnailUrl?: string;
+// Add local extension for placeholder text
+interface EventWithMediaExtended extends EventWithMedia {
   placeholderText?: string;
 }
 
@@ -17,14 +16,44 @@ const DynamicHeroImage: React.FC = () => {
   const [isShowingDefault, setIsShowingDefault] = useState(true);
   const [dynamicImages, setDynamicImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentEvent, setCurrentEvent] = useState<EventWithMedia | null>(null);
+  const [currentEvent, setCurrentEvent] = useState<EventWithMediaExtended | null>(null);
+  const [eventsData, setEventsData] = useState<EventWithMediaExtended[]>([]);
   const [hasTicketedEvents, setHasTicketedEvents] = useState(false);
 
   // Default image path
   const defaultImage = "/images/hero_section/default_hero_section_second_column_poster.webp";
 
+  // Overlay logic based on current event - Implements priority system from documentation
+  const getOverlayForEvent = (event: EventWithMediaExtended | null) => {
+    if (!event) return null;
+
+    // Priority 1: Buy Tickets (highest priority)
+    if (event.admissionType?.toLowerCase().includes('ticket') ||
+        event.admissionType?.toLowerCase().includes('paid') ||
+        event.admissionType?.toLowerCase().includes('fee')) {
+      return { type: 'tickets', image: '/images/buy_tickets_click_here_red.webp', action: `/events/${event.id}` };
+    }
+
+    // Priority 2: Registration Required
+    if (event.isRegistrationRequired) {
+      return { type: 'registration', image: '/images/register_here_button.png', action: `/events/${event.id}` };
+    }
+
+    // Priority 3: Live Event
+    if (event.isLive) {
+      return { type: 'live', image: '/images/watch_live_button.png', action: `/events/${event.id}` };
+    }
+
+    // Priority 4: Sports Event
+    if (event.isSportsEvent) {
+      return { type: 'sports', image: '/images/sports_event_button.png', action: `/events/${event.id}` };
+    }
+
+    return null; // No overlay
+  };
+
   // Fetch events with media function
-  const fetchEventsWithMedia = async (): Promise<EventWithMedia[]> => {
+  const fetchEventsWithMedia = async (): Promise<EventWithMediaExtended[]> => {
     const baseUrl = getAppUrl();
     console.log('Fetching events from:', `${baseUrl}/api/proxy/event-details`);
 
@@ -42,6 +71,7 @@ const DynamicHeroImage: React.FC = () => {
         try {
           eventsData = await eventsResponse.json();
           console.log('Successfully fetched events:', eventsData.length);
+          console.log('Events list:', eventsData.map(e => ({ id: e.id, title: e.title, startDate: e.startDate })));
         } catch (err) {
           console.error('Failed to parse events JSON:', err);
           eventsData = [];
@@ -78,6 +108,10 @@ const DynamicHeroImage: React.FC = () => {
     const eventsWithMediaResults = await Promise.allSettled(
       eventsData.map(async (event: EventDetailsDTO) => {
         try {
+          console.log(`=== PROCESSING EVENT ===`);
+          console.log(`Event ID: ${event.id}`);
+          console.log(`Event Title: ${event.title}`);
+          console.log(`Event Start Date: ${event.startDate}`);
           console.log(`Fetching media for event ID: ${event.id}, title: ${event.title}`);
 
           // Add timeout to prevent hanging requests
@@ -86,7 +120,7 @@ const DynamicHeroImage: React.FC = () => {
 
           try {
             const flyerRes = await fetch(
-              `${baseUrl}/api/proxy/event-medias?eventId.equals=${event.id}&eventFlyer.equals=true`,
+              `${baseUrl}/api/proxy/event-medias?eventId.equals=${event.id}&isHomePageHeroImage.equals=true`,
               {
                 cache: 'no-store',
                 signal: controller.signal
@@ -99,51 +133,30 @@ const DynamicHeroImage: React.FC = () => {
             if (flyerRes.ok) {
               try {
                 const flyerData = await flyerRes.json();
-                mediaArray = Array.isArray(flyerData) ? flyerData : (flyerData ? [flyerData] : []);
-                console.log(`Event ${event.id}: Found ${mediaArray.length} flyer media items`);
+                const rawMediaArray = Array.isArray(flyerData) ? flyerData : (flyerData ? [flyerData] : []);
+                
+                // Client-side filter to ensure we only get items where isHomePageHeroImage is explicitly true
+                mediaArray = rawMediaArray.filter(media => media.isHomePageHeroImage === true);
+                
+                console.log(`Event ${event.id}: Found ${rawMediaArray.length} total media items, ${mediaArray.length} with isHomePageHeroImage=true`);
+                if (mediaArray.length > 0) {
+                  console.log(`Event ${event.id}: Media details:`, mediaArray[0]);
+                } else if (rawMediaArray.length > 0) {
+                  console.log(`Event ${event.id}: No media items have isHomePageHeroImage=true. Sample item:`, rawMediaArray[0]);
+                }
               } catch (jsonErr) {
-                console.error(`Event ${event.id}: Failed to parse flyer JSON:`, jsonErr);
+                console.error(`Event ${event.id}: Failed to parse home page hero image JSON:`, jsonErr);
                 mediaArray = [];
               }
             } else {
-              console.log(`Event ${event.id}: Flyer fetch failed with status ${flyerRes.status}`);
+              console.log(`Event ${event.id}: Home page hero image fetch failed with status ${flyerRes.status}`);
             }
 
-            if (!mediaArray.length) {
-              const featuredController = new AbortController();
-              const featuredTimeoutId = setTimeout(() => featuredController.abort(), 10000);
-
-              try {
-                const featuredRes = await fetch(
-                  `${baseUrl}/api/proxy/event-medias?eventId.equals=${event.id}&isFeaturedImage.equals=true`,
-                  {
-                    cache: 'no-store',
-                    signal: featuredController.signal
-                  }
-                );
-                clearTimeout(featuredTimeoutId);
-
-                if (featuredRes.ok) {
-                  try {
-                    const featuredData = await featuredRes.json();
-                    mediaArray = Array.isArray(featuredData) ? featuredData : (featuredData ? [featuredData] : []);
-                    console.log(`Event ${event.id}: Found ${mediaArray.length} featured media items`);
-                  } catch (jsonErr) {
-                    console.error(`Event ${event.id}: Failed to parse featured JSON:`, jsonErr);
-                    mediaArray = [];
-                  }
-                } else {
-                  console.log(`Event ${event.id}: Featured image fetch failed with status ${featuredRes.status}`);
-                }
-              } catch (featuredErr) {
-                clearTimeout(featuredTimeoutId);
-                console.error(`Event ${event.id}: Featured image fetch error:`, featuredErr);
-              }
-            }
 
             if (mediaArray.length > 0) {
               const fileUrl = mediaArray[0].fileUrl;
               if (fileUrl) {
+                console.log(`Event ${event.id}: SUCCESS - Found hero image: ${fileUrl}`);
                 return {
                   ...event,
                   thumbnailUrl: fileUrl,
@@ -152,6 +165,7 @@ const DynamicHeroImage: React.FC = () => {
               }
             }
 
+            console.log(`Event ${event.id}: NO HERO IMAGE - No isHomePageHeroImage found`);
             return {
               ...event,
               thumbnailUrl: undefined,
@@ -177,34 +191,14 @@ const DynamicHeroImage: React.FC = () => {
     );
 
     // Filter out failed promises and return successful results
-    const eventsWithMedia: EventWithMedia[] = eventsWithMediaResults
+    const eventsWithMedia: EventWithMediaExtended[] = eventsWithMediaResults
       .filter((result) => result.status === 'fulfilled')
-      .map((result) => (result as PromiseFulfilledResult<EventWithMedia>).value);
+      .map((result) => (result as PromiseFulfilledResult<EventWithMediaExtended>).value);
 
     console.log(`Successfully processed ${eventsWithMedia.length} events with media`);
     return eventsWithMedia;
   };
 
-  // Fetch hero image for specific event function
-  const fetchHeroImageForEvent = async (eventId: number): Promise<string | null> => {
-    const baseUrl = getAppUrl();
-    try {
-      const mediaRes = await fetch(
-        `${baseUrl}/api/proxy/event-medias?eventId.equals=${eventId}&isFeaturedImage.equals=true`,
-        { cache: 'no-store' }
-      );
-      if (mediaRes.ok) {
-        const mediaData = await mediaRes.json();
-        const mediaArray = Array.isArray(mediaData) ? mediaData : (mediaData ? [mediaData] : []);
-        if (mediaArray.length > 0 && mediaArray[0].fileUrl) {
-          return mediaArray[0].fileUrl;
-        }
-      }
-    } catch {
-      return null;
-    }
-    return null;
-  };
 
   useEffect(() => {
     const initializeHeroImages = async () => {
@@ -220,54 +214,43 @@ const DynamicHeroImage: React.FC = () => {
           const threeMonthsFromNow = new Date();
           threeMonthsFromNow.setMonth(today.getMonth() + 3);
 
-          let heroImageUrl = defaultImage;
-          let nextEvent: EventWithMedia | null = null;
+          console.log('=== HERO IMAGE SELECTION ===');
+          console.log('Today:', today.toISOString());
+          console.log('Three months from now:', threeMonthsFromNow.toISOString());
 
-          // Find the next event with startDate >= today
+          let heroImageUrl = defaultImage;
+          let nextEvent: EventWithMediaExtended | null = null;
+
+          // Find events in the future with isHomePageHeroImage = true
           const upcomingEvents = events
-            .filter(event => event.startDate && new Date(event.startDate) >= today)
+            .filter(event => {
+              // Check: 1) Event in future, 2) Within 3 months, 3) Is active, 4) Has thumbnailUrl (isHomePageHeroImage = true)
+              const eventDate = event.startDate ? new Date(event.startDate) : null;
+              return eventDate &&
+                eventDate >= today &&
+                eventDate <= threeMonthsFromNow &&
+                event.isActive &&
+                event.thumbnailUrl;
+            })
             .sort((a, b) => {
               const aDate = a.startDate ? new Date(a.startDate).getTime() : Infinity;
               const bDate = b.startDate ? new Date(b.startDate).getTime() : Infinity;
               return aDate - bDate;
             });
 
-          console.log(`Found ${upcomingEvents.length} upcoming events`);
+          console.log(`Found ${upcomingEvents.length} upcoming events with isHomePageHeroImage = true`);
 
           if (upcomingEvents.length > 0) {
             const event = upcomingEvents[0];
-            const eventDate = event.startDate ? new Date(event.startDate) : null;
-            if (eventDate && eventDate <= threeMonthsFromNow && event.thumbnailUrl) {
-              heroImageUrl = event.thumbnailUrl;
-              nextEvent = event;
-              console.log(`Using hero image from event: ${event.title} (ID: ${event.id})`);
-            }
+            heroImageUrl = event.thumbnailUrl!;
+            nextEvent = event;
+            console.log(`Using hero image from event: ${event.title} (ID: ${event.id})`);
           }
 
-          // Fallback: If heroImageUrl is still default, try to fetch a hero image from event media
-          if (!heroImageUrl || heroImageUrl === defaultImage) {
-            // Find an event in the next 3 months
-            const candidateEvent = events.find(event => {
-              const eventDate = event.startDate ? new Date(event.startDate) : null;
-              return eventDate && eventDate >= today && eventDate <= threeMonthsFromNow;
-            });
-            if (candidateEvent) {
-              try {
-                console.log(`Trying to fetch hero image for event: ${candidateEvent.title} (ID: ${candidateEvent.id})`);
-                const heroUrl = await fetchHeroImageForEvent(candidateEvent.id!);
-                if (heroUrl) {
-                  heroImageUrl = heroUrl;
-                  console.log(`Successfully fetched hero image: ${heroUrl}`);
-                }
-              } catch (err) {
-                console.error('Failed to fetch hero image:', err);
-              }
-            }
-          }
 
           // Build dynamic images array with multiple events
           const imageUrls: string[] = [];
-          const eventData: EventWithMedia[] = [];
+          const eventData: EventWithMediaExtended[] = [];
 
           // Add hero image if it's not the default
           if (heroImageUrl !== defaultImage) {
@@ -277,22 +260,21 @@ const DynamicHeroImage: React.FC = () => {
             }
           }
 
-          // Add more upcoming events with media (up to 3 total)
+          // Add more upcoming events with isHomePageHeroImage = true (up to 3 total)
           const additionalEvents = upcomingEvents
-            .filter(event => event.thumbnailUrl && event.id !== nextEvent?.id)
+            .filter(event => event.id !== nextEvent?.id)
             .slice(0, 2); // Take up to 2 more events
 
           additionalEvents.forEach(event => {
-            if (event.thumbnailUrl) {
-              imageUrls.push(event.thumbnailUrl);
-              eventData.push(event);
-            }
+            imageUrls.push(event.thumbnailUrl!);
+            eventData.push(event);
           });
 
           // Add fallback to original image
           imageUrls.push("https://cdn.builder.io/api/v1/image/assets%2Fa70a28525f6f491aaa751610252a199c%2F67c8b636de774dd2bb5d7097f5fcc176?format=webp&width=800");
 
           setDynamicImages(imageUrls);
+          setEventsData(eventData); // Store events data for overlay logic
 
           // Check if any events have tickets (infer from admissionType or other fields)
           const hasTickets = upcomingEvents.some(event =>
@@ -303,9 +285,11 @@ const DynamicHeroImage: React.FC = () => {
           );
           setHasTicketedEvents(hasTickets);
 
-          // Set current event for display
+          // Set current event for display - this will be updated during rotation
           if (eventData.length > 0) {
             setCurrentEvent(eventData[0]);
+          } else {
+            setCurrentEvent(null); // No current event for default/fallback images
           }
         }
       } catch (error) {
@@ -332,11 +316,16 @@ const DynamicHeroImage: React.FC = () => {
         const interval = setInterval(() => {
           setCurrentImageIndex((prev) => {
             const newIndex = (prev + 1) % dynamicImages.length;
-            // Update current event when image changes
-            if (newIndex < dynamicImages.length - 1) { // Skip the fallback image
-              // This would need to be updated to match the actual event data
-              // For now, we'll just rotate through the images
+            
+            // Update current event when image changes - key implementation for overlay sync
+            if (newIndex < eventsData.length) {
+              // Show event-specific overlay for event images
+              setCurrentEvent(eventsData[newIndex]);
+            } else {
+              // No overlay for fallback/default images
+              setCurrentEvent(null);
             }
+            
             return newIndex;
           });
         }, 15000); // Change every 15 seconds
@@ -402,27 +391,30 @@ const DynamicHeroImage: React.FC = () => {
           }}
         />
 
-        {/* Buy Tickets Overlay - Show only for event flyers, not fallback image */}
-        {hasTicketedEvents && currentEvent && isShowingEventFlyer && (
-          <div className="absolute bottom-4 right-4 z-10">
-            <Image
-              src="/images/buy_tickets_click_here_red.webp"
-              alt="Buy Tickets Click Here"
-              width={180}
-              height={90}
-              className="cursor-pointer hover:scale-105 transition-transform duration-300"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent parent click handler
-                // Route to specific event if available, otherwise events page
-                if (currentEvent && currentEvent.id) {
-                  window.location.href = `/events/${currentEvent.id}`;
-                } else {
-                  window.location.href = '/events';
-                }
-              }}
-            />
-          </div>
-        )}
+        {/* Enhanced Overlay Logic - Priority-based system as per documentation */}
+        {(() => {
+          const overlay = getOverlayForEvent(currentEvent);
+          return overlay && isShowingEventFlyer ? (
+            <div className="absolute bottom-4 right-4 z-10">
+              <Image
+                src={overlay.image}
+                alt={`${overlay.type} overlay`}
+                width={180}
+                height={90}
+                className="cursor-pointer hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  // Fallback to buy tickets image if overlay image is missing
+                  const img = e.target as HTMLImageElement;
+                  img.src = '/images/buy_tickets_click_here_red.webp';
+                }}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent parent click handler
+                  window.location.href = overlay.action;
+                }}
+              />
+            </div>
+          ) : null;
+        })()}
       </div>
     );
   }

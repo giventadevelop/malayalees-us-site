@@ -203,7 +203,7 @@ interface EditMediaModalProps {
   loading: boolean;
 }
 
-type MediaCheckboxName = 'isPublic' | 'eventFlyer' | 'isEventManagementOfficialDocument' | 'isFeaturedImage' | 'isHeroImage' | 'isActiveHeroImage' | 'isFeaturedVideo';
+type MediaCheckboxName = 'isPublic' | 'eventFlyer' | 'isEventManagementOfficialDocument' | 'isFeaturedImage' | 'isHeroImage' | 'isActiveHeroImage' | 'isFeaturedVideo' | 'isHomePageHeroImage' | 'isFeaturedEventStripImage' | 'isLiveEventStripImage';
 
 function EditMediaModal({ media, onClose, onSave, loading }: EditMediaModalProps) {
   const [form, setForm] = useState<Partial<EventMediaDTO>>(() => ({
@@ -215,6 +215,9 @@ function EditMediaModal({ media, onClose, onSave, loading }: EditMediaModalProps
     isHeroImage: Boolean(media.isHeroImage),
     isActiveHeroImage: Boolean(media.isActiveHeroImage),
     isFeaturedVideo: Boolean(media.isFeaturedVideo),
+    isHomePageHeroImage: Boolean(media.isHomePageHeroImage),
+    isFeaturedEventStripImage: Boolean(media.isFeaturedEventStripImage),
+    isLiveEventStripImage: Boolean(media.isLiveEventStripImage),
     featuredVideoUrl: media.featuredVideoUrl || '',
   }));
 
@@ -329,7 +332,7 @@ function EditMediaModal({ media, onClose, onSave, loading }: EditMediaModalProps
             <label className="block text-sm font-medium text-gray-700">
               Media Properties
             </label>
-            <div className="custom-grid-table mt-4 p-4" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+            <div className="custom-grid-table mt-4 p-4" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
               {[
                 { name: 'isPublic' as const, label: 'Public' },
                 { name: 'eventFlyer' as const, label: 'Event Flyer' },
@@ -338,6 +341,9 @@ function EditMediaModal({ media, onClose, onSave, loading }: EditMediaModalProps
                 { name: 'isHeroImage' as const, label: 'Hero Image' },
                 { name: 'isActiveHeroImage' as const, label: 'Active Hero' },
                 { name: 'isFeaturedVideo' as const, label: 'Featured Video' },
+                { name: 'isHomePageHeroImage' as const, label: 'Home Page Hero' },
+                { name: 'isFeaturedEventStripImage' as const, label: 'Featured Event Strip' },
+                { name: 'isLiveEventStripImage' as const, label: 'Live Event Strip' },
               ].map(({ name, label }) => (
                 <label key={name} className="flex flex-col items-center">
                   <span className="relative flex items-center justify-center">
