@@ -147,7 +147,6 @@ export interface EventMediaDTO {
   eventMediaType: string;
   storageType: string;
   fileUrl?: string;
-  fileData?: Uint8Array;
   fileDataContentType?: string;
   contentType?: string;
   fileSize?: number;
@@ -161,12 +160,11 @@ export interface EventMediaDTO {
   downloadCount?: number;
   isFeaturedVideo?: boolean;
   featuredVideoUrl?: string;
-  isFeaturedImage?: boolean;
   isHeroImage?: boolean;
   isActiveHeroImage?: boolean;
   isHomePageHeroImage: boolean;
-  isFeaturedEventStripImage: boolean;
-  isLiveEventStripImage: boolean;
+  isFeaturedEventImage: boolean;
+  isLiveEventImage: boolean;
   eventId?: number;
   uploadedById?: number;
   createdAt: string;

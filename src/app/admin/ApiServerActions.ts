@@ -200,20 +200,14 @@ export async function fetchEventsFilteredServer(params: {
 }
 
 export async function fetchEventDetailsServer(eventId: number): Promise<EventDetailsDTO | null> {
-  const baseUrl = getAppUrl();
-  const response = await fetch(`${baseUrl}/api/proxy/event-details/${eventId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    cache: 'no-store',
-    });
-
-    if (!response.ok) {
-    console.error(`Failed to fetch event details for eventId ${eventId}:`, response.status, await response.text());
+  const tenantId = getTenantId();
+  const url = `${API_BASE_URL}/api/event-details/${eventId}?tenantId.equals=${tenantId}`;
+  const res = await fetchWithJwtRetry(url, { cache: 'no-store' });
+  if (!res.ok) {
+    console.error(`Failed to fetch event details for eventId ${eventId}:`, res.status, await res.text());
     return null;
   }
-  return response.json();
+  return await res.json();
 }
 
 export async function fetchUserProfileServer(userId: string): Promise<UserProfileDTO | null> {

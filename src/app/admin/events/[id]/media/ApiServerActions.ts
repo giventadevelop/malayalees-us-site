@@ -83,7 +83,6 @@ export interface MediaUploadParams {
   eventMediaType?: string; // Optional in new schema
   storageType?: string; // Optional in new schema
   fileUrl?: string; // Optional in new schema
-  isFeaturedImage: boolean;
   eventFlyer: boolean;
   isEventManagementOfficialDocument: boolean;
   isHeroImage: boolean;
@@ -102,7 +101,6 @@ export async function uploadMedia(eventId: number, {
   eventMediaType,
   storageType,
   fileUrl,
-  isFeaturedImage,
   eventFlyer,
   isEventManagementOfficialDocument,
   isHeroImage,
@@ -136,7 +134,6 @@ export async function uploadMedia(eventId: number, {
   formData.append('isEventManagementOfficialDocument', String(isEventManagementOfficialDocument));
   formData.append('isHeroImage', String(isHeroImage));
   formData.append('isActiveHeroImage', String(isActiveHeroImage));
-  formData.append('isFeaturedImage', String(isFeaturedImage));
   formData.append('isPublic', String(isPublic));
   formData.append('isTeamMemberProfileImage', String(isTeamMemberProfileImage));
   formData.append('tenantId', getTenantId());
@@ -235,7 +232,6 @@ export async function uploadMediaServer(params: {
   isEventManagementOfficialDocument: boolean;
   isHeroImage: boolean;
   isActiveHeroImage: boolean;
-  isFeaturedImage: boolean;
   isPublic: boolean;
   altText: string;
   displayOrder?: number;

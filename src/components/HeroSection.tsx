@@ -29,8 +29,8 @@ const DynamicHeroImage: React.FC = () => {
 
     // Priority 1: Buy Tickets (highest priority)
     if (event.admissionType?.toLowerCase().includes('ticket') ||
-        event.admissionType?.toLowerCase().includes('paid') ||
-        event.admissionType?.toLowerCase().includes('fee')) {
+      event.admissionType?.toLowerCase().includes('paid') ||
+      event.admissionType?.toLowerCase().includes('fee')) {
       return { type: 'tickets', image: '/images/buy_tickets_click_here_red.webp', action: `/events/${event.id}` };
     }
 
@@ -134,10 +134,10 @@ const DynamicHeroImage: React.FC = () => {
               try {
                 const flyerData = await flyerRes.json();
                 const rawMediaArray = Array.isArray(flyerData) ? flyerData : (flyerData ? [flyerData] : []);
-                
+
                 // Client-side filter to ensure we only get items where isHomePageHeroImage is explicitly true
                 mediaArray = rawMediaArray.filter(media => media.isHomePageHeroImage === true);
-                
+
                 console.log(`Event ${event.id}: Found ${rawMediaArray.length} total media items, ${mediaArray.length} with isHomePageHeroImage=true`);
                 if (mediaArray.length > 0) {
                   console.log(`Event ${event.id}: Media details:`, mediaArray[0]);
@@ -316,7 +316,7 @@ const DynamicHeroImage: React.FC = () => {
         const interval = setInterval(() => {
           setCurrentImageIndex((prev) => {
             const newIndex = (prev + 1) % dynamicImages.length;
-            
+
             // Update current event when image changes - key implementation for overlay sync
             if (newIndex < eventsData.length) {
               // Show event-specific overlay for event images
@@ -325,7 +325,7 @@ const DynamicHeroImage: React.FC = () => {
               // No overlay for fallback/default images
               setCurrentEvent(null);
             }
-            
+
             return newIndex;
           });
         }, 15000); // Change every 15 seconds
@@ -410,6 +410,35 @@ const DynamicHeroImage: React.FC = () => {
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent parent click handler
                   window.location.href = overlay.action;
+                }}
+              />
+            </div>
+          ) : null;
+        })()}
+
+        {/* See All Events Overlay - Bottom Left */}
+        {(() => {
+          const shouldShowSeeAllEvents = currentEvent && (
+            (currentEvent.admissionType?.toLowerCase().includes('ticket') ||
+              currentEvent.admissionType?.toLowerCase().includes('paid') ||
+              currentEvent.admissionType?.toLowerCase().includes('fee')) ||
+            currentEvent.isRegistrationRequired
+          );
+
+          return shouldShowSeeAllEvents && isShowingEventFlyer ? (
+            <div className="absolute left-4 z-10" style={{ bottom: '-36px' }}>
+              <Image
+                src="/images/hero_bottom_see_all_events-Photoroom.png"
+                alt="See All Events"
+                width={240}
+                height={120}
+                className="cursor-pointer hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  console.warn('See All Events overlay image not found');
+                }}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent parent click handler
+                  window.location.href = '/events';
                 }}
               />
             </div>
@@ -547,22 +576,6 @@ const HeroSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Click to View All Events - Below Hero Section, Above What We Do Section */}
-      <div className="bg-white py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-end">
-          <Image
-            src="/images/click_to_view_all_events.png"
-            alt="Click to View All Events"
-            width={150}
-            height={60}
-            className="cursor-pointer hover:scale-105 transition-transform duration-300"
-            onClick={() => {
-              // Route to events page
-              window.location.href = '/events';
-            }}
-          />
-        </div>
-      </div>
     </>
   );
 };

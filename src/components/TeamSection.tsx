@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { fetchExecutiveTeamMembersServer } from '@/app/charity-theme/ApiServerActions';
 import type { ExecutiveCommitteeTeamMemberDTO } from '@/types';
+import { getAppUrl } from '@/lib/env';
 import styles from './TeamSection.module.css';
 
 const TeamSection: React.FC = () => {
@@ -15,8 +15,27 @@ const TeamSection: React.FC = () => {
     // Fetch team members when component mounts
     const loadTeamMembers = async () => {
       try {
-        const members = await fetchExecutiveTeamMembersServer();
-        setTeamMembers(members);
+        const baseUrl = getAppUrl();
+        const response = await fetch(
+          `${baseUrl}/api/proxy/executive-committee-team-members?isActive.equals=true&sort=priorityOrder,asc`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            cache: 'no-store',
+          }
+        );
+
+        if (!response.ok) {
+          console.error('Failed to fetch executive team members:', response.statusText);
+          setTeamMembers([]);
+          setLoading(false);
+          return;
+        }
+
+        const data = await response.json();
+        setTeamMembers(Array.isArray(data) ? data : []);
         setLoading(false);
 
         // Delay showing images by 3-5 seconds after page load
@@ -25,6 +44,7 @@ const TeamSection: React.FC = () => {
         }, 3000 + Math.random() * 2000); // Random delay between 3-5 seconds
       } catch (error) {
         console.error('Error loading team members:', error);
+        setTeamMembers([]);
         setLoading(false);
       }
     };

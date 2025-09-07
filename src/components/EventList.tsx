@@ -8,6 +8,7 @@ import { getTenantId } from '@/lib/env';
 import { formatDateLocal } from '@/lib/date';
 import Link from 'next/link';
 import ReactDOM from 'react-dom';
+import Image from 'next/image';
 
 interface EventListProps {
   events: EventDetailsDTO[];
@@ -47,6 +48,8 @@ export function EventList({
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const [tooltipEvent, setTooltipEvent] = useState<EventDetailsDTO | null>(null);
   const [tooltipAnchor, setTooltipAnchor] = useState<DOMRect | null>(null);
+  const [isZoomingOut, setIsZoomingOut] = useState(false);
+  const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
     // Use provided calendar events or fetch if not provided
@@ -73,6 +76,26 @@ export function EventList({
         .then(data => setEventTypes(Array.isArray(data) ? data : []));
     }
   }, [eventTypesProp]);
+
+  // Handle zoom-out effect when loading changes from true to false
+  useEffect(() => {
+    if (!loading && events.length > 0) {
+      // Start zoom-out effect
+      setIsZoomingOut(true);
+
+      // After zoom-out animation completes, show content
+      const timer = setTimeout(() => {
+        setShowContent(true);
+        setIsZoomingOut(false);
+      }, 500); // Match the zoom-out animation duration
+
+      return () => clearTimeout(timer);
+    } else if (loading) {
+      // Reset states when loading starts
+      setShowContent(false);
+      setIsZoomingOut(false);
+    }
+  }, [loading, events.length]);
 
   function getEventTypeName(event: EventDetailsDTO) {
     if (event?.eventType?.name) return event.eventType.name;
@@ -173,7 +196,50 @@ export function EventList({
     );
   }
 
-  if (loading) return <div>Loading events...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[600px] w-full">
+        <div className="relative w-full max-w-6xl">
+          <Image
+            src="/images/loading_events.jpg"
+            alt="Loading events..."
+            width={800}
+            height={600}
+            className="w-full h-auto rounded-lg shadow-2xl animate-pulse zoom-loading"
+            priority
+          />
+          <div className="absolute inset-0 rounded-lg overflow-hidden">
+            <div className="wavy-animation"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isZoomingOut) {
+    return (
+      <div className="flex justify-center items-center min-h-[600px] w-full">
+        <div className="relative w-full max-w-6xl">
+          <Image
+            src="/images/loading_events.jpg"
+            alt="Loading events..."
+            width={800}
+            height={600}
+            className="w-full h-auto rounded-lg shadow-2xl zoom-out"
+            priority
+          />
+          <div className="absolute inset-0 rounded-lg overflow-hidden">
+            <div className="wavy-animation"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!showContent) {
+    return null; // Don't show anything during transition
+  }
+
   if (!events.length) return <div>No events found.</div>;
 
   const totalPages = Math.ceil(totalCount / pageSize);

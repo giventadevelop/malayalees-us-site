@@ -30,6 +30,9 @@ export const defaultEvent: EventDetailsDTO = {
   isRegistrationRequired: false,
   isSportsEvent: false,
   isLive: false,
+  isFeaturedEvent: false,
+  featuredEventPriority: 0,
+  liveEventPriority: 0,
   createdBy: undefined,
   createdAt: '',
   updatedAt: '',
@@ -216,6 +219,9 @@ export function EventForm({ event, eventTypes, onSubmit, loading }: EventFormPro
       isRegistrationRequired: !!form.isRegistrationRequired,
       isSportsEvent: !!form.isSportsEvent,
       isLive: !!form.isLive,
+      isFeaturedEvent: !!form.isFeaturedEvent,
+      featuredEventPriority: Number(form.featuredEventPriority) || 0,
+      liveEventPriority: Number(form.liveEventPriority) || 0,
     };
     onSubmit(sanitizedForm);
   }
@@ -405,6 +411,7 @@ export function EventForm({ event, eventTypes, onSubmit, loading }: EventFormPro
           { name: 'isRegistrationRequired', label: 'Registration Required', checked: form.isRegistrationRequired ?? false },
           { name: 'isSportsEvent', label: 'Sports Event', checked: form.isSportsEvent ?? false },
           { name: 'isLive', label: 'Live Event', checked: form.isLive ?? false },
+          { name: 'isFeaturedEvent', label: 'Featured Event', checked: form.isFeaturedEvent ?? false },
         ].map(({ name, label, checked }) => (
           <div key={name} className="custom-grid-cell">
             <label className="flex flex-col items-center">
@@ -428,6 +435,38 @@ export function EventForm({ event, eventTypes, onSubmit, loading }: EventFormPro
             </label>
           </div>
         ))}
+      </div>
+
+      {/* Priority Fields */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block font-medium">Featured Event Priority</label>
+          <input
+            ref={(el) => { if (el) fieldRefs.current.featuredEventPriority = el; }}
+            type="number"
+            name="featuredEventPriority"
+            value={form.featuredEventPriority ?? ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
+            min={0}
+            placeholder="0"
+          />
+          <p className="text-sm text-gray-500 mt-1">Higher numbers = higher priority</p>
+        </div>
+        <div>
+          <label className="block font-medium">Live Event Priority</label>
+          <input
+            ref={(el) => { if (el) fieldRefs.current.liveEventPriority = el; }}
+            type="number"
+            name="liveEventPriority"
+            value={form.liveEventPriority ?? ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
+            min={0}
+            placeholder="0"
+          />
+          <p className="text-sm text-gray-500 mt-1">Higher numbers = higher priority</p>
+        </div>
       </div>
       <div>
         <label className="block font-medium">Max Guests Per Attendee</label>

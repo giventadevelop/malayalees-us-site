@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import HeroSection from '../components/HeroSection';
+import FeaturedEventsSection from '../components/FeaturedEventsSection';
 import ServicesSection from '../components/ServicesSection';
 import AboutSection from '../components/AboutSection';
 import CausesSection from '../components/CausesSection';
@@ -42,6 +43,7 @@ export default function HomePage() {
   return (
     <main>
       <HeroSection />
+      <FeaturedEventsSection />
       <ServicesSection />
       <AboutSection />
       <CausesSection />

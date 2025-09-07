@@ -1,6 +1,6 @@
 // This file was renamed from actions.ts to ApiServerActions.ts as a standard for server-side API calls in this module.
 "use server";
-import { getCachedApiJwt, generateApiJwt } from '@/lib/api/jwt';
+import { fetchWithJwtRetry } from '@/lib/proxyHandler';
 import { getTenantId } from '@/lib/env';
 import { UserProfileDTO } from '@/types';
 
@@ -53,18 +53,9 @@ export async function fetchUsersServer({ search, searchField, status, role, page
   params.append('page', String(page - 1));
   params.append('size', String(pageSize));
   params.append('tenantId.equals', getTenantId());
-  let token = await getCachedApiJwt();
-  let res = await fetch(`${API_BASE_URL}/api/user-profiles?${params.toString()}`, {
-    headers: { 'Authorization': `Bearer ${token}` },
+  const res = await fetchWithJwtRetry(`${API_BASE_URL}/api/user-profiles?${params.toString()}`, {
     cache: 'no-store',
   });
-  if (res.status === 401) {
-    token = await generateApiJwt();
-    res = await fetch(`${API_BASE_URL}/api/user-profiles?${params.toString()}`, {
-      headers: { 'Authorization': `Bearer ${token}` },
-      cache: 'no-store',
-    });
-  }
   const totalCount = res.headers.get('X-Total-Count');
   const data = await res.json();
   return { data, totalCount: totalCount ? parseInt(totalCount, 10) : 0 };
@@ -73,23 +64,19 @@ export async function fetchUsersServer({ search, searchField, status, role, page
 export async function patchUserProfileServer(userId: number, payload: Partial<UserProfileDTO>) {
   const url = `${API_BASE_URL}/api/user-profiles/${userId}`;
 
-  let token = await getCachedApiJwt();
-  if (!token) {
-    token = await generateApiJwt();
-  }
-
   const finalPayload = {
     ...payload,
     id: userId,
+    tenantId: getTenantId(),
   };
 
-  const res = await fetch(url, {
+  const res = await fetchWithJwtRetry(url, {
     method: 'PATCH',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Content-Type': 'application/merge-patch+json',
     },
     body: JSON.stringify(finalPayload),
+    cache: 'no-store',
   });
 
   if (!res.ok) {
@@ -101,25 +88,12 @@ export async function patchUserProfileServer(userId: number, payload: Partial<Us
 }
 
 export async function bulkUploadUsersServer(users: any[]) {
-  let token = await getCachedApiJwt();
-  let res = await fetch(`${API_BASE_URL}/api/user-profiles/bulk`, {
+  const res = await fetchWithJwtRetry(`${API_BASE_URL}/api/user-profiles/bulk`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(users.map(u => ({ ...u, tenantId: getTenantId() }))),
   });
-  if (res.status === 401) {
-    token = await generateApiJwt();
-    res = await fetch(`${API_BASE_URL}/api/user-profiles/bulk`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(users.map(u => ({ ...u, tenantId: getTenantId() }))),
-    });
-  }
   return await res.json();
 }

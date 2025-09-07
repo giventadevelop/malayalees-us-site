@@ -203,7 +203,7 @@ interface EditMediaModalProps {
   loading: boolean;
 }
 
-type MediaCheckboxName = 'isPublic' | 'eventFlyer' | 'isEventManagementOfficialDocument' | 'isFeaturedImage' | 'isHeroImage' | 'isActiveHeroImage' | 'isFeaturedVideo' | 'isHomePageHeroImage' | 'isFeaturedEventStripImage' | 'isLiveEventStripImage';
+type MediaCheckboxName = 'isPublic' | 'eventFlyer' | 'isEventManagementOfficialDocument' | 'isHeroImage' | 'isActiveHeroImage' | 'isFeaturedVideo' | 'isHomePageHeroImage' | 'isFeaturedEventImage' | 'isLiveEventImage';
 
 function EditMediaModal({ media, onClose, onSave, loading }: EditMediaModalProps) {
   const [form, setForm] = useState<Partial<EventMediaDTO>>(() => ({
@@ -211,13 +211,12 @@ function EditMediaModal({ media, onClose, onSave, loading }: EditMediaModalProps
     isPublic: Boolean(media.isPublic),
     eventFlyer: Boolean(media.eventFlyer),
     isEventManagementOfficialDocument: Boolean(media.isEventManagementOfficialDocument),
-    isFeaturedImage: Boolean(media.isFeaturedImage),
     isHeroImage: Boolean(media.isHeroImage),
     isActiveHeroImage: Boolean(media.isActiveHeroImage),
     isFeaturedVideo: Boolean(media.isFeaturedVideo),
     isHomePageHeroImage: Boolean(media.isHomePageHeroImage),
-    isFeaturedEventStripImage: Boolean(media.isFeaturedEventStripImage),
-    isLiveEventStripImage: Boolean(media.isLiveEventStripImage),
+    isFeaturedEventImage: Boolean(media.isFeaturedEventImage),
+    isLiveEventImage: Boolean(media.isLiveEventImage),
     featuredVideoUrl: media.featuredVideoUrl || '',
   }));
 
@@ -256,9 +255,8 @@ function EditMediaModal({ media, onClose, onSave, loading }: EditMediaModalProps
       }
       if (name === 'isEventManagementOfficialDocument' && newValue) {
         updates.eventFlyer = false;
-        updates.isFeaturedImage = false;
       }
-      if ((name === 'eventFlyer' || name === 'isFeaturedImage') && newValue) {
+      if (name === 'eventFlyer' && newValue) {
         updates.isEventManagementOfficialDocument = false;
       }
       if (name === 'isFeaturedVideo' && !newValue) {
@@ -337,13 +335,12 @@ function EditMediaModal({ media, onClose, onSave, loading }: EditMediaModalProps
                 { name: 'isPublic' as const, label: 'Public' },
                 { name: 'eventFlyer' as const, label: 'Event Flyer' },
                 { name: 'isEventManagementOfficialDocument' as const, label: 'Official Doc' },
-                { name: 'isFeaturedImage' as const, label: 'Featured Image' },
                 { name: 'isHeroImage' as const, label: 'Hero Image' },
                 { name: 'isActiveHeroImage' as const, label: 'Active Hero' },
                 { name: 'isFeaturedVideo' as const, label: 'Featured Video' },
                 { name: 'isHomePageHeroImage' as const, label: 'Home Page Hero' },
-                { name: 'isFeaturedEventStripImage' as const, label: 'Featured Event Strip' },
-                { name: 'isLiveEventStripImage' as const, label: 'Live Event Strip' },
+                { name: 'isFeaturedEventImage' as const, label: 'Featured Event Image' },
+                { name: 'isLiveEventImage' as const, label: 'Live Event Image' },
               ].map(({ name, label }) => (
                 <label key={name} className="flex flex-col items-center">
                   <span className="relative flex items-center justify-center">

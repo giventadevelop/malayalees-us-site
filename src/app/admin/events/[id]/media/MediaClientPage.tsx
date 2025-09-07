@@ -110,7 +110,9 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
   const [popoverUploadedMediaMedia, setPopoverUploadedMediaMedia] = useState<EventMediaDTO | null>(null);
   const [isHeroImage, setIsHeroImage] = useState(false);
   const [isActiveHeroImage, setIsActiveHeroImage] = useState(false);
-  const [isFeaturedImage, setIsFeaturedImage] = useState(false);
+  const [isFeaturedEventImage, setIsFeaturedEventImage] = useState(false);
+  const [isLiveEventImage, setIsLiveEventImage] = useState(false);
+  const [isHomePageHeroImage, setIsHomePageHeroImage] = useState(false);
   const [isPublic, setIsPublic] = useState(true);
   const [altText, setAltText] = useState("");
   const [displayOrder, setDisplayOrder] = useState<number | undefined>(undefined);
@@ -225,7 +227,7 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       formData.append('isEventManagementOfficialDocument', String(isEventManagementOfficialDocument));
       formData.append('isHeroImage', String(isHeroImage));
       formData.append('isActiveHeroImage', String(isActiveHeroImage));
-      formData.append('isFeaturedImage', String(isFeaturedImage));
+      // Note: isFeaturedEventImage, isLiveEventImage, and isHomePageHeroImage are passed as query parameters above
       formData.append('isPublic', String(isPublic));
       formData.append('isTeamMemberProfileImage', 'false');
       formData.append('tenantId', tenantId);
@@ -248,8 +250,13 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
         formData.append('displayOrder', String(displayOrder));
       }
 
-      // Use the proxy endpoint directly from client
-      const url = `${appUrl}/api/proxy/event-medias/upload-multiple`;
+      // Use the proxy endpoint directly from client with query parameters for required fields
+      const queryParams = new URLSearchParams();
+      queryParams.append('isHomePageHeroImage', String(isHomePageHeroImage));
+      queryParams.append('isFeaturedEventImage', String(isFeaturedEventImage));
+      queryParams.append('isLiveEventImage', String(isLiveEventImage));
+
+      const url = `${appUrl}/api/proxy/event-medias/upload-multiple?${queryParams.toString()}`;
 
       const res = await fetch(url, {
         method: 'POST',
@@ -268,6 +275,9 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       setDescription("");
       setEventFlyer(false);
       setIsEventManagementOfficialDocument(false);
+      setIsFeaturedEventImage(false);
+      setIsLiveEventImage(false);
+      setIsHomePageHeroImage(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
       // Refresh the page after upload
       setTimeout(() => window.location.reload(), 1200);
@@ -370,7 +380,9 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       eventFlyer: media.eventFlyer || false,
       isHeroImage: media.isHeroImage || false,
       isActiveHeroImage: media.isActiveHeroImage || false,
-      isFeaturedImage: media.isFeaturedImage || false,
+      isFeaturedEventImage: media.isFeaturedEventImage || false,
+      isLiveEventImage: media.isLiveEventImage || false,
+      isHomePageHeroImage: media.isHomePageHeroImage || false,
       isPublic: media.isPublic === false ? false : true,
       altText: media.altText || '',
       displayOrder: media.displayOrder || undefined,
@@ -386,7 +398,9 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
         eventFlyer: media.eventFlyer || false,
         isHeroImage: media.isHeroImage || false,
         isActiveHeroImage: media.isActiveHeroImage || false,
-        isFeaturedImage: media.isFeaturedImage || false,
+        isFeaturedEventImage: media.isFeaturedEventImage || false,
+        isLiveEventImage: media.isLiveEventImage || false,
+        isHomePageHeroImage: media.isHomePageHeroImage || false,
         isPublic: media.isPublic === false ? false : true,
         altText: media.altText || '',
         displayOrder: media.displayOrder || undefined,
@@ -504,7 +518,7 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-4">Media Options</label>
               <div className="custom-grid-table mt-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
-                {['eventFlyer', 'isHeroImage', 'isActiveHeroImage', 'isFeaturedImage', 'isPublic', 'isFeaturedVideo'].map(key => (
+                {['eventFlyer', 'isHeroImage', 'isActiveHeroImage', 'isPublic', 'isFeaturedVideo', 'isFeaturedEventImage', 'isLiveEventImage', 'isHomePageHeroImage'].map(key => (
                   <label key={key} className="flex flex-col items-center">
                     <span className="relative flex items-center justify-center">
                       <input
@@ -842,16 +856,31 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
             <div className="custom-grid-cell">
               <label className="flex flex-col items-center">
                 <span className="relative flex items-center justify-center">
-                  <input type="checkbox" className="custom-checkbox" checked={isFeaturedImage} onChange={e => setIsFeaturedImage(e.target.checked)} />
+                  <input type="checkbox" className="custom-checkbox" checked={isFeaturedEventImage} onChange={e => setIsFeaturedEventImage(e.target.checked)} />
                   <span className="custom-checkbox-tick">
-                    {isFeaturedImage && (
+                    {isFeaturedEventImage && (
                       <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l5 5L19 7" />
                       </svg>
                     )}
                   </span>
                 </span>
-                <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">Featured Image</span>
+                <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">Featured Event Image</span>
+              </label>
+            </div>
+            <div className="custom-grid-cell">
+              <label className="flex flex-col items-center">
+                <span className="relative flex items-center justify-center">
+                  <input type="checkbox" className="custom-checkbox" checked={isLiveEventImage} onChange={e => setIsLiveEventImage(e.target.checked)} />
+                  <span className="custom-checkbox-tick">
+                    {isLiveEventImage && (
+                      <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l5 5L19 7" />
+                      </svg>
+                    )}
+                  </span>
+                </span>
+                <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">Live Event Image</span>
               </label>
             </div>
             <div className="custom-grid-cell">
@@ -867,6 +896,21 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
                   </span>
                 </span>
                 <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">Public</span>
+              </label>
+            </div>
+            <div className="custom-grid-cell">
+              <label className="flex flex-col items-center">
+                <span className="relative flex items-center justify-center">
+                  <input type="checkbox" className="custom-checkbox" checked={isHomePageHeroImage} onChange={e => setIsHomePageHeroImage(e.target.checked)} />
+                  <span className="custom-checkbox-tick">
+                    {isHomePageHeroImage && (
+                      <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l5 5L19 7" />
+                      </svg>
+                    )}
+                  </span>
+                </span>
+                <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">Home Page Hero Image</span>
               </label>
             </div>
           </div>

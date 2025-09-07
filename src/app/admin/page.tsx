@@ -7,6 +7,7 @@ import { FaUsers, FaCalendarAlt, FaPlus, FaEnvelope, FaCreditCard } from 'react-
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AdminNavigation from '@/components/AdminNavigation';
+import Image from 'next/image';
 import {
   fetchEventsFilteredServer,
   fetchEventTypesServer,
