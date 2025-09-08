@@ -473,7 +473,7 @@ const DynamicHeroImage: React.FC = () => {
 const HeroSection: React.FC = () => {
   return (
     <>
-      <div className="min-h-[37.5vh] bg-white pt-20 pb-9 relative">
+      <div className="min-h-[37.5vh] bg-white pt-20 pb-0 relative">
         {/* Donate Image - Top Right Corner - Positioned below header to avoid hamburger overlap */}
         <div className="absolute top-28 right-6 z-50 lg:top-28 lg:right-8">
           <div className="bg-transparent p-2 rounded-lg">

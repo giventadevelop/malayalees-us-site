@@ -707,6 +707,45 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
           </div>
         </div>
 
+        {/* Featured Event Image Specifications Tip */}
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <svg className="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-green-800 mb-2">🎯 Featured Event Image Specifications</h3>
+              <div className="text-sm text-green-700 space-y-2">
+                <p><strong>For Featured Event Images:</strong> Use 1920×1080px (16:9 aspect ratio) for optimal display in the featured events section.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                  <div>
+                    <p className="font-medium text-green-800">Optimal Dimensions:</p>
+                    <ul className="text-xs space-y-1 mt-1">
+                      <li>• <strong>Desktop:</strong> 1920×1080px (16:9 ratio)</li>
+                      <li>• <strong>Mobile:</strong> 800×450px (16:9 ratio)</li>
+                      <li>• <strong>Format:</strong> WebP preferred, JPG acceptable</li>
+                      <li>• <strong>Quality:</strong> 85-90%</li>
+                      <li>• <strong>File Size:</strong> Under 500KB</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-medium text-green-800">Content Guidelines:</p>
+                    <ul className="text-xs space-y-1 mt-1">
+                      <li>• Event venue or activity in focus</li>
+                      <li>• Good lighting and vibrant colors</li>
+                      <li>• Horizontal composition preferred</li>
+                      <li>• Professional event photography style</li>
+                    </ul>
+                  </div>
+                </div>
+                <p className="text-xs text-green-600 mt-2 italic">16:9 aspect ratio ensures your featured event images fill the container perfectly without padding and look great on all screen sizes.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
