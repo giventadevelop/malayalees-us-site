@@ -198,9 +198,6 @@ const FeaturedEventsSection: React.FC = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
             Featured Events
           </h2>
-          <p className="text-sm md:text-base text-gray-600">
-            Discover our upcoming featured events
-          </p>
         </div>
 
         {/* Featured Events Strip */}

@@ -85,9 +85,11 @@ export default function AdminMediaPage() {
   }
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-8 pt-24">
       <AdminNavigation />
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Manage Media Files</h1>
+      <div className="mb-12">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Manage Media Files</h1>
+      </div>
       {error && <div className="bg-red-50 text-red-500 p-3 rounded mb-4">{error}</div>}
       <div className="border rounded p-4 bg-white shadow-sm min-h-[200px]">
         {loading ? (

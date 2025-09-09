@@ -44,8 +44,10 @@ export default function HomePage() {
   return (
     <main>
       <HeroSection />
-      <LiveEventsSection />
-      <FeaturedEventsSection />
+      <div className="mt-[100px]">
+        <LiveEventsSection />
+        <FeaturedEventsSection />
+      </div>
       <ServicesSection />
       <AboutSection />
       <CausesSection />

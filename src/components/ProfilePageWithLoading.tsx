@@ -5,7 +5,7 @@ import { useUser } from '@clerk/nextjs';
 import { UserProfileDTO } from '@/types';
 import ProfileForm from '@/components/ProfileForm';
 import { ProfileReconciliationTrigger } from '@/components/ProfileReconciliationTrigger';
-import { ErrorDialog } from '@/components/ErrorDialog';
+import ErrorDialog from '@/components/ErrorDialog';
 import Image from 'next/image';
 
 /**
@@ -162,12 +162,10 @@ export default function ProfilePageWithLoading() {
 
       {/* Error Dialog for Backend Errors - Rendered as overlay */}
       <ErrorDialog
-        open={showErrorDialog}
+        isOpen={showErrorDialog}
         onClose={() => setShowErrorDialog(false)}
         title="Some unexpected error has occurred"
         message="Please try back again later."
-        details={errorDetails || undefined}
-        showRetry={false}
       />
     </>
   );

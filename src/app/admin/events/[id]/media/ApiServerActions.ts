@@ -93,6 +93,7 @@ export interface MediaUploadParams {
   userProfileId?: number | null; // Optional in new schema
   files: File[];
   isTeamMemberProfileImage?: boolean; // Add optional parameter for team member profile images
+  startDisplayingFrom: string; // Required parameter - date when media should start being displayed
 }
 
 export async function uploadMedia(eventId: number, {
@@ -110,11 +111,16 @@ export async function uploadMedia(eventId: number, {
   displayOrder,
   userProfileId,
   files,
-  isTeamMemberProfileImage = false // Default to false for regular event media
+  isTeamMemberProfileImage = false, // Default to false for regular event media
+  startDisplayingFrom
 }: MediaUploadParams) {
   // Validate required fields
   if (!title || title.trim() === '') {
     throw new Error('Title is required');
+  }
+
+  if (!startDisplayingFrom || startDisplayingFrom.trim() === '') {
+    throw new Error('Start Displaying From date is required');
   }
 
   if (!files || files.length === 0) {
@@ -156,6 +162,9 @@ export async function uploadMedia(eventId: number, {
     formData.append('displayOrder', String(displayOrder));
   }
 
+  // Append startDisplayingFrom (required field)
+  formData.append('startDisplayingFrom', startDisplayingFrom);
+
   // Use the proxy endpoint (not direct backend call)
   const url = `${getAppUrl()}/api/proxy/event-medias/upload-multiple`;
 
@@ -190,10 +199,14 @@ export async function editMediaServer(mediaId: number | string, payload: Partial
 
     const url = `${API_BASE_URL}/api/event-medias/${mediaId}`;
 
-    // Clean and prepare the payload according to rules
+    // Clean and prepare the payload according to rules - include all required fields
     const cleanedPayload = withTenantId({
       ...payload,
       id: Number(mediaId),
+      // Include required fields that backend expects
+      eventMediaType: payload.eventMediaType || 'gallery', // Default to gallery if not provided
+      storageType: payload.storageType || 's3', // Default to s3 if not provided
+      createdAt: payload.createdAt || new Date().toISOString(), // Use existing or current time
       updatedAt: new Date().toISOString(),
     });
 
@@ -202,7 +215,7 @@ export async function editMediaServer(mediaId: number | string, payload: Partial
     const response = await fetchWithJwtRetry(url, {
       method: 'PATCH',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/merge-patch+json', // Use correct content type for PATCH
       },
       body: JSON.stringify(cleanedPayload),
     });
@@ -237,6 +250,7 @@ export async function uploadMediaServer(params: {
   displayOrder?: number;
   userProfileId?: number | null;
   isTeamMemberProfileImage?: boolean; // Add optional parameter for team member profile images
+  startDisplayingFrom: string; // Required parameter - date when media should start being displayed
 }) {
   const { eventId, files, ...rest } = params;
 

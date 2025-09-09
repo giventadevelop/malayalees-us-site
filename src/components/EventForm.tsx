@@ -16,6 +16,7 @@ export const defaultEvent: EventDetailsDTO = {
   eventType: undefined,
   startDate: '',
   endDate: '',
+  promotionStartDate: '',
   startTime: '',
   endTime: '',
   timezone: '',
@@ -31,8 +32,8 @@ export const defaultEvent: EventDetailsDTO = {
   isSportsEvent: false,
   isLive: false,
   isFeaturedEvent: false,
-  featuredEventPriority: 0,
-  liveEventPriority: 0,
+  featuredEventPriorityRanking: 0,
+  liveEventPriorityRanking: 0,
   createdBy: undefined,
   createdAt: '',
   updatedAt: '',
@@ -75,29 +76,40 @@ export function EventForm({ event, eventTypes, onSubmit, loading }: EventFormPro
     if (!form.eventType || !form.eventType.id) errs.eventType = 'Event type is required';
     if (!form.startDate) errs.startDate = 'Start date is required';
     if (!form.endDate) errs.endDate = 'End date is required';
+    if (!form.promotionStartDate) errs.promotionStartDate = 'Promotion start date is required';
     if (!form.startTime) errs.startTime = 'Start time is required';
     if (!form.endTime) errs.endTime = 'End time is required';
     if (!form.admissionType) errs.admissionType = 'Admission type is required';
     if (!form.timezone) errs.timezone = 'Timezone is required';
 
     // Date and time validations
+    // Get today's date in local timezone (YYYY-MM-DD format)
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayStr = today.getFullYear() + '-' +
+      String(today.getMonth() + 1).padStart(2, '0') + '-' +
+      String(today.getDate()).padStart(2, '0');
+
     const startDateStr = form.startDate;
     const endDateStr = form.endDate;
-    const startDate = startDateStr ? new Date(startDateStr) : null;
-    const endDate = endDateStr ? new Date(endDateStr) : null;
-    if (startDate) startDate.setHours(0, 0, 0, 0);
-    if (endDate) endDate.setHours(0, 0, 0, 0);
+    const promotionStartDateStr = form.promotionStartDate;
 
-    if (startDate && startDate.getTime() < today.getTime()) {
+    // For date validation, compare strings directly to avoid timezone issues
+    // YYYY-MM-DD format can be compared lexicographically
+
+    if (startDateStr && startDateStr < todayStr) {
       errs.startDate = 'Start date must be today or in the future';
     }
-    if (endDate && endDate < today) {
+    if (endDateStr && endDateStr < todayStr) {
       errs.endDate = 'End date must be today or in the future';
     }
-    if (startDate && endDate && endDate < startDate) {
+    if (promotionStartDateStr && promotionStartDateStr < todayStr) {
+      errs.promotionStartDate = 'Promotion start date must be today or in the future';
+    }
+    if (startDateStr && endDateStr && endDateStr < startDateStr) {
       errs.endDate = 'End date cannot be before start date';
+    }
+    if (promotionStartDateStr && startDateStr && promotionStartDateStr > startDateStr) {
+      errs.promotionStartDate = 'Promotion start date cannot be after event start date';
     }
 
     // Time validations
@@ -106,14 +118,14 @@ export function EventForm({ event, eventTypes, onSubmit, loading }: EventFormPro
     if (startDateStr && startTimeStr) {
       const now = new Date();
       const startDateTime = new Date(`${startDateStr}T${convertTo24Hour(startTimeStr)}`);
-      if (startDate && startDate.getTime() === today.getTime() && startDateTime < now) {
+      if (startDateStr === todayStr && startDateTime < now) {
         errs.startTime = 'Start time must be in the future';
       }
     }
     if (startDateStr && startTimeStr && endDateStr && endTimeStr) {
       const startDateTime = new Date(`${startDateStr}T${convertTo24Hour(startTimeStr)}`);
       const endDateTime = new Date(`${endDateStr}T${convertTo24Hour(endTimeStr)}`);
-      if (startDate && endDate && startDate.getTime() === endDate.getTime() && endDateTime <= startDateTime) {
+      if (startDateStr === endDateStr && endDateTime <= startDateTime) {
         errs.endTime = 'End time must be after start time';
       }
     }
@@ -220,8 +232,8 @@ export function EventForm({ event, eventTypes, onSubmit, loading }: EventFormPro
       isSportsEvent: !!form.isSportsEvent,
       isLive: !!form.isLive,
       isFeaturedEvent: !!form.isFeaturedEvent,
-      featuredEventPriority: Number(form.featuredEventPriority) || 0,
-      liveEventPriority: Number(form.liveEventPriority) || 0,
+      featuredEventPriorityRanking: Number(form.featuredEventPriorityRanking) || 0,
+      liveEventPriorityRanking: Number(form.liveEventPriorityRanking) || 0,
     };
     onSubmit(sanitizedForm);
   }
@@ -309,6 +321,19 @@ export function EventForm({ event, eventTypes, onSubmit, loading }: EventFormPro
           />
           {errors.endDate && <div className="text-red-500 text-sm mt-1">{errors.endDate}</div>}
         </div>
+      </div>
+      <div>
+        <label className="block font-medium">Promotion Start Date *</label>
+        <input
+          ref={(el) => { if (el) fieldRefs.current.promotionStartDate = el; }}
+          type="date"
+          name="promotionStartDate"
+          value={form.promotionStartDate}
+          onChange={handleChange}
+          className={`w-full border rounded p-2 ${errors.promotionStartDate ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+        />
+        {errors.promotionStartDate && <div className="text-red-500 text-sm mt-1">{errors.promotionStartDate}</div>}
+        <p className="text-sm text-gray-500 mt-1">When should promotion for this event begin?</p>
       </div>
       <div className="flex gap-2">
         <div className="flex-1">
@@ -440,12 +465,12 @@ export function EventForm({ event, eventTypes, onSubmit, loading }: EventFormPro
       {/* Priority Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block font-medium">Featured Event Priority</label>
+          <label className="block font-medium">Featured Event Priority Ranking</label>
           <input
-            ref={(el) => { if (el) fieldRefs.current.featuredEventPriority = el; }}
+            ref={(el) => { if (el) fieldRefs.current.featuredEventPriorityRanking = el; }}
             type="number"
-            name="featuredEventPriority"
-            value={form.featuredEventPriority ?? ''}
+            name="featuredEventPriorityRanking"
+            value={form.featuredEventPriorityRanking ?? ''}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
             min={0}
@@ -454,12 +479,12 @@ export function EventForm({ event, eventTypes, onSubmit, loading }: EventFormPro
           <p className="text-sm text-gray-500 mt-1">Higher numbers = higher priority</p>
         </div>
         <div>
-          <label className="block font-medium">Live Event Priority</label>
+          <label className="block font-medium">Live Event Priority Ranking</label>
           <input
-            ref={(el) => { if (el) fieldRefs.current.liveEventPriority = el; }}
+            ref={(el) => { if (el) fieldRefs.current.liveEventPriorityRanking = el; }}
             type="number"
-            name="liveEventPriority"
-            value={form.liveEventPriority ?? ''}
+            name="liveEventPriorityRanking"
+            value={form.liveEventPriorityRanking ?? ''}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 focus:ring-blue-500"
             min={0}

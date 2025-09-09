@@ -73,6 +73,8 @@ export interface EventDetailsDTO {
   startDate: string;
   /** Event end date (YYYY-MM-DD) */
   endDate: string;
+  /** Event promotion start date (YYYY-MM-DD) */
+  promotionStartDate: string;
   /** Event start time (e.g., 18:00) */
   startTime: string;
   /** Event end time (e.g., 21:00) */
@@ -107,10 +109,10 @@ export interface EventDetailsDTO {
   isLive?: boolean;
   /** Is featured event */
   isFeaturedEvent: boolean;
-  /** Featured event priority */
-  featuredEventPriority: number;
-  /** Live event priority */
-  liveEventPriority: number;
+  /** Featured event priority ranking */
+  featuredEventPriorityRanking: number;
+  /** Live event priority ranking */
+  liveEventPriorityRanking: number;
   /** Created at (ISO date-time) */
   createdAt: string;
   /** Updated at (ISO date-time) */
@@ -169,6 +171,8 @@ export interface EventMediaDTO {
   uploadedById?: number;
   createdAt: string;
   updatedAt: string;
+  /** Start displaying from date (YYYY-MM-DD) */
+  startDisplayingFrom?: string;
 }
 
 export interface EventCalendarEntryDTO {

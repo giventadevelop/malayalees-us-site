@@ -116,6 +116,7 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
   const [isPublic, setIsPublic] = useState(true);
   const [altText, setAltText] = useState("");
   const [displayOrder, setDisplayOrder] = useState<number | undefined>(undefined);
+  const [startDisplayingFrom, setStartDisplayingFrom] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadFormDivRef = useRef<HTMLDivElement>(null);
   const tooltipTimer = useRef<NodeJS.Timeout | null>(null);
@@ -190,6 +191,11 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       return;
     }
 
+    if (!startDisplayingFrom.trim()) {
+      setMessage("Start Displaying From date is required. Please select a date when the media should start being displayed.");
+      return;
+    }
+
     if (!files || files.length === 0) {
       setMessage("Please select at least one file to upload.");
       return;
@@ -227,7 +233,9 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       formData.append('isEventManagementOfficialDocument', String(isEventManagementOfficialDocument));
       formData.append('isHeroImage', String(isHeroImage));
       formData.append('isActiveHeroImage', String(isActiveHeroImage));
-      // Note: isFeaturedEventImage, isLiveEventImage, and isHomePageHeroImage are passed as query parameters above
+      formData.append('isFeaturedEventImage', String(isFeaturedEventImage));
+      formData.append('isLiveEventImage', String(isLiveEventImage));
+      formData.append('isHomePageHeroImage', String(isHomePageHeroImage));
       formData.append('isPublic', String(isPublic));
       formData.append('isTeamMemberProfileImage', 'false');
       formData.append('tenantId', tenantId);
@@ -250,13 +258,12 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
         formData.append('displayOrder', String(displayOrder));
       }
 
-      // Use the proxy endpoint directly from client with query parameters for required fields
-      const queryParams = new URLSearchParams();
-      queryParams.append('isHomePageHeroImage', String(isHomePageHeroImage));
-      queryParams.append('isFeaturedEventImage', String(isFeaturedEventImage));
-      queryParams.append('isLiveEventImage', String(isLiveEventImage));
+      if (startDisplayingFrom) {
+        formData.append('startDisplayingFrom', startDisplayingFrom);
+      }
 
-      const url = `${appUrl}/api/proxy/event-medias/upload-multiple?${queryParams.toString()}`;
+      // Use the proxy endpoint directly from client
+      const url = `${appUrl}/api/proxy/event-medias/upload-multiple`;
 
       const res = await fetch(url, {
         method: 'POST',
@@ -278,6 +285,7 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       setIsFeaturedEventImage(false);
       setIsLiveEventImage(false);
       setIsHomePageHeroImage(false);
+      setStartDisplayingFrom("");
       if (fileInputRef.current) fileInputRef.current.value = "";
       // Refresh the page after upload
       setTimeout(() => window.location.reload(), 1200);
@@ -388,6 +396,7 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       displayOrder: media.displayOrder || undefined,
       isFeaturedVideo: media.isFeaturedVideo || false,
       featuredVideoUrl: media.featuredVideoUrl || '',
+      startDisplayingFrom: media.startDisplayingFrom || '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -406,6 +415,12 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
         displayOrder: media.displayOrder || undefined,
         isFeaturedVideo: media.isFeaturedVideo || false,
         featuredVideoUrl: media.featuredVideoUrl || '',
+        startDisplayingFrom: media.startDisplayingFrom || '',
+        // Include required fields for backend validation
+        eventMediaType: media.eventMediaType || 'gallery',
+        storageType: media.storageType || 's3',
+        createdAt: media.createdAt || new Date().toISOString(),
+        updatedAt: media.updatedAt || new Date().toISOString(),
       });
     }, [media]);
 
@@ -512,6 +527,20 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
                 onChange={handleChange}
                 className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
               />
+            </div>
+
+            {/* Start Displaying From */}
+            <div className="md:col-span-2">
+              <label htmlFor="startDisplayingFrom" className="block text-sm font-medium text-gray-700 mb-1">Start Displaying From</label>
+              <input
+                type="date"
+                name="startDisplayingFrom"
+                id="startDisplayingFrom"
+                value={formData.startDisplayingFrom || ''}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+              />
+              <p className="text-sm text-gray-500 mt-1">When should this media start being displayed?</p>
             </div>
 
             {/* Checkboxes - Using proper UI style guide implementation */}
@@ -831,6 +860,24 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
               </label>
             </div>
           </div>
+
+          {/* Start Displaying From Date Field */}
+          <div className="mt-4 mb-4">
+            <label htmlFor="startDisplayingFrom" className="block text-sm font-medium text-gray-700 mb-2">
+              Start Displaying From Date *
+            </label>
+            <input
+              type="date"
+              id="startDisplayingFrom"
+              name="startDisplayingFrom"
+              value={startDisplayingFrom}
+              onChange={e => setStartDisplayingFrom(e.target.value)}
+              className={`border rounded px-3 py-2 w-48 ${startDisplayingFrom.trim() ? 'border-gray-300' : 'border-red-300 bg-red-50'}`}
+              required
+            />
+            <p className="text-sm text-gray-500 mt-1">Select the date when this media should start being displayed</p>
+          </div>
+
           <div className="custom-grid-table mt-2 mb-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
             <div className="custom-grid-cell">
               <label className="flex flex-col items-center">

@@ -645,11 +645,11 @@ export default function EventsPage() {
                 <button
                   onClick={handleSearch}
                   disabled={loading || isSearching}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 w-fit"
                 >
                   {loading || isSearching ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                       Searching...
                     </>
                   ) : (
@@ -661,7 +661,7 @@ export default function EventsPage() {
                 </button>
                 <button
                   onClick={clearSearch}
-                  className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                  className="px-2 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-1.5 w-fit"
                 >
                   <span>🗑️</span>
                   Clear Search

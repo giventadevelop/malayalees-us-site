@@ -136,11 +136,11 @@ export default function EditMediaPage() {
     } : prev);
   }
 
-  if (loading) return <div className="p-8">Loading media file...</div>;
-  if (!media) return <div className="p-8 text-red-500">Media file not found.</div>;
+  if (loading) return <div className="p-8 pt-24">Loading media file...</div>;
+  if (!media) return <div className="p-8 pt-24 text-red-500">Media file not found.</div>;
 
   return (
-    <div className="max-w-xl mx-auto p-8 bg-white rounded shadow">
+    <div className="max-w-xl mx-auto p-8 pt-24 bg-white rounded shadow">
       {/* Dashboard Card with Grid Buttons */}
       <div className="flex justify-center mb-8">
         <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl">
