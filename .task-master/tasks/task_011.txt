@@ -1,6 +1,6 @@
 # Task ID: 11
 # Title: Create admin event management dashboard
-# Status: pending
+# Status: done
 # Dependencies: 4 ⏱️
 # Priority: medium
 # Description: Develop the admin dashboard for managing free events.

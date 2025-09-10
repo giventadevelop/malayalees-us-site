@@ -1,6 +1,6 @@
 # Task ID: 8
 # Title: Implement guest management interface
-# Status: pending
+# Status: done
 # Dependencies: 7 ⏱️
 # Priority: high
 # Description: Create the interface for adding and managing guests during registration.

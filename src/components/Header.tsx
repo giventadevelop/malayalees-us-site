@@ -40,7 +40,9 @@ const navItems = [
 const adminSubmenuItems = [
   { name: 'Admin Home', href: '/admin' },
   { name: 'Manage Users', href: '/admin/manage-usage' },
-  { name: 'Manage Events', href: '/admin' },
+  { name: 'Manage Events', href: '/admin/events' },
+  { name: 'Event Analytics', href: '/admin/events/dashboard' },
+  { name: 'Registrations', href: '/admin/events/registrations' },
   { name: 'Promotion Emails', href: '/admin/promotion-emails' },
   { name: 'Test Stripe', href: '/admin/test-stripe' },
   { name: 'Media Management', href: '/admin/media' },

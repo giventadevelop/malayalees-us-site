@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FaUsers, FaCalendarAlt, FaEnvelope, FaCreditCard, FaHome, FaUserTie } from 'react-icons/fa';
+import { FaUsers, FaCalendarAlt, FaEnvelope, FaCreditCard, FaHome, FaUserTie, FaChartLine } from 'react-icons/fa';
 
 interface AdminNavigationProps {
   currentPage?: string;
@@ -27,12 +27,28 @@ export default function AdminNavigation({ currentPage, showHome = true }: AdminN
       key: 'manage-usage'
     },
     {
-      href: '/admin',
+      href: '/admin/events',
       icon: FaCalendarAlt,
       label: 'Manage Events',
       color: 'green',
       active: currentPage === 'events',
       key: 'manage-events'
+    },
+    {
+      href: '/admin/events/dashboard',
+      icon: FaChartLine,
+      label: 'Event Analytics',
+      color: 'teal',
+      active: currentPage === 'event-dashboard',
+      key: 'event-dashboard'
+    },
+    {
+      href: '/admin/events/registrations',
+      icon: FaUsers,
+      label: 'Registrations',
+      color: 'indigo',
+      active: currentPage === 'event-registrations',
+      key: 'event-registrations'
     },
     {
       href: '/admin/promotion-emails',
@@ -67,7 +83,9 @@ export default function AdminNavigation({ currentPage, showHome = true }: AdminN
       green: 'bg-green-50 hover:bg-green-100 text-green-700',
       yellow: 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700',
       purple: 'bg-purple-50 hover:bg-purple-100 text-purple-700',
-      orange: 'bg-orange-50 hover:bg-orange-100 text-orange-700'
+      orange: 'bg-orange-50 hover:bg-orange-100 text-orange-700',
+      teal: 'bg-teal-50 hover:bg-teal-100 text-teal-700',
+      indigo: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700'
     };
 
     const activeColors = {
@@ -76,7 +94,9 @@ export default function AdminNavigation({ currentPage, showHome = true }: AdminN
       green: 'bg-green-200 text-green-800',
       yellow: 'bg-yellow-200 text-yellow-800',
       purple: 'bg-purple-200 text-purple-800',
-      orange: 'bg-orange-200 text-orange-800'
+      orange: 'bg-orange-200 text-orange-800',
+      teal: 'bg-teal-200 text-teal-800',
+      indigo: 'bg-indigo-200 text-indigo-800'
     };
 
     return isActive ? activeColors[color as keyof typeof activeColors] : baseColors[color as keyof typeof baseColors];

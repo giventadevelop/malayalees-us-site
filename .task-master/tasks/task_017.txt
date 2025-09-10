@@ -1,6 +1,6 @@
 # Task ID: 17
 # Title: Implement QR code generation and validation
-# Status: pending
+# Status: done
 # Dependencies: 4 ⏱️
 # Priority: medium
 # Description: Create system for generating and validating QR codes for event check-in.

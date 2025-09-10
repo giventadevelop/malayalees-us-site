@@ -74,9 +74,10 @@ async function RegistrationPageContent({ eventId }: { eventId: number }) {
   }
 
   return (
-    <EventRegistrationForm 
-      eventId={eventId} 
+    <EventRegistrationForm
+      eventId={eventId}
       eventTitle={eventDetails.title}
+      eventDetails={eventDetails}
     />
   );
 }

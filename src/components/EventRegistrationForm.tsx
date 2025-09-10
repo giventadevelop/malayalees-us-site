@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { EventAttendeeDTO, EventAttendeeGuestDTO, UserProfileDTO } from "@/types";
-import { FaPlus, FaTrashAlt, FaUser, FaUsers, FaChild, FaBaby } from "react-icons/fa";
+import { EventAttendeeDTO, EventAttendeeGuestDTO, UserProfileDTO, EventDetailsDTO } from "@/types";
+import { FaPlus, FaTrashAlt, FaUser, FaUsers, FaChild, FaBaby, FaLock } from "react-icons/fa";
+import MemberOnlyGuard from "./auth/MemberOnlyGuard";
 
 interface EventRegistrationFormProps {
   eventId: number;
   eventTitle: string;
+  eventDetails?: EventDetailsDTO;
 }
 
 type GuestFormData = {
@@ -82,10 +84,10 @@ const relationships = [
   'Other'
 ];
 
-export default function EventRegistrationForm({ eventId, eventTitle }: EventRegistrationFormProps) {
+export default function EventRegistrationForm({ eventId, eventTitle, eventDetails }: EventRegistrationFormProps) {
   const router = useRouter();
   const { userId } = useAuth();
-  
+
   const [loading, setLoading] = useState(false);
   const [emailLookupLoading, setEmailLookupLoading] = useState(false);
   const [formData, setFormData] = useState<RegistrationFormData>(defaultFormData);
@@ -96,34 +98,32 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
   // Handle email lookup
   const handleEmailLookup = async (email: string) => {
     if (!email || !email.includes('@')) return;
-    
+
     setEmailLookupLoading(true);
     try {
-      const response = await fetch(`/api/proxy/user-profiles?email.equals=${encodeURIComponent(email)}`);
-      if (response.ok) {
-        const profiles = await response.json();
-        if (profiles && profiles.length > 0) {
-          const profile = profiles[0];
-          setExistingProfile(profile);
-          setFormData(prev => ({
-            ...prev,
-            email: profile.email || email,
-            firstName: profile.firstName || '',
-            lastName: profile.lastName || '',
-            phone: profile.phone || '',
-            isMember: profile.userStatus === 'ACTIVE'
-          }));
-        } else {
-          setExistingProfile(null);
-          setFormData(prev => ({
-            ...prev,
-            email,
-            firstName: '',
-            lastName: '',
-            phone: '',
-            isMember: false
-          }));
-        }
+      const { lookupUserProfileByEmailAction } = await import('../app/event/registration/actions');
+      const profile = await lookupUserProfileByEmailAction(email);
+
+      if (profile) {
+        setExistingProfile(profile);
+        setFormData(prev => ({
+          ...prev,
+          email: profile.email || email,
+          firstName: profile.firstName || '',
+          lastName: profile.lastName || '',
+          phone: profile.phone || '',
+          isMember: profile.userStatus === 'ACTIVE'
+        }));
+      } else {
+        setExistingProfile(null);
+        setFormData(prev => ({
+          ...prev,
+          email,
+          firstName: '',
+          lastName: '',
+          phone: '',
+          isMember: false
+        }));
       }
     } catch (error) {
       console.error('Email lookup failed:', error);
@@ -146,7 +146,7 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -170,7 +170,7 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
   const updateGuest = (index: number, field: keyof GuestFormData, value: string) => {
     setFormData(prev => ({
       ...prev,
-      guests: prev.guests.map((guest, i) => 
+      guests: prev.guests.map((guest, i) =>
         i === index ? { ...guest, [field]: value } : guest
       )
     }));
@@ -203,7 +203,11 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
 
     try {
       // Import server actions
-      const { createEventAttendeeAction, createUserProfileAction } = await import('../app/event/registration/actions');
+      const {
+        createEventAttendeeAction,
+        createUserProfileAction,
+        createEventAttendeeGuestAction
+      } = await import('../app/event/registration/actions');
 
       let userProfileId = existingProfile?.id;
 
@@ -216,8 +220,7 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
           lastName: formData.lastName,
           phone: formData.phone,
           userRole: 'MEMBER',
-          userStatus: 'PENDING_APPROVAL',
-          tenantId: process.env.NEXT_PUBLIC_TENANT_ID
+          userStatus: 'PENDING_APPROVAL'
         });
         userProfileId = newProfile.id;
       }
@@ -239,9 +242,7 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
         accessibilityNeeds: formData.accessibilityNeeds,
         registrationStatus: 'REGISTERED',
         registrationDate: new Date().toISOString(),
-        totalNumberOfGuests: formData.guests.length,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        totalNumberOfGuests: formData.guests.length
       };
 
       const attendee = await createEventAttendeeAction(attendeeData);
@@ -257,9 +258,7 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
             ageGroup: guest.ageGroup,
             relationship: guest.relationship,
             specialRequirements: guest.specialRequirements,
-            registrationStatus: 'REGISTERED',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            registrationStatus: 'REGISTERED'
           };
           await createEventAttendeeGuestAction(attendee.id, guestData);
         }
@@ -267,7 +266,7 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
 
       setSuccess(true);
       setTimeout(() => {
-        router.push(`/event/success?eventId=${eventId}`);
+        router.push(`/event/success?eventId=${eventId}&attendeeId=${attendee.id}`);
       }, 2000);
 
     } catch (error) {
@@ -298,11 +297,21 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
     );
   }
 
-  return (
+  const isMemberOnly = eventDetails?.isMemberOnly === true;
+
+  const formContent = (
     <div className="max-w-5xl mx-auto px-8 py-8">
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Register for {eventTitle}</h1>
-        
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Register for {eventTitle}</h1>
+          {isMemberOnly && (
+            <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-semibold">
+              <FaLock className="w-4 h-4" />
+              Members Only Event
+            </div>
+          )}
+        </div>
+
         {error && (
           <div className="bg-red-50 text-red-700 p-3 rounded-md mb-4">
             {error}
@@ -313,7 +322,7 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
           {/* Email Lookup Section */}
           <div className="border rounded-lg p-4 bg-gray-50">
             <h3 className="text-lg font-semibold mb-4">Primary Attendee Information</h3>
-            
+
             <div className="mb-4">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email Address *
@@ -550,7 +559,7 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
           {/* Additional Information */}
           <div className="border rounded-lg p-4 bg-gray-50">
             <h3 className="text-lg font-semibold mb-4">Additional Information</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -599,7 +608,7 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
           {/* Emergency Contact */}
           <div className="border rounded-lg p-4 bg-gray-50">
             <h3 className="text-lg font-semibold mb-4">Emergency Contact</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -653,8 +662,8 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
                 onClick={(e) => e.stopPropagation()}
               />
               <span className="ml-2 text-sm text-gray-700">
-                I agree to the <a href="/terms" className="text-blue-600 hover:underline" target="_blank">Terms and Conditions</a> and 
-                <a href="/privacy" className="text-blue-600 hover:underline ml-1" target="_blank">Privacy Policy</a>. 
+                I agree to the <a href="/terms" className="text-blue-600 hover:underline" target="_blank">Terms and Conditions</a> and
+                <a href="/privacy" className="text-blue-600 hover:underline ml-1" target="_blank">Privacy Policy</a>.
                 I understand that my registration is subject to approval and I will be notified of the status.
               </span>
             </label>
@@ -674,4 +683,15 @@ export default function EventRegistrationForm({ eventId, eventTitle }: EventRegi
       </div>
     </div>
   );
+
+  // If event is member-only, wrap with MemberOnlyGuard
+  if (isMemberOnly && eventDetails) {
+    return (
+      <MemberOnlyGuard event={eventDetails}>
+        {formContent}
+      </MemberOnlyGuard>
+    );
+  }
+
+  return formContent;
 }

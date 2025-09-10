@@ -2,14 +2,16 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { getAppUrl } from '@/lib/env';
 import { formatInTimeZone } from 'date-fns-tz';
-import type { EventDetailsDTO } from '@/types';
+import type { EventDetailsDTO, EventAttendeeDTO, EventAttendeeGuestDTO } from '@/types';
 import SuccessClient from './SuccessClient';
+import { getEventAttendee, getEventAttendeeGuests } from './ApiServerActions';
 
 interface SuccessPageProps {
   searchParams: {
     eventId?: string;
     session_id?: string;
     pi?: string;
+    attendeeId?: string;
   };
 }
 
@@ -52,7 +54,7 @@ function LoadingSkeleton() {
 }
 
 export default async function SuccessPage({ searchParams }: SuccessPageProps) {
-  const { eventId, session_id, pi } = searchParams;
+  const { eventId, session_id, pi, attendeeId } = searchParams;
 
   // If session_id or pi parameters are present, use SuccessClient
   if (session_id || pi) {
@@ -66,7 +68,7 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
     );
   }
 
-  // Legacy flow: require eventId parameter
+  // Event registration flow: require eventId parameter
   const parsedEventId = eventId ? parseInt(eventId) : null;
   if (!parsedEventId || isNaN(parsedEventId)) {
     notFound();
@@ -74,16 +76,34 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
 
   return (
     <Suspense fallback={<LoadingSkeleton />}>
-      <SuccessPageContent eventId={parsedEventId} />
+      <SuccessPageContent eventId={parsedEventId} attendeeId={attendeeId} />
     </Suspense>
   );
 }
 
-async function SuccessPageContent({ eventId }: { eventId: number }) {
+async function SuccessPageContent({ eventId, attendeeId }: { eventId: number; attendeeId?: string }) {
   const eventDetails = await fetchEventDetails(eventId);
 
   if (!eventDetails) {
     notFound();
+  }
+
+  // Fetch attendee and guest information if attendeeId is provided
+  let attendee: EventAttendeeDTO | null = null;
+  let guests: EventAttendeeGuestDTO[] = [];
+
+  if (attendeeId) {
+    try {
+      const parsedAttendeeId = parseInt(attendeeId);
+      if (!isNaN(parsedAttendeeId)) {
+        attendee = await getEventAttendee(parsedAttendeeId);
+        if (attendee) {
+          guests = await getEventAttendeeGuests(parsedAttendeeId);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching attendee details:', error);
+    }
   }
 
   const eventDate = formatInTimeZone(
@@ -118,6 +138,79 @@ async function SuccessPageContent({ eventId }: { eventId: number }) {
             )}
           </div>
 
+          {/* Registration Details */}
+          {attendee && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-blue-800 mb-3">Registration Details</h3>
+              <div className="text-left space-y-2">
+                <p className="text-blue-700">
+                  <strong>Primary Attendee:</strong> {attendee.firstName} {attendee.lastName}
+                </p>
+                <p className="text-blue-700">
+                  <strong>Email:</strong> {attendee.email}
+                </p>
+                {attendee.phone && (
+                  <p className="text-blue-700">
+                    <strong>Phone:</strong> {attendee.phone}
+                  </p>
+                )}
+                <p className="text-blue-700">
+                  <strong>Registration Status:</strong> {attendee.registrationStatus}
+                </p>
+                {attendee.totalNumberOfGuests && attendee.totalNumberOfGuests > 0 && (
+                  <p className="text-blue-700">
+                    <strong>Total Guests:</strong> {attendee.totalNumberOfGuests}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Guest Information */}
+          {guests.length > 0 && (
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-purple-800 mb-3">Guest Information</h3>
+              <div className="space-y-3">
+                {guests.map((guest, index) => (
+                  <div key={index} className="bg-white rounded-lg p-4 border border-purple-100">
+                    <p className="font-medium text-purple-800">
+                      {guest.firstName} {guest.lastName}
+                    </p>
+                    <div className="text-sm text-purple-600 space-y-1">
+                      <p><strong>Age Group:</strong> {guest.ageGroup}</p>
+                      <p><strong>Relationship:</strong> {guest.relationship}</p>
+                      {guest.email && <p><strong>Email:</strong> {guest.email}</p>}
+                      {guest.phone && <p><strong>Phone:</strong> {guest.phone}</p>}
+                      {guest.specialRequirements && (
+                        <p><strong>Special Requirements:</strong> {guest.specialRequirements}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* QR Code Section */}
+          {attendee && attendee.qrCodeData && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-yellow-800 mb-3">Your QR Code</h3>
+              <div className="text-center">
+                <div className="bg-white p-4 rounded-lg inline-block">
+                  <img
+                    src={attendee.qrCodeData}
+                    alt="Registration QR Code"
+                    className="mx-auto"
+                    style={{ maxWidth: '200px', maxHeight: '200px' }}
+                  />
+                </div>
+                <p className="text-sm text-yellow-700 mt-2">
+                  Present this QR code at the event for check-in
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
             <h3 className="text-lg font-semibold text-blue-800 mb-3">What's Next?</h3>
             <ul className="text-blue-700 text-left space-y-2">
@@ -125,6 +218,9 @@ async function SuccessPageContent({ eventId }: { eventId: number }) {
               <li>• Your registration is subject to approval</li>
               <li>• You will be notified of the final status</li>
               <li>• Check your email for any additional instructions</li>
+              {attendee?.qrCodeData && (
+                <li>• Save your QR code for easy check-in at the event</li>
+              )}
             </ul>
           </div>
 

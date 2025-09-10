@@ -1,6 +1,6 @@
 # Task ID: 7
 # Title: Create registration form component
-# Status: pending
+# Status: done
 # Dependencies: 6 ⏱️
 # Priority: high
 # Description: Develop the registration form component for collecting primary attendee information.

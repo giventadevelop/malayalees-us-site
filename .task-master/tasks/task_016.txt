@@ -1,6 +1,6 @@
 # Task ID: 16
 # Title: Implement waitlist functionality
-# Status: pending
+# Status: done
 # Dependencies: 4 ⏱️
 # Priority: low
 # Description: Create waitlist system for handling registrations when event capacity is reached.

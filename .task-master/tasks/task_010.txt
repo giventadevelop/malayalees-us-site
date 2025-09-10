@@ -1,6 +1,6 @@
 # Task ID: 10
 # Title: Implement access control for member-only events
-# Status: pending
+# Status: done
 # Dependencies: 4 ⏱️
 # Priority: medium
 # Description: Create logic to restrict access to member-only events and handle authentication.

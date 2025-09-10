@@ -1,6 +1,6 @@
 # Task ID: 19
 # Title: Implement data export functionality
-# Status: pending
+# Status: done
 # Dependencies: 12 ⏱️
 # Priority: low
 # Description: Create functionality to export event and registration data for admins.
