@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatInTimeZone } from 'date-fns-tz';
 import type { EventDetailsDTO, EventMediaDTO } from '@/types';
-import { getAppUrl } from '@/lib/env';
+import { useFilteredEvents } from '@/hooks/useFilteredEvents';
 
 interface LiveEventWithMedia {
   event: EventDetailsDTO;
@@ -13,170 +13,20 @@ interface LiveEventWithMedia {
 }
 
 const LiveEventsSection: React.FC = () => {
-  const [liveEvents, setLiveEvents] = useState<LiveEventWithMedia[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
+  const { filteredEvents, isLoading, error } = useFilteredEvents('live');
 
-  // Reuse the same logic from HeroSection for filtering events in next 3 months
-  const isEventInNextThreeMonths = (eventDate: string): boolean => {
-    const today = new Date();
-    const threeMonthsFromNow = new Date();
-    threeMonthsFromNow.setMonth(today.getMonth() + 3);
-
-    const eventStartDate = new Date(eventDate);
-    return eventStartDate >= today && eventStartDate <= threeMonthsFromNow;
-  };
-
-  // Filter for live events with isLiveEvent = true and isLiveEventImage = true
-  const fetchLiveEvents = async (): Promise<LiveEventWithMedia[]> => {
-    const baseUrl = getAppUrl();
-    const liveEventsData: LiveEventWithMedia[] = [];
-
-    try {
-      // Use the same events fetch logic as HeroSection
-      let eventsResponse = await fetch(
-        `${baseUrl}/api/proxy/event-details?sort=startDate,asc`,
-        { cache: 'no-store' }
-      );
-
-      if (!eventsResponse.ok) {
-        console.log('Events fetch failed with status:', eventsResponse.status);
-        // Try fallback like HeroSection does
-        try {
-          eventsResponse = await fetch(
-            `${baseUrl}/api/proxy/event-details?sort=startDate,desc`,
-            { cache: 'no-store' }
-          );
-          if (!eventsResponse.ok) {
-            console.log('Fallback events fetch also failed with status:', eventsResponse.status);
-            return [];
-          }
-        } catch (fallbackErr) {
-          console.error('Fallback events fetch error:', fallbackErr);
-          return [];
-        }
-      }
-
-      const events: EventDetailsDTO[] = await eventsResponse.json();
-      console.log('Fetched events for live section:', events.length);
-
-      // Apply the same filtering logic as HeroSection: events in next 3 months and active
-      const upcomingEvents = events.filter(event =>
-        event.startDate &&
-        isEventInNextThreeMonths(event.startDate) &&
-        event.isActive
-      );
-
-      console.log('Upcoming events in next 3 months:', upcomingEvents.length);
-
-      // For each upcoming event, check if it has live event media (isLiveEventImage = true)
-      const allLiveEvents: LiveEventWithMedia[] = [];
-
-      for (const event of upcomingEvents) {
-        try {
-          // Use the same media fetch pattern as HeroSection but for isLiveEventImage
-          const mediaResponse = await fetch(
-            `${baseUrl}/api/proxy/event-medias?eventId.equals=${event.id}&isLiveEventImage.equals=true`,
-            { cache: 'no-store' }
-          );
-
-          if (mediaResponse.ok) {
-            const mediaData = await mediaResponse.json();
-            const mediaArray = Array.isArray(mediaData) ? mediaData : (mediaData ? [mediaData] : []);
-
-            // Client-side filter to ensure we only get items where isLiveEventImage is explicitly true
-            const liveMedia = mediaArray.filter(media => media.isLiveEventImage === true);
-
-            if (liveMedia.length > 0) {
-              allLiveEvents.push({
-                event,
-                media: liveMedia[0] // Take the first live media
-              });
-              console.log(`Found live event: ${event.title} with priority: ${event.liveEventPriority} and media: ${liveMedia[0].fileUrl}`);
-            }
-          } else {
-            console.log(`Event ${event.id}: Live event image fetch failed with status ${mediaResponse.status}`);
-          }
-        } catch (mediaError) {
-          console.error(`Error fetching live media for event ${event.id}:`, mediaError);
-        }
-      }
-
-      // Priority-based filtering logic (similar to featured events)
-      if (allLiveEvents.length === 0) {
-        console.log('No live events found');
-        return [];
-      }
-
-      if (allLiveEvents.length === 1) {
-        console.log('Only one live event found, selecting it');
-        liveEventsData.push(allLiveEvents[0]);
-        return liveEventsData;
-      }
-
-      // Group events by priority
-      const eventsByPriority = new Map<number, LiveEventWithMedia[]>();
-
-      allLiveEvents.forEach(liveEvent => {
-        const priority = liveEvent.event.liveEventPriority || 0; // Default to 0 if not set
-        if (!eventsByPriority.has(priority)) {
-          eventsByPriority.set(priority, []);
-        }
-        eventsByPriority.get(priority)!.push(liveEvent);
-      });
-
-      // Find the highest priority (lowest number = highest priority)
-      const priorities = Array.from(eventsByPriority.keys()).sort((a, b) => a - b);
-      const highestPriority = priorities[0];
-      const highestPriorityEvents = eventsByPriority.get(highestPriority) || [];
-
-      console.log(`Found ${allLiveEvents.length} live events across ${priorities.length} priority levels`);
-      console.log(`Highest priority: ${highestPriority} with ${highestPriorityEvents.length} events`);
-
-      // Select from highest priority events
-      if (highestPriorityEvents.length === 1) {
-        console.log('Only one event with highest priority, selecting it');
-        liveEventsData.push(highestPriorityEvents[0]);
-      } else {
-        // Multiple events with same highest priority - choose randomly
-        const randomIndex = Math.floor(Math.random() * highestPriorityEvents.length);
-        console.log(`Multiple events with same priority (${highestPriority}), randomly selecting index ${randomIndex}`);
-        liveEventsData.push(highestPriorityEvents[randomIndex]);
-      }
-
-      console.log('Total live events selected:', liveEventsData.length);
-      return liveEventsData;
-
-    } catch (error) {
-      console.error('Error fetching live events:', error);
-      return [];
-    }
-  };
-
-  // Load live events after hero section is loaded (same timing as HeroSection)
+  // Show section after hero section is loaded (2 second delay)
   useEffect(() => {
-    const loadLiveEvents = async () => {
-      try {
-        setIsLoading(true);
-        const events = await fetchLiveEvents();
-        setLiveEvents(events);
-        setIsLoading(false);
-
-        // Show section after hero section is loaded (2 second delay)
-        setTimeout(() => {
-          setIsVisible(true);
-        }, 2000);
-      } catch (error) {
-        console.error('Error loading live events:', error);
-        setIsLoading(false);
-      }
-    };
-
-    loadLiveEvents();
-  }, []);
+    if (!isLoading && filteredEvents.length > 0) {
+      setTimeout(() => {
+        setIsVisible(true);
+      }, 2000);
+    }
+  }, [isLoading, filteredEvents.length]);
 
   // Don't render anything if loading or no events
-  if (isLoading || !isVisible || liveEvents.length === 0) {
+  if (isLoading || !isVisible || filteredEvents.length === 0) {
     return null;
   }
 
@@ -185,7 +35,7 @@ const LiveEventsSection: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Live Events Strip */}
         <div className="space-y-4 md:space-y-6">
-          {liveEvents.map((liveEvent, index) => (
+          {filteredEvents.map((liveEvent, index) => (
             <div
               key={liveEvent.event.id}
               className="bg-white rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden h-auto md:h-[200px]"

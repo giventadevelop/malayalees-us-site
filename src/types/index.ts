@@ -172,7 +172,7 @@ export interface EventMediaDTO {
   createdAt: string;
   updatedAt: string;
   /** Start displaying from date (YYYY-MM-DD) */
-  startDisplayingFrom?: string;
+  startDisplayingFromDate?: string;
 }
 
 export interface EventCalendarEntryDTO {

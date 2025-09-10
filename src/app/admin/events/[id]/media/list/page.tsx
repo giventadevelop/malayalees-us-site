@@ -207,17 +207,38 @@ type MediaCheckboxName = 'isPublic' | 'eventFlyer' | 'isEventManagementOfficialD
 
 function EditMediaModal({ media, onClose, onSave, loading }: EditMediaModalProps) {
   const [form, setForm] = useState<Partial<EventMediaDTO>>(() => ({
-    ...media,
+    id: media.id,
+    tenantId: media.tenantId,
+    title: media.title || '',
+    description: media.description || '',
+    eventMediaType: media.eventMediaType || '',
+    storageType: media.storageType || '',
+    fileUrl: media.fileUrl || '',
+    contentType: media.contentType,
+    fileSize: media.fileSize,
     isPublic: Boolean(media.isPublic),
     eventFlyer: Boolean(media.eventFlyer),
     isEventManagementOfficialDocument: Boolean(media.isEventManagementOfficialDocument),
+    preSignedUrl: media.preSignedUrl || '',
+    preSignedUrlExpiresAt: media.preSignedUrlExpiresAt,
+    altText: media.altText || '',
+    displayOrder: media.displayOrder,
+    downloadCount: media.downloadCount,
+    isFeaturedVideo: Boolean(media.isFeaturedVideo),
+    featuredVideoUrl: media.featuredVideoUrl || '',
     isHeroImage: Boolean(media.isHeroImage),
     isActiveHeroImage: Boolean(media.isActiveHeroImage),
-    isFeaturedVideo: Boolean(media.isFeaturedVideo),
     isHomePageHeroImage: Boolean(media.isHomePageHeroImage),
     isFeaturedEventImage: Boolean(media.isFeaturedEventImage),
     isLiveEventImage: Boolean(media.isLiveEventImage),
-    featuredVideoUrl: media.featuredVideoUrl || '',
+    eventId: media.eventId,
+    uploadedById: media.uploadedById,
+    createdAt: media.createdAt,
+    updatedAt: media.updatedAt,
+    startDisplayingFromDate: media.startDisplayingFromDate ?
+      (typeof media.startDisplayingFromDate === 'string' ?
+        media.startDisplayingFromDate :
+        new Date(media.startDisplayingFromDate).toISOString().split('T')[0]) : '',
   }));
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -232,8 +253,13 @@ function EditMediaModal({ media, onClose, onSave, loading }: EditMediaModalProps
         updatedAt: new Date().toISOString(),
         ...Object.fromEntries(
           Object.entries(form)
-            .filter(([_, v]) => v !== undefined && v !== null)
-            .map(([k, v]) => [k, typeof v === 'boolean' ? Boolean(v) : v])
+            .filter(([_, v]) => v !== undefined && v !== null && v !== '')
+            .map(([k, v]) => [
+              k,
+              k === 'startDisplayingFromDate' && (v === '' || v === 'null') ? null :
+                k === 'startDisplayingFromDate' && v ? new Date(v as string).toISOString().split('T')[0] :
+                  typeof v === 'boolean' ? Boolean(v) : v
+            ])
         ),
       };
       await onSave(payload);
@@ -308,6 +334,22 @@ function EditMediaModal({ media, onClose, onSave, loading }: EditMediaModalProps
               onChange={(e) => setForm(prev => ({ ...prev, altText: e.target.value }))}
               className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700" htmlFor="startDisplayingFromDate">
+              Start Displaying From Date
+            </label>
+            <input
+              id="startDisplayingFromDate"
+              type="date"
+              value={form.startDisplayingFromDate || ''}
+              onChange={(e) => setForm(prev => ({ ...prev, startDisplayingFromDate: e.target.value }))}
+              className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+            />
+            <p className="mt-1 text-sm text-gray-500">
+              Leave empty to display immediately, or set a future date to schedule when this media should start being displayed.
+            </p>
           </div>
 
           {form.isFeaturedVideo && (

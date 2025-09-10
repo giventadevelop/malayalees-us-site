@@ -93,7 +93,7 @@ export interface MediaUploadParams {
   userProfileId?: number | null; // Optional in new schema
   files: File[];
   isTeamMemberProfileImage?: boolean; // Add optional parameter for team member profile images
-  startDisplayingFrom: string; // Required parameter - date when media should start being displayed
+  startDisplayingFromDate: string; // Required parameter - date when media should start being displayed
 }
 
 export async function uploadMedia(eventId: number, {
@@ -112,14 +112,14 @@ export async function uploadMedia(eventId: number, {
   userProfileId,
   files,
   isTeamMemberProfileImage = false, // Default to false for regular event media
-  startDisplayingFrom
+  startDisplayingFromDate
 }: MediaUploadParams) {
   // Validate required fields
   if (!title || title.trim() === '') {
     throw new Error('Title is required');
   }
 
-  if (!startDisplayingFrom || startDisplayingFrom.trim() === '') {
+  if (!startDisplayingFromDate || startDisplayingFromDate.trim() === '') {
     throw new Error('Start Displaying From date is required');
   }
 
@@ -162,8 +162,8 @@ export async function uploadMedia(eventId: number, {
     formData.append('displayOrder', String(displayOrder));
   }
 
-  // Append startDisplayingFrom (required field)
-  formData.append('startDisplayingFrom', startDisplayingFrom);
+  // Append startDisplayingFromDate (required field)
+  formData.append('startDisplayingFromDate', startDisplayingFromDate);
 
   // Use the proxy endpoint (not direct backend call)
   const url = `${getAppUrl()}/api/proxy/event-medias/upload-multiple`;
@@ -250,7 +250,7 @@ export async function uploadMediaServer(params: {
   displayOrder?: number;
   userProfileId?: number | null;
   isTeamMemberProfileImage?: boolean; // Add optional parameter for team member profile images
-  startDisplayingFrom: string; // Required parameter - date when media should start being displayed
+  startDisplayingFromDate: string; // Required parameter - date when media should start being displayed
 }) {
   const { eventId, files, ...rest } = params;
 

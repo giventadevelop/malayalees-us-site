@@ -116,7 +116,7 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
   const [isPublic, setIsPublic] = useState(true);
   const [altText, setAltText] = useState("");
   const [displayOrder, setDisplayOrder] = useState<number | undefined>(undefined);
-  const [startDisplayingFrom, setStartDisplayingFrom] = useState("");
+  const [startDisplayingFromDate, setStartDisplayingFromDate] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadFormDivRef = useRef<HTMLDivElement>(null);
   const tooltipTimer = useRef<NodeJS.Timeout | null>(null);
@@ -191,7 +191,7 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       return;
     }
 
-    if (!startDisplayingFrom.trim()) {
+    if (!startDisplayingFromDate.trim()) {
       setMessage("Start Displaying From date is required. Please select a date when the media should start being displayed.");
       return;
     }
@@ -258,8 +258,8 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
         formData.append('displayOrder', String(displayOrder));
       }
 
-      if (startDisplayingFrom) {
-        formData.append('startDisplayingFrom', startDisplayingFrom);
+      if (startDisplayingFromDate) {
+        formData.append('startDisplayingFromDate', startDisplayingFromDate);
       }
 
       // Use the proxy endpoint directly from client
@@ -285,7 +285,7 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       setIsFeaturedEventImage(false);
       setIsLiveEventImage(false);
       setIsHomePageHeroImage(false);
-      setStartDisplayingFrom("");
+      setStartDisplayingFromDate("");
       if (fileInputRef.current) fileInputRef.current.value = "";
       // Refresh the page after upload
       setTimeout(() => window.location.reload(), 1200);
@@ -396,7 +396,7 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       displayOrder: media.displayOrder || undefined,
       isFeaturedVideo: media.isFeaturedVideo || false,
       featuredVideoUrl: media.featuredVideoUrl || '',
-      startDisplayingFrom: media.startDisplayingFrom || '',
+      startDisplayingFromDate: media.startDisplayingFromDate || '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -415,7 +415,7 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
         displayOrder: media.displayOrder || undefined,
         isFeaturedVideo: media.isFeaturedVideo || false,
         featuredVideoUrl: media.featuredVideoUrl || '',
-        startDisplayingFrom: media.startDisplayingFrom || '',
+        startDisplayingFromDate: media.startDisplayingFromDate || '',
         // Include required fields for backend validation
         eventMediaType: media.eventMediaType || 'gallery',
         storageType: media.storageType || 's3',
@@ -531,12 +531,12 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
 
             {/* Start Displaying From */}
             <div className="md:col-span-2">
-              <label htmlFor="startDisplayingFrom" className="block text-sm font-medium text-gray-700 mb-1">Start Displaying From</label>
+              <label htmlFor="startDisplayingFromDate" className="block text-sm font-medium text-gray-700 mb-1">Start Displaying From</label>
               <input
                 type="date"
-                name="startDisplayingFrom"
-                id="startDisplayingFrom"
-                value={formData.startDisplayingFrom || ''}
+                name="startDisplayingFromDate"
+                id="startDisplayingFromDate"
+                value={formData.startDisplayingFromDate || ''}
                 onChange={handleChange}
                 className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
               />
@@ -863,16 +863,16 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
 
           {/* Start Displaying From Date Field */}
           <div className="mt-4 mb-4">
-            <label htmlFor="startDisplayingFrom" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="startDisplayingFromDate" className="block text-sm font-medium text-gray-700 mb-2">
               Start Displaying From Date *
             </label>
             <input
               type="date"
-              id="startDisplayingFrom"
-              name="startDisplayingFrom"
-              value={startDisplayingFrom}
-              onChange={e => setStartDisplayingFrom(e.target.value)}
-              className={`border rounded px-3 py-2 w-48 ${startDisplayingFrom.trim() ? 'border-gray-300' : 'border-red-300 bg-red-50'}`}
+              id="startDisplayingFromDate"
+              name="startDisplayingFromDate"
+              value={startDisplayingFromDate}
+              onChange={e => setStartDisplayingFromDate(e.target.value)}
+              className={`border rounded px-3 py-2 w-48 ${startDisplayingFromDate.trim() ? 'border-gray-300' : 'border-red-300 bg-red-50'}`}
               required
             />
             <p className="text-sm text-gray-500 mt-1">Select the date when this media should start being displayed</p>
@@ -1080,12 +1080,12 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
                       >
                         {media.fileUrl && media.contentType?.startsWith('image') && (
                           <a href={media.fileUrl} target="_blank" rel="noopener noreferrer">
-                            <img src={media.fileUrl} alt={media.title || ''} className="w-16 h-16 object-cover rounded mx-auto" />
+                            <img src={media.fileUrl.startsWith('http') ? media.fileUrl : `https://placehold.co/600x400?text=${media.title}`} alt={media.title || ''} className="w-16 h-16 object-cover rounded mx-auto" />
                           </a>
                         )}
                         {media.fileUrl && media.contentType?.startsWith('video') && (
                           <a href={media.fileUrl} target="_blank" rel="noopener noreferrer">
-                            <video src={media.fileUrl} controls className="w-24 h-16 rounded mx-auto" />
+                            <video src={media.fileUrl.startsWith('http') ? media.fileUrl : `https://placehold.co/600x400?text=${media.title}`} controls className="w-24 h-16 rounded mx-auto" />
                           </a>
                         )}
                         {media.fileUrl && !media.contentType?.startsWith('image') && !media.contentType?.startsWith('video') && (
@@ -1148,107 +1148,107 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
         <div className="mb-2 text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded px-4 py-2">
           Mouse over the first 2 columns (Title, Type) to see full details about the item. Use the × button to close the tooltip.
         </div>
-        <h2 className="text-lg font-semibold mb-2">Uploaded Media</h2>
-        <div className="flex items-center gap-4 mb-2">
-          <label className="flex items-center gap-2">
-            <input type="checkbox" checked={showOnlyEventFlyers} onChange={e => setShowOnlyEventFlyers(e.target.checked)} /> Show only event flyers
-          </label>
+        <div className="mb-4 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-gray-900">Uploaded Media Files</h2>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={showOnlyEventFlyers}
+                onChange={e => setShowOnlyEventFlyers(e.target.checked)}
+                className="rounded"
+              />
+              <span className="text-sm font-medium">Show only Event Flyers</span>
+            </label>
+          </div>
         </div>
+
         {mediaList.length === 0 ? (
-          <div className="text-gray-500">No media uploaded yet.</div>
+          <div className="text-center p-8 text-gray-500">No media files uploaded yet.</div>
         ) : (
           <div className="mb-8">
-            <table className="w-full border text-sm relative bg-white rounded shadow-md">
-              <thead>
-                <tr className="bg-green-100 font-bold border-b-2 border-green-300">
-                  <th className="p-2 border">Title</th>
-                  <th className="p-2 border">Type</th>
-                  <th className="p-2 border">Preview</th>
-                  <th className="p-2 border">Uploaded At</th>
-                  <th className="p-2 border">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pagedMedia.map((media) => {
-                  let uploadedMediaPosition0 = 'right', uploadedMediaPosition1 = 'right', uploadedMediaPosition2 = 'right';
-                  return (
-                    <tr key={media.id} className="border-b border-gray-300 relative">
-                      <td
-                        className="p-2 border align-middle relative hover:bg-green-50 cursor-pointer"
-                        onMouseEnter={e => handleCellMouseEnter(media, e, 'uploadedMedia')}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {pagedMedia.map((media, index) => {
+                const serialNumber = mediaPage * mediaPageSize + index + 1;
+                return (
+                  <div
+                    key={media.id}
+                    data-serial-number={serialNumber}
+                    className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col justify-between"
+                  >
+                    <div>
+                      <div
+                        className="relative h-48 bg-gray-200 cursor-pointer"
+                        onMouseEnter={e => handleCellMouseEnter(media, e as any, 'uploadedMedia')}
                         onMouseLeave={handleCellMouseLeave}
                       >
-                        {media.title}
-                      </td>
-                      <td
-                        className="p-2 border align-middle relative hover:bg-green-50 cursor-pointer"
-                        onMouseEnter={e => handleCellMouseEnter(media, e, 'uploadedMedia')}
-                        onMouseLeave={handleCellMouseLeave}
+                        {/* Serial number overlay */}
+                        <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 rounded-full text-sm font-bold z-10 shadow-lg">
+                          #{serialNumber}
+                        </div>
+                        {media.fileUrl && (
+                          <img
+                            src={media.fileUrl.startsWith('http') ? media.fileUrl : `https://placehold.co/600x400?text=${media.title}`}
+                            alt={media.altText || media.title || ''}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null;
+                              target.src = `https://placehold.co/600x400?text=No+Image`;
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-lg truncate" title={media.title || ''}>{media.title}</h3>
+                        <p className="text-gray-600 text-sm h-10 overflow-hidden" title={media.description || ''}>{media.description}</p>
+                        <div className="text-xs text-gray-500 mt-2">
+                          {media.createdAt ? new Date(media.createdAt).toLocaleDateString() : ''}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 pt-0 flex justify-end space-x-2">
+                      <button
+                        onClick={() => {
+                          console.log('Edit icon clicked', media);
+                          setEditMedia(media);
+                        }}
+                        className="text-blue-500 hover:text-blue-700 p-2 rounded-full"
+                        title="Edit Media"
                       >
-                        {media.eventMediaType}
-                      </td>
-                      <td
-                        className="p-2 border align-middle text-center relative"
+                        <FaEdit size={20} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(media.id!)}
+                        className="text-red-500 hover:text-red-700 p-2 rounded-full"
+                        title="Delete Media"
                       >
-                        {media.fileUrl && media.contentType?.startsWith('image') && (
-                          <a href={media.fileUrl} target="_blank" rel="noopener noreferrer">
-                            <img src={media.fileUrl} alt={media.title || ''} className="w-16 h-16 object-cover rounded mx-auto" />
-                          </a>
-                        )}
-                        {media.fileUrl && media.contentType?.startsWith('video') && (
-                          <a href={media.fileUrl} target="_blank" rel="noopener noreferrer">
-                            <video src={media.fileUrl} controls className="w-24 h-16 rounded mx-auto" />
-                          </a>
-                        )}
-                        {media.fileUrl && !media.contentType?.startsWith('image') && !media.contentType?.startsWith('video') && (
-                          <a href={media.fileUrl} target="_blank" rel="noopener noreferrer" className="text-green-600 underline">
-                            {media.title || media.fileUrl}
-                          </a>
-                        )}
-                      </td>
-                      <td className="p-2 border align-middle">{media.createdAt ? new Date(media.createdAt).toLocaleString() : ''}</td>
-                      <td className="p-2 border align-middle flex gap-2 items-center justify-center">
-                        <button
-                          className="icon-btn icon-btn-edit flex flex-col items-center"
-                          title="Edit"
-                          onClick={() => {
-                            console.log('Edit icon clicked', media);
-                            setEditMedia(media);
-                          }}
-                        >
-                          <FaEdit />
-                          <span className="text-[10px] text-gray-600 mt-1">Edit</span>
-                        </button>
-                        <button
-                          className="icon-btn icon-btn-delete flex flex-col items-center"
-                          onClick={() => handleDelete(media.id!)}
-                          title="Delete"
-                        >
-                          <FaTrashAlt />
-                          <span className="text-[10px] text-gray-600 mt-1">Delete</span>
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            {/* Pagination for uploaded media */}
-            <div className="flex justify-between items-center mt-2">
+                        <FaTrashAlt size={20} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination */}
+            <div className="flex justify-between items-center mt-8">
               <button
-                className="px-3 py-1 rounded bg-green-100 border border-green-300 text-green-700 disabled:opacity-50"
                 onClick={() => setMediaPage(p => Math.max(0, p - 1))}
                 disabled={mediaPage === 0}
+                className="px-4 py-2 bg-blue-600 text-white font-semibold rounded shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Previous
+                ← Previous
               </button>
-              <span>Page {mediaPage + 1}</span>
+              <span className="text-sm font-semibold text-gray-700">
+                Page {mediaPage + 1} of {Math.ceil(filteredMediaList.length / mediaPageSize)}
+              </span>
               <button
-                className="px-3 py-1 rounded bg-green-100 border border-green-300 text-green-700 disabled:opacity-50"
                 onClick={() => setMediaPage(p => p + 1)}
                 disabled={!hasNextMediaPage}
+                className="px-4 py-2 bg-blue-600 text-white font-semibold rounded shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Next
+                Next →
               </button>
             </div>
           </div>

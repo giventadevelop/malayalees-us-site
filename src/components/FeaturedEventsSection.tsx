@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatInTimeZone } from 'date-fns-tz';
 import type { EventDetailsDTO, EventMediaDTO } from '@/types';
-import { getAppUrl } from '@/lib/env';
+import { useFilteredEvents } from '@/hooks/useFilteredEvents';
 
 interface FeaturedEventWithMedia {
   event: EventDetailsDTO;
@@ -13,175 +13,20 @@ interface FeaturedEventWithMedia {
 }
 
 const FeaturedEventsSection: React.FC = () => {
-  const [featuredEvents, setFeaturedEvents] = useState<FeaturedEventWithMedia[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
+  const { filteredEvents, isLoading, error } = useFilteredEvents('featured');
 
-  // Reuse the same logic from HeroSection for filtering events in next 3 months
-  const isEventInNextThreeMonths = (eventDate: string): boolean => {
-    const today = new Date();
-    const threeMonthsFromNow = new Date();
-    threeMonthsFromNow.setMonth(today.getMonth() + 3);
-
-    const eventStartDate = new Date(eventDate);
-    return eventStartDate >= today && eventStartDate <= threeMonthsFromNow;
-  };
-
-  // Reuse the same fetch logic from HeroSection but filter for isFeaturedEventImage = true
-  const fetchFeaturedEvents = async (): Promise<FeaturedEventWithMedia[]> => {
-    const baseUrl = getAppUrl();
-    const featuredEventsData: FeaturedEventWithMedia[] = [];
-
-    try {
-      // Use the same events fetch logic as HeroSection
-      let eventsResponse = await fetch(
-        `${baseUrl}/api/proxy/event-details?sort=startDate,asc`,
-        { cache: 'no-store' }
-      );
-
-      if (!eventsResponse.ok) {
-        console.log('Events fetch failed with status:', eventsResponse.status);
-        // Try fallback like HeroSection does
-        try {
-          eventsResponse = await fetch(
-            `${baseUrl}/api/proxy/event-details?sort=startDate,desc`,
-            { cache: 'no-store' }
-          );
-          if (!eventsResponse.ok) {
-            console.log('Fallback events fetch also failed with status:', eventsResponse.status);
-            return [];
-          }
-        } catch (fallbackErr) {
-          console.error('Fallback events fetch error:', fallbackErr);
-          return [];
-        }
-      }
-
-      const events: EventDetailsDTO[] = await eventsResponse.json();
-      console.log('Fetched events for featured section:', events.length);
-
-      // Apply the same filtering logic as HeroSection: events in next 3 months and active
-      const upcomingEvents = events.filter(event =>
-        event.startDate &&
-        isEventInNextThreeMonths(event.startDate) &&
-        event.isActive
-      );
-
-      console.log('Upcoming events in next 3 months:', upcomingEvents.length);
-
-      // For each upcoming event, check if it has featured event media (isFeaturedEventImage = true)
-      const allFeaturedEvents: FeaturedEventWithMedia[] = [];
-
-      for (const event of upcomingEvents) {
-        try {
-          // Use the same media fetch pattern as HeroSection but for isFeaturedEventImage
-          const mediaResponse = await fetch(
-            `${baseUrl}/api/proxy/event-medias?eventId.equals=${event.id}&isFeaturedEventImage.equals=true`,
-            { cache: 'no-store' }
-          );
-
-          if (mediaResponse.ok) {
-            const mediaData = await mediaResponse.json();
-            const mediaArray = Array.isArray(mediaData) ? mediaData : (mediaData ? [mediaData] : []);
-
-            // Client-side filter to ensure we only get items where isFeaturedEventImage is explicitly true
-            const featuredMedia = mediaArray.filter(media => media.isFeaturedEventImage === true);
-
-            if (featuredMedia.length > 0) {
-              allFeaturedEvents.push({
-                event,
-                media: featuredMedia[0] // Take the first featured media
-              });
-              console.log(`Found featured event: ${event.title} with priority: ${event.featuredEventPriority} and media: ${featuredMedia[0].fileUrl}`);
-            }
-          } else {
-            console.log(`Event ${event.id}: Featured event image fetch failed with status ${mediaResponse.status}`);
-          }
-        } catch (mediaError) {
-          console.error(`Error fetching featured media for event ${event.id}:`, mediaError);
-        }
-      }
-
-      // Priority-based filtering logic
-      if (allFeaturedEvents.length === 0) {
-        console.log('No featured events found');
-        return [];
-      }
-
-      if (allFeaturedEvents.length === 1) {
-        console.log('Only one featured event found, selecting it');
-        featuredEventsData.push(allFeaturedEvents[0]);
-        return featuredEventsData;
-      }
-
-      // Group events by priority
-      const eventsByPriority = new Map<number, FeaturedEventWithMedia[]>();
-
-      allFeaturedEvents.forEach(featuredEvent => {
-        const priority = featuredEvent.event.featuredEventPriority || 0; // Default to 0 if not set
-        if (!eventsByPriority.has(priority)) {
-          eventsByPriority.set(priority, []);
-        }
-        eventsByPriority.get(priority)!.push(featuredEvent);
-      });
-
-      // Find the highest priority (lowest number = highest priority)
-      const priorities = Array.from(eventsByPriority.keys()).sort((a, b) => a - b);
-      const highestPriority = priorities[0];
-      const highestPriorityEvents = eventsByPriority.get(highestPriority) || [];
-
-      console.log(`Found ${allFeaturedEvents.length} featured events across ${priorities.length} priority levels`);
-      console.log(`Highest priority: ${highestPriority} with ${highestPriorityEvents.length} events`);
-
-      // Select from highest priority events
-      if (highestPriorityEvents.length === 1) {
-        console.log('Only one event with highest priority, selecting it');
-        featuredEventsData.push(highestPriorityEvents[0]);
-      } else {
-        // Multiple events with same highest priority - choose randomly
-        const randomIndex = Math.floor(Math.random() * highestPriorityEvents.length);
-        console.log(`Multiple events with same priority (${highestPriority}), randomly selecting index ${randomIndex}`);
-        featuredEventsData.push(highestPriorityEvents[randomIndex]);
-      }
-
-      console.log('Total featured events selected:', featuredEventsData.length);
-      return featuredEventsData;
-
-    } catch (error) {
-      console.error('Error fetching featured events:', error);
-      return [];
-    }
-  };
-
-  // Load featured events after hero section is loaded (same timing as HeroSection)
+  // Show section after hero section is loaded (same timing as HeroSection)
   useEffect(() => {
-    const loadFeaturedEvents = async () => {
-      try {
-        setIsLoading(true);
-        const events = await fetchFeaturedEvents();
-        setFeaturedEvents(events);
-
-        // Only show the section if we have featured events
-        if (events.length > 0) {
-          // Add a delay to ensure hero section is fully loaded (same timing as HeroSection)
-          setTimeout(() => {
-            setIsVisible(true);
-          }, 2000); // Same 2-second delay as HeroSection
-        }
-      } catch (error) {
-        console.error('Failed to load featured events:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Load after a delay to ensure hero section is loaded
-    const timer = setTimeout(loadFeaturedEvents, 2000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!isLoading && filteredEvents.length > 0) {
+      setTimeout(() => {
+        setIsVisible(true);
+      }, 2000);
+    }
+  }, [isLoading, filteredEvents.length]);
 
   // Don't render anything if loading or no featured events
-  if (isLoading || featuredEvents.length === 0) {
+  if (isLoading || filteredEvents.length === 0) {
     return null;
   }
 
@@ -202,7 +47,7 @@ const FeaturedEventsSection: React.FC = () => {
 
         {/* Featured Events Strip */}
         <div className="space-y-4 md:space-y-6">
-          {featuredEvents.map((featuredEvent, index) => (
+          {filteredEvents.map((featuredEvent, index) => (
             <div
               key={featuredEvent.event.id}
               className="bg-white rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden h-auto md:h-[200px]"

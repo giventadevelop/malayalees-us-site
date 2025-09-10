@@ -119,12 +119,20 @@ export default function EventsPage() {
         if (!eventsRes.ok) throw new Error('Failed to fetch events');
         const events: EventDetailsDTO[] = await eventsRes.json();
         let eventList = Array.isArray(events) ? events : [events];
-        // For each event, fetch its flyer
+        // For each event, fetch its hero image (homepage hero or regular hero)
         const eventsWithMedia = await Promise.all(
           eventList.map(async (event: EventDetailsDTO) => {
             try {
-              const mediaRes = await fetch(`/api/proxy/event-medias?eventId.equals=${event.id}&eventFlyer.equals=true`);
-              const mediaData = await mediaRes.json();
+              // First try to find homepage hero image
+              let mediaRes = await fetch(`/api/proxy/event-medias?eventId.equals=${event.id}&isHomePageHeroImage.equals=true`);
+              let mediaData = await mediaRes.json();
+
+              // If no homepage hero image found, try regular hero image
+              if (!mediaData || mediaData.length === 0) {
+                mediaRes = await fetch(`/api/proxy/event-medias?eventId.equals=${event.id}&isHeroImage.equals=true`);
+                mediaData = await mediaRes.json();
+              }
+
               if (mediaData && mediaData.length > 0) {
                 return { ...event, thumbnailUrl: mediaData[0].fileUrl };
               }
