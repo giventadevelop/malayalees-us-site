@@ -1,6 +1,6 @@
 # Task ID: 9
 # Title: Develop registration confirmation page
-# Status: pending
+# Status: done
 # Dependencies: 4 ⏱️, 8 ⏱️
 # Priority: medium
 # Description: Create the confirmation page showing registration details and QR code.

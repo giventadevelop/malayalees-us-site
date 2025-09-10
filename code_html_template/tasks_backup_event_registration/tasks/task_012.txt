@@ -1,6 +1,6 @@
 # Task ID: 12
 # Title: Implement registration management for admins
-# Status: pending
+# Status: done
 # Dependencies: 11 ⏱️
 # Priority: medium
 # Description: Create the interface for admins to view and manage event registrations.

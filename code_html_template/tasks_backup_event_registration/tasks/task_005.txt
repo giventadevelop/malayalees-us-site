@@ -1,6 +1,6 @@
 # Task ID: 5
 # Title: Develop events listing page
-# Status: pending
+# Status: done
 # Dependencies: 3 ✅
 # Priority: medium
 # Description: Create the events listing page with filtering functionality for free events.

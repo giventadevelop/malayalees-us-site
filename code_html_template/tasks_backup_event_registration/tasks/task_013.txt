@@ -1,6 +1,6 @@
 # Task ID: 13
 # Title: Implement guest analytics for admins
-# Status: pending
+# Status: done
 # Dependencies: 12 ⏱️
 # Priority: low
 # Description: Create analytics visualizations for guest data.

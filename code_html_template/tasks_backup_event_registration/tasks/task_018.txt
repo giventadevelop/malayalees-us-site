@@ -1,6 +1,6 @@
 # Task ID: 18
 # Title: Optimize database queries and performance
-# Status: pending
+# Status: done
 # Dependencies: 4 ⏱️
 # Priority: low
 # Description: Improve performance of database queries for event listing and registration.

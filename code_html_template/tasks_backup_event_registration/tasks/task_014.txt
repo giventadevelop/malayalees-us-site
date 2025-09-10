@@ -1,6 +1,6 @@
 # Task ID: 14
 # Title: Optimize for mobile devices
-# Status: pending
+# Status: done
 # Dependencies: 9 ⏱️
 # Priority: medium
 # Description: Ensure the entire registration flow is optimized for mobile users.

@@ -1,6 +1,6 @@
 # Task ID: 4
 # Title: Implement event registration API endpoints
-# Status: pending
+# Status: done
 # Dependencies: 3 ✅
 # Priority: high
 # Description: Create API endpoints for registering for free events and managing registrations.
