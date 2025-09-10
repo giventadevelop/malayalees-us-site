@@ -36,6 +36,9 @@ export interface UserProfileDTO {
   district?: string;
   educationalInstitution?: string;
   profileImageUrl?: string;
+  isEmailSubscribed?: boolean;
+  emailSubscriptionToken?: string;
+  isEmailSubscriptionTokenUsed?: boolean;
   userStatus?: string; // varchar(50)
   userRole?: string;   // varchar(50)
   reviewedByAdminAt?: string; // ISO date string (date)

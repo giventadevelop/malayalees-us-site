@@ -211,11 +211,8 @@ export async function updateUserProfileAction(profileId: number, payload: Partia
     console.log('[Profile Action] Updating profile:', profileId, 'with payload:', payload);
 
     // Get JWT token for direct backend authentication
-    let token: string;
-    try {
-      token = await getCachedApiJwt();
-    } catch (jwtError) {
-      console.log('[Profile Action] Cached JWT failed, trying generateApiJwt:', jwtError);
+    let token = await getCachedApiJwt();
+    if (!token) {
       token = await generateApiJwt();
     }
 
@@ -280,14 +277,108 @@ export async function createUserProfileAction(payload: Omit<UserProfileDTO, 'id'
   }
 }
 
-export async function resubscribeEmailAction(email: string, token: string): Promise<boolean> {
-  const baseUrl = getAppUrl();
-
+export async function resubscribeEmailAction(email: string, token: string): Promise<{ success: boolean; message: string }> {
   try {
-    const response = await fetch(`${baseUrl}/api/proxy/user-profiles/resubscribe-email?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`);
-    return response.ok;
+    console.log('[RESUBSCRIBE-EMAIL-SERVER] 🚀 Resubscribe email server action called');
+    console.log('[RESUBSCRIBE-EMAIL-SERVER] 📧 Email:', email);
+    console.log('[RESUBSCRIBE-EMAIL-SERVER] 🔑 Token:', token);
+
+    // Get API base URL
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!apiBaseUrl) {
+      throw new Error('API base URL not configured');
+    }
+
+    // Get JWT token for backend calls
+    let jwtToken = await getCachedApiJwt();
+    if (!jwtToken) {
+      jwtToken = await generateApiJwt();
+    }
+
+    // Get tenant ID
+    const tenantId = getTenantId();
+
+    // Call backend API directly with proper parameters
+    const response = await fetch(`${apiBaseUrl}/api/user-profiles/resubscribe-email?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}&tenantId=${encodeURIComponent(tenantId)}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${jwtToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.ok) {
+      console.log('[RESUBSCRIBE-EMAIL-SERVER] ✅ Email resubscribed successfully');
+      return {
+        success: true,
+        message: 'Successfully resubscribed to email notifications!'
+      };
+    } else {
+      const errorText = await response.text();
+      console.error('[RESUBSCRIBE-EMAIL-SERVER] ❌ Resubscribe failed:', response.status, errorText);
+      return {
+        success: false,
+        message: `Failed to resubscribe: ${response.status} ${errorText}`
+      };
+    }
   } catch (error) {
-    console.error('Error resubscribing email:', error);
-    return false;
+    console.error('[RESUBSCRIBE-EMAIL-SERVER] ❌ Error resubscribing email:', error);
+    return {
+      success: false,
+      message: `Error resubscribing: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
+}
+
+export async function unsubscribeEmailAction(email: string, token: string): Promise<{ success: boolean; message: string }> {
+  try {
+    console.log('[UNSUBSCRIBE-EMAIL-SERVER] 🚀 Unsubscribe email server action called');
+    console.log('[UNSUBSCRIBE-EMAIL-SERVER] 📧 Email:', email);
+    console.log('[UNSUBSCRIBE-EMAIL-SERVER] 🔑 Token:', token);
+
+    // Get API base URL
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!apiBaseUrl) {
+      throw new Error('API base URL not configured');
+    }
+
+    // Get JWT token for backend calls
+    let jwtToken = await getCachedApiJwt();
+    if (!jwtToken) {
+      jwtToken = await generateApiJwt();
+    }
+
+    // Get tenant ID
+    const tenantId = getTenantId();
+
+    // Call backend API directly with proper parameters
+    const response = await fetch(`${apiBaseUrl}/api/user-profiles/unsubscribe-email?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}&tenantId=${encodeURIComponent(tenantId)}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${jwtToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.ok) {
+      console.log('[UNSUBSCRIBE-EMAIL-SERVER] ✅ Email unsubscribed successfully');
+      return {
+        success: true,
+        message: 'Successfully unsubscribed from email notifications!'
+      };
+    } else {
+      const errorText = await response.text();
+      console.error('[UNSUBSCRIBE-EMAIL-SERVER] ❌ Unsubscribe failed:', response.status, errorText);
+      return {
+        success: false,
+        message: `Failed to unsubscribe: ${response.status} ${errorText}`
+      };
+    }
+  } catch (error) {
+    console.error('[UNSUBSCRIBE-EMAIL-SERVER] ❌ Error unsubscribing email:', error);
+    return {
+      success: false,
+      message: `Error unsubscribing: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
   }
 }

@@ -159,7 +159,7 @@ export async function fetchUserProfileServer(userId: string): Promise<UserProfil
           district: '',
           educationalInstitution: '',
           profileImageUrl: '',
-          isEmailSubscribed: false,
+          isEmailSubscribed: true,
           emailSubscriptionToken: '',
           isEmailSubscriptionTokenUsed: false,
           reviewedByAdminAt: null,
