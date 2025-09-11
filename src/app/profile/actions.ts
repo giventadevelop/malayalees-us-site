@@ -316,6 +316,25 @@ export async function resubscribeEmailAction(email: string, token: string): Prom
     } else {
       const errorText = await response.text();
       console.error('[RESUBSCRIBE-EMAIL-SERVER] ❌ Resubscribe failed:', response.status, errorText);
+
+      // Handle specific error cases
+      if (response.status === 400) {
+        return {
+          success: false,
+          message: 'Invalid email address or token. Please try again.'
+        };
+      } else if (response.status === 404) {
+        return {
+          success: false,
+          message: 'Email not found in our system. Please contact support.'
+        };
+      } else if (response.status === 401) {
+        return {
+          success: false,
+          message: 'Authentication failed. Please refresh the page and try again.'
+        };
+      }
+
       return {
         success: false,
         message: `Failed to resubscribe: ${response.status} ${errorText}`
@@ -369,6 +388,25 @@ export async function unsubscribeEmailAction(email: string, token: string): Prom
     } else {
       const errorText = await response.text();
       console.error('[UNSUBSCRIBE-EMAIL-SERVER] ❌ Unsubscribe failed:', response.status, errorText);
+
+      // Handle specific error cases
+      if (response.status === 400) {
+        return {
+          success: false,
+          message: 'Invalid email address or token. Please try again.'
+        };
+      } else if (response.status === 404) {
+        return {
+          success: false,
+          message: 'Email not found in our system. Please contact support.'
+        };
+      } else if (response.status === 401) {
+        return {
+          success: false,
+          message: 'Authentication failed. Please refresh the page and try again.'
+        };
+      }
+
       return {
         success: false,
         message: `Failed to unsubscribe: ${response.status} ${errorText}`

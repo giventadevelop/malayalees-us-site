@@ -183,13 +183,24 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
       return;
     }
 
+    // Use the existing emailSubscriptionToken from the form data
+    const existingToken = formData.emailSubscriptionToken;
+    console.log('[EMAIL-SUBSCRIPTION] Using existing token:', existingToken);
+    console.log('[EMAIL-SUBSCRIPTION] Email:', email);
+    console.log('[EMAIL-SUBSCRIPTION] Action:', checked ? 'resubscribe' : 'unsubscribe');
+
+    if (!existingToken) {
+      setResubscribeError('Email subscription token not found. Please refresh the page and try again.');
+      return;
+    }
+
     setResubscribeLoading(true);
     setResubscribeError(null);
 
     try {
       const result = checked
-        ? await resubscribeEmailAction(email, 'token')
-        : await unsubscribeEmailAction(email, 'token');
+        ? await resubscribeEmailAction(email, existingToken)
+        : await unsubscribeEmailAction(email, existingToken);
 
       if (result.success) {
         setFormData((prev) => ({ ...prev, isEmailSubscribed: checked }));
@@ -201,7 +212,8 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
         setFormData((prev) => ({ ...prev, isEmailSubscribed: !checked }));
       }
     } catch (e) {
-      setResubscribeError('Network error. Please try again.');
+      const errorMessage = e instanceof Error ? e.message : 'Network error. Please try again.';
+      setResubscribeError(errorMessage);
       // Revert the checkbox state
       setFormData((prev) => ({ ...prev, isEmailSubscribed: !checked }));
     } finally {
@@ -270,12 +282,19 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
     setResubscribeSuccess(false);
     try {
       const email = formData.email;
+      const existingToken = formData.emailSubscriptionToken;
+
       if (!email) {
         setResubscribeError('Missing email.');
         return;
       }
 
-      const result = await resubscribeEmailAction(email, 'token'); // Note: token should come from somewhere
+      if (!existingToken) {
+        setResubscribeError('Email subscription token not found. Please refresh the page and try again.');
+        return;
+      }
+
+      const result = await resubscribeEmailAction(email, existingToken);
       if (result.success) {
         setResubscribeSuccess(true);
         setResubscribeError(null);
@@ -558,15 +577,30 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
       <div className="border rounded-lg p-6 bg-blue-50 mb-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Preferences</h3>
         <div className="flex items-start space-x-3">
-          <input
-            type="checkbox"
-            id="isEmailSubscribed"
-            name="isEmailSubscribed"
-            checked={formData.isEmailSubscribed || false}
-            onChange={handleEmailSubscriptionChange}
-            disabled={resubscribeLoading}
-            className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
-          />
+          <label className="flex flex-col items-center">
+            <span className="relative flex items-center justify-center">
+              <input
+                type="checkbox"
+                id="isEmailSubscribed"
+                name="isEmailSubscribed"
+                checked={formData.isEmailSubscribed || false}
+                onChange={handleEmailSubscriptionChange}
+                disabled={resubscribeLoading}
+                onClick={(e) => e.stopPropagation()}
+                className="custom-checkbox"
+              />
+              <span className="custom-checkbox-tick">
+                {formData.isEmailSubscribed && (
+                  <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l5 5L19 7" />
+                  </svg>
+                )}
+              </span>
+            </span>
+            <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">
+              {resubscribeLoading ? 'Updating...' : 'Email Notifications'}
+            </span>
+          </label>
           <div className="flex-1">
             <label htmlFor="isEmailSubscribed" className="text-sm font-medium text-gray-700 cursor-pointer">
               Subscribe to email notifications and updates

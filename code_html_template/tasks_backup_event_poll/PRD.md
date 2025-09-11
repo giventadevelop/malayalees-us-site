@@ -314,4 +314,431 @@ All list endpoints support comprehensive filtering using Spring Data REST criter
 
 ---
 
+## API JSON Schema
+
+Below is the complete API JSON schema for the poll feature endpoints:
+
+```json
+{
+  "/api/event-polls/{id}": {
+    "get": {
+      "tags": [
+        "event-poll-resource"
+      ],
+      "operationId": "getEventPoll",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "OK",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventPollDTO"
+              }
+            }
+          }
+        }
+      }
+    },
+    "put": {
+      "tags": [
+        "event-poll-resource"
+      ],
+      "operationId": "updateEventPoll",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/EventPollDTO"
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "description": "OK",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventPollDTO"
+              }
+            }
+          }
+        }
+      }
+    },
+    "delete": {
+      "tags": [
+        "event-poll-resource"
+      ],
+      "operationId": "deleteEventPoll",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "OK"
+        }
+      }
+    },
+    "patch": {
+      "tags": [
+        "event-poll-resource"
+      ],
+      "operationId": "partialUpdateEventPoll",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/EventPollDTO"
+            }
+          },
+          "application/merge-patch+json": {
+            "schema": {
+              "$ref": "#/components/schemas/EventPollDTO"
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "description": "OK",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventPollDTO"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/api/event-poll-responses/{id}": {
+    "get": {
+      "tags": [
+        "event-poll-response-resource"
+      ],
+      "operationId": "getEventPollResponse",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "OK",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventPollResponseDTO"
+              }
+            }
+          }
+        }
+      }
+    },
+    "put": {
+      "tags": [
+        "event-poll-response-resource"
+      ],
+      "operationId": "updateEventPollResponse",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/EventPollResponseDTO"
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "description": "OK",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventPollResponseDTO"
+              }
+            }
+          }
+        }
+      }
+    },
+    "delete": {
+      "tags": [
+        "event-poll-response-resource"
+      ],
+      "operationId": "deleteEventPollResponse",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "OK"
+        }
+      }
+    },
+    "patch": {
+      "tags": [
+        "event-poll-response-resource"
+      ],
+      "operationId": "partialUpdateEventPollResponse",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/EventPollResponseDTO"
+            }
+          },
+          "application/merge-patch+json": {
+            "schema": {
+              "$ref": "#/components/schemas/EventPollResponseDTO"
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "description": "OK",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventPollResponseDTO"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/api/event-poll-options/{id}": {
+    "get": {
+      "tags": [
+        "event-poll-option-resource"
+      ],
+      "operationId": "getEventPollOption",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "OK",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventPollOptionDTO"
+              }
+            }
+          }
+        }
+      }
+    },
+    "put": {
+      "tags": [
+        "event-poll-option-resource"
+      ],
+      "operationId": "updateEventPollOption",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/EventPollOptionDTO"
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "description": "OK",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventPollOptionDTO"
+              }
+            }
+          }
+        }
+      }
+    },
+    "delete": {
+      "tags": [
+        "event-poll-option-resource"
+      ],
+      "operationId": "deleteEventPollOption",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "OK"
+        }
+      }
+    },
+    "patch": {
+      "tags": [
+        "event-poll-option-resource"
+      ],
+      "operationId": "partialUpdateEventPollOption",
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      ],
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/EventPollOptionDTO"
+            }
+          },
+          "application/merge-patch+json": {
+            "schema": {
+              "$ref": "#/components/schemas/EventPollOptionDTO"
+            }
+          }
+        },
+        "required": true
+      },
+      "responses": {
+        "200": {
+          "description": "OK",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventPollOptionDTO"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+## Implementation Guidelines
+
+This PRD should be implemented following the established project standards:
+
+- **API Integration**: Follow the patterns defined in `.cursor/rules/nextjs_api_routes.mdc`
+- **UI Components**: Adhere to the design system in `.cursor/rules/ui_style_guide.mdc`
+- **Database Design**: Use the provided SQL schemas as the foundation
+- **Security**: Implement proper JWT authentication and tenant isolation
+- **Testing**: Ensure comprehensive test coverage for all functionality
+
 *This PRD serves as the foundation for implementing a comprehensive poll feature that enhances event engagement and provides valuable insights through interactive voting and real-time analytics.*

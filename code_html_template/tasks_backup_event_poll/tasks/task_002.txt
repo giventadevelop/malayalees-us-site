@@ -1,6 +1,6 @@
 # Task ID: 2
 # Title: Implement Event Poll API endpoints
-# Status: pending
+# Status: done
 # Dependencies: 1 ⏱️
 # Priority: high
 # Description: Create the RESTful API endpoints for managing event polls.

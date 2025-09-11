@@ -1,6 +1,6 @@
 # Task ID: 1
 # Title: Set up database schema
-# Status: pending
+# Status: done
 # Dependencies: None
 # Priority: high
 # Description: Create the database tables for the poll feature as specified in the PRD.

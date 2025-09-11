@@ -1,15 +1,17 @@
 # Task ID: 17
-# Title: Implement QR code generation and validation
-# Status: done
-# Dependencies: 4 ⏱️
+# Title: Implement accessibility features
+# Status: pending
+# Dependencies: 6 ⏱️, 7 ⏱️, 8 ⏱️
 # Priority: medium
-# Description: Create system for generating and validating QR codes for event check-in.
+# Description: Ensure the poll feature meets WCAG 2.1 AA compliance.
 # Details:
-Develop QR code system with:
-- Unique QR code generation per registration
-- QR code validation endpoint
-- Check-in tracking
-- Security measures to prevent QR code duplication
+Implement accessibility features including:
+- Proper semantic HTML
+- Keyboard navigation
+- Screen reader compatibility
+- Sufficient color contrast
+- Focus management
+- ARIA attributes where needed
 
 # Test Strategy:
-Test QR code generation and validation. Verify codes are unique and properly linked to registrations.
+Test with accessibility tools and screen readers. Verify that all functionality is accessible without a mouse and that screen readers provide appropriate context.
