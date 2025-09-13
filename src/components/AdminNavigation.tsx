@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FaUsers, FaCalendarAlt, FaEnvelope, FaCreditCard, FaHome, FaUserTie, FaChartLine } from 'react-icons/fa';
+import { FaUsers, FaCalendarAlt, FaEnvelope, FaCreditCard, FaHome, FaUserTie, FaChartLine, FaBuilding, FaCog } from 'react-icons/fa';
 
 interface AdminNavigationProps {
   currentPage?: string;
@@ -73,6 +73,30 @@ export default function AdminNavigation({ currentPage, showHome = true }: AdminN
       color: 'orange',
       active: currentPage === 'executive-committee',
       key: 'executive-committee'
+    },
+    {
+      href: '/admin/tenant-management/organizations',
+      icon: FaBuilding,
+      label: 'Organizations',
+      color: 'cyan',
+      active: currentPage === 'tenant-organizations',
+      key: 'tenant-organizations'
+    },
+    {
+      href: '/admin/tenant-management/settings',
+      icon: FaCog,
+      label: 'Tenant Settings',
+      color: 'slate',
+      active: currentPage === 'tenant-settings',
+      key: 'tenant-settings'
+    },
+    {
+      href: '/admin/tenant-management/test',
+      icon: FaChartLine,
+      label: 'Test CRUD',
+      color: 'red',
+      active: currentPage === 'tenant-test',
+      key: 'tenant-test'
     }
   ];
 
@@ -85,7 +109,10 @@ export default function AdminNavigation({ currentPage, showHome = true }: AdminN
       purple: 'bg-purple-50 hover:bg-purple-100 text-purple-700',
       orange: 'bg-orange-50 hover:bg-orange-100 text-orange-700',
       teal: 'bg-teal-50 hover:bg-teal-100 text-teal-700',
-      indigo: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700'
+      indigo: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700',
+      cyan: 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700',
+      slate: 'bg-slate-50 hover:bg-slate-100 text-slate-700',
+      red: 'bg-red-50 hover:bg-red-100 text-red-700'
     };
 
     const activeColors = {
@@ -96,7 +123,10 @@ export default function AdminNavigation({ currentPage, showHome = true }: AdminN
       purple: 'bg-purple-200 text-purple-800',
       orange: 'bg-orange-200 text-orange-800',
       teal: 'bg-teal-200 text-teal-800',
-      indigo: 'bg-indigo-200 text-indigo-800'
+      indigo: 'bg-indigo-200 text-indigo-800',
+      cyan: 'bg-cyan-200 text-cyan-800',
+      slate: 'bg-slate-200 text-slate-800',
+      red: 'bg-red-200 text-red-800'
     };
 
     return isActive ? activeColors[color as keyof typeof activeColors] : baseColors[color as keyof typeof baseColors];

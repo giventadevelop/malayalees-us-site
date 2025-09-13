@@ -262,10 +262,18 @@ export async function updateUserProfileServer(profileId: number, payload: Partia
     // Get JWT token for direct backend authentication
     let token: string;
     try {
-      token = await getCachedApiJwt();
+      const cachedToken = await getCachedApiJwt();
+      if (!cachedToken) {
+        throw new Error('No cached token available');
+      }
+      token = cachedToken;
     } catch (jwtError) {
       console.log('[Profile Server] Cached JWT failed, trying generateApiJwt:', jwtError);
-      token = await generateApiJwt();
+      const generatedToken = await generateApiJwt();
+      if (!generatedToken) {
+        throw new Error('Failed to generate JWT token');
+      }
+      token = generatedToken;
     }
 
     // Add id field to payload as required by backend conventions
@@ -353,13 +361,110 @@ export async function checkEmailSubscriptionServer(email: string): Promise<{ isS
       const profile = Array.isArray(data) ? data[0] : data;
       return {
         isSubscribed: !profile?.emailUnsubscribed,
-        token: profile?.emailUnsubscribeToken
+        token: profile?.emailSubscriptionToken
       };
     }
     return { isSubscribed: false };
   } catch (error) {
     console.error('Error checking email subscription:', error);
     return { isSubscribed: false };
+  }
+}
+
+/**
+ * Fetch user profile by email address
+ * Note: The proxy handler automatically injects tenantId.equals for security
+ */
+export async function fetchUserProfileByEmailServer(email: string): Promise<UserProfileDTO | null> {
+  const baseUrl = getAppUrl();
+
+  try {
+    // The proxy handler automatically adds tenantId.equals for security
+    // This ensures we only get profiles for the current tenant
+    const url = `${baseUrl}/api/proxy/user-profiles?email.equals=${encodeURIComponent(email)}`;
+    console.log('[fetchUserProfileByEmailServer] Fetching profile by email:', email);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store'
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const profile = Array.isArray(data) ? data[0] : data;
+      console.log('[fetchUserProfileByEmailServer] Profile found:', {
+        id: profile?.id,
+        email: profile?.email,
+        tenantId: profile?.tenantId
+      });
+      return profile || null;
+    }
+
+    console.error('Error fetching profile by email:', response.status);
+    return null;
+  } catch (error) {
+    console.error('Error fetching profile by email:', error);
+    return null;
+  }
+}
+
+/**
+ * Generate a new email subscription token for a user profile
+ * Uses direct backend API call with JWT authentication
+ */
+export async function generateEmailSubscriptionTokenServer(profileId: number): Promise<{ success: boolean; token?: string; error?: string }> {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  try {
+    // Generate a new token (UUID-like string)
+    const newToken = `sub_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+
+    // Get JWT token for backend authentication
+    let token: string;
+    try {
+      const cachedToken = await getCachedApiJwt();
+      if (!cachedToken) {
+        throw new Error('No cached token available');
+      }
+      token = cachedToken;
+    } catch (jwtError) {
+      console.log('[generateEmailSubscriptionTokenServer] Cached JWT failed, trying generateApiJwt:', jwtError);
+      const generatedToken = await generateApiJwt();
+      if (!generatedToken) {
+        throw new Error('Failed to generate JWT token');
+      }
+      token = generatedToken;
+    }
+
+    // Update the user profile with the new token using direct backend API call
+    const url = `${API_BASE_URL}/api/user-profiles/${profileId}`;
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/merge-patch+json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        id: profileId, // Include ID for PATCH operations
+        tenantId: getTenantId(), // Include tenantId for multi-tenant support
+        emailSubscriptionToken: newToken,
+        isEmailSubscribed: true,
+        updatedAt: new Date().toISOString()
+      }),
+    });
+
+    if (response.ok) {
+      console.log('[generateEmailSubscriptionTokenServer] Successfully generated token:', newToken);
+      return { success: true, token: newToken };
+    } else {
+      const errorText = await response.text();
+      console.error('Error generating email subscription token:', response.status, errorText);
+      return { success: false, error: `Failed to generate token: ${response.status}` };
+    }
+  } catch (error) {
+    console.error('Error generating email subscription token:', error);
+    return { success: false, error: `Network error: ${error instanceof Error ? error.message : 'Unknown error'}` };
   }
 }
 

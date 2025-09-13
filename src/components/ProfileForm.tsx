@@ -6,6 +6,7 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { UserProfileDTO } from "@/types";
 import { getTenantId } from '@/lib/env';
 import { resubscribeEmailAction, unsubscribeEmailAction } from '@/app/profile/actions';
+import { generateEmailSubscriptionTokenServer, fetchUserProfileByEmailServer } from '@/app/profile/ApiServerActions';
 
 type UserProfileFormData = Omit<UserProfileDTO, 'createdAt' | 'updatedAt' | 'id'> & { id?: number };
 const defaultFormData: UserProfileFormData = {
@@ -282,19 +283,59 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
     setResubscribeSuccess(false);
     try {
       const email = formData.email;
-      const existingToken = formData.emailSubscriptionToken;
+      let token = formData.emailSubscriptionToken;
+      let profileId = formData.id;
 
       if (!email) {
         setResubscribeError('Missing email.');
         return;
       }
 
-      if (!existingToken) {
-        setResubscribeError('Email subscription token not found. Please refresh the page and try again.');
-        return;
+      // If no token exists or no profile ID, fetch profile by email first
+      if (!token || !profileId) {
+        console.log('[ProfileForm] No email subscription token or profile ID found, fetching profile by email...');
+
+        const profile = await fetchUserProfileByEmailServer(email);
+        if (!profile) {
+          setResubscribeError('User profile not found. Please make sure you have completed your profile setup first.');
+          return;
+        }
+
+        profileId = profile.id!;
+        token = profile.emailSubscriptionToken;
+
+        // Update form data with fetched profile info
+        setFormData((prev) => ({
+          ...prev,
+          id: profileId,
+          emailSubscriptionToken: token,
+          isEmailSubscribed: profile.isEmailSubscribed
+        }));
+
+        console.log('[ProfileForm] Fetched profile by email:', { profileId, hasToken: !!token });
       }
 
-      const result = await resubscribeEmailAction(email, existingToken);
+      // If still no token after fetching profile, generate a new one
+      if (!token) {
+        console.log('[ProfileForm] No email subscription token found in profile, generating new one...');
+
+        const tokenResult = await generateEmailSubscriptionTokenServer(profileId);
+        if (!tokenResult.success) {
+          setResubscribeError(`Failed to generate email subscription token: ${tokenResult.error}`);
+          return;
+        }
+
+        token = tokenResult.token!;
+        // Update the form data with the new token
+        setFormData((prev) => ({
+          ...prev,
+          emailSubscriptionToken: token,
+          isEmailSubscribed: true
+        }));
+        console.log('[ProfileForm] Generated new email subscription token:', token);
+      }
+
+      const result = await resubscribeEmailAction(email, token);
       if (result.success) {
         setResubscribeSuccess(true);
         setResubscribeError(null);

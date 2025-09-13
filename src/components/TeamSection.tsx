@@ -28,7 +28,7 @@ const TeamSection: React.FC = () => {
         );
 
         if (!response.ok) {
-          console.error('Failed to fetch executive team members:', response.statusText);
+          console.log('Backend unavailable - team members not loaded:', response.statusText);
           setTeamMembers([]);
           setLoading(false);
           return;
@@ -43,7 +43,7 @@ const TeamSection: React.FC = () => {
           setShowImages(true);
         }, 3000 + Math.random() * 2000); // Random delay between 3-5 seconds
       } catch (error) {
-        console.error('Error loading team members:', error);
+        console.log('Backend connection error - team members not loaded:', error);
         setTeamMembers([]);
         setLoading(false);
       }
