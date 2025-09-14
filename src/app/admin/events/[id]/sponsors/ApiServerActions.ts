@@ -32,7 +32,23 @@ export async function fetchEventSponsorServer(id: number) {
 }
 
 export async function createEventSponsorServer(sponsor: Omit<EventSponsorsDTO, 'id' | 'createdAt' | 'updatedAt'>) {
-  const payload = withTenantId(sponsor);
+  // Helper function to convert empty strings to null for URL fields
+  const cleanUrlField = (value: string | undefined | null): string | null => {
+    return (value && value.trim() !== '') ? value : null;
+  };
+  
+  const payload = withTenantId({
+    ...sponsor,
+    // Convert empty URL fields to null to satisfy database constraints
+    websiteUrl: cleanUrlField(sponsor.websiteUrl),
+    logoUrl: cleanUrlField(sponsor.logoUrl),
+    heroImageUrl: cleanUrlField(sponsor.heroImageUrl),
+    bannerImageUrl: cleanUrlField(sponsor.bannerImageUrl),
+    facebookUrl: cleanUrlField(sponsor.facebookUrl),
+    twitterUrl: cleanUrlField(sponsor.twitterUrl),
+    linkedinUrl: cleanUrlField(sponsor.linkedinUrl),
+    instagramUrl: cleanUrlField(sponsor.instagramUrl),
+  });
   
   const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors`, {
     method: 'POST',
@@ -49,7 +65,24 @@ export async function createEventSponsorServer(sponsor: Omit<EventSponsorsDTO, '
 }
 
 export async function updateEventSponsorServer(id: number, sponsor: Partial<EventSponsorsDTO>) {
-  const payload = withTenantId({ ...sponsor, id });
+  // Helper function to convert empty strings to null for URL fields
+  const cleanUrlField = (value: string | undefined | null): string | null => {
+    return (value && value.trim() !== '') ? value : null;
+  };
+  
+  const payload = withTenantId({ 
+    ...sponsor, 
+    id,
+    // Convert empty URL fields to null to satisfy database constraints
+    websiteUrl: sponsor.websiteUrl ? cleanUrlField(sponsor.websiteUrl) : undefined,
+    logoUrl: sponsor.logoUrl ? cleanUrlField(sponsor.logoUrl) : undefined,
+    heroImageUrl: sponsor.heroImageUrl ? cleanUrlField(sponsor.heroImageUrl) : undefined,
+    bannerImageUrl: sponsor.bannerImageUrl ? cleanUrlField(sponsor.bannerImageUrl) : undefined,
+    facebookUrl: sponsor.facebookUrl ? cleanUrlField(sponsor.facebookUrl) : undefined,
+    twitterUrl: sponsor.twitterUrl ? cleanUrlField(sponsor.twitterUrl) : undefined,
+    linkedinUrl: sponsor.linkedinUrl ? cleanUrlField(sponsor.linkedinUrl) : undefined,
+    instagramUrl: sponsor.instagramUrl ? cleanUrlField(sponsor.instagramUrl) : undefined,
+  });
   
   const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors/${id}`, {
     method: 'PATCH',

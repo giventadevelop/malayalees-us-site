@@ -34,7 +34,16 @@ export async function fetchEventProgramDirectorServer(id: number) {
 }
 
 export async function createEventProgramDirectorServer(director: Omit<EventProgramDirectorsDTO, 'id' | 'createdAt' | 'updatedAt'>) {
-  const payload = withTenantId(director);
+  // Helper function to convert empty strings to null for URL fields
+  const cleanUrlField = (value: string | undefined | null): string | null => {
+    return (value && value.trim() !== '') ? value : null;
+  };
+  
+  const payload = withTenantId({
+    ...director,
+    // Convert empty URL fields to null to satisfy database constraints
+    photoUrl: cleanUrlField(director.photoUrl),
+  });
   
   const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-program-directors`, {
     method: 'POST',
@@ -51,7 +60,17 @@ export async function createEventProgramDirectorServer(director: Omit<EventProgr
 }
 
 export async function updateEventProgramDirectorServer(id: number, director: Partial<EventProgramDirectorsDTO>) {
-  const payload = withTenantId({ ...director, id });
+  // Helper function to convert empty strings to null for URL fields
+  const cleanUrlField = (value: string | undefined | null): string | null => {
+    return (value && value.trim() !== '') ? value : null;
+  };
+  
+  const payload = withTenantId({ 
+    ...director, 
+    id,
+    // Convert empty URL fields to null to satisfy database constraints
+    photoUrl: director.photoUrl ? cleanUrlField(director.photoUrl) : undefined,
+  });
   
   const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-program-directors/${id}`, {
     method: 'PATCH',
