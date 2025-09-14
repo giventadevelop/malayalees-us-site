@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaArrowLeft, FaHandshake, FaUserPlus } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaArrowLeft, FaUserPlus, FaHandshake } from 'react-icons/fa';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -100,19 +100,19 @@ export default function EventSponsorsPage() {
 
     try {
       setLoading(true);
-      
+
       // Create sponsor join record
       const sponsorJoinData = {
         event: { id: parseInt(eventId) } as EventDetailsDTO,
         sponsor: selectedAvailableSponsor
       };
-      
+
       console.log('🔍 Assigning sponsor to event:', {
         eventId: parseInt(eventId),
         sponsorId: selectedAvailableSponsor.id,
         sponsorName: selectedAvailableSponsor.name
       });
-      
+
       const newSponsorJoin = await createEventSponsorJoinServer(sponsorJoinData);
       setEventSponsors(prev => [...prev, newSponsorJoin]);
       setIsAssignModalOpen(false);
@@ -290,15 +290,15 @@ export default function EventSponsorsPage() {
             Event Sponsors
             {event && <span className="text-lg font-normal text-gray-600 ml-2">- {event.title}</span>}
           </h1>
-          <p className="text-gray-600">Manage sponsors for this event</p>
+          <p className="text-gray-600">Manage sponsor assignments for this specific event only</p>
         </div>
       </div>
 
       {/* Toast Message */}
       {toastMessage && (
         <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
-            ? 'bg-green-50 border border-green-200 text-green-700'
-            : 'bg-red-50 border border-red-200 text-red-700'
+          ? 'bg-green-50 border border-green-200 text-green-700'
+          : 'bg-red-50 border border-red-200 text-red-700'
           }`}>
           {toastMessage.message}
         </div>
@@ -319,13 +319,6 @@ export default function EventSponsorsPage() {
               />
             </div>
           </div>
-          <Link
-            href="/admin/event-sponsors"
-            className="bg-green-600 text-white px-4 py-2 rounded-lg shadow font-bold flex items-center gap-2 hover:bg-green-700 transition"
-          >
-            <FaHandshake />
-            Manage All Sponsors
-          </Link>
         </div>
       </div>
 
@@ -337,15 +330,11 @@ export default function EventSponsorsPage() {
 
       {/* Available Sponsors Section */}
       <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Available Sponsors</h2>
-          <Link
-            href="/admin/event-sponsors"
-            className="bg-green-600 text-white px-4 py-2 rounded-lg shadow font-bold flex items-center gap-2 hover:bg-green-700 transition"
-          >
-            <FaUserPlus />
-            Create New Sponsor
-          </Link>
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold">Available Sponsors to Assign</h2>
+          <p className="text-gray-600 text-sm mt-1">
+            Select from existing sponsors to assign them to this event. To create new sponsors, use the global sponsors management.
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -368,13 +357,16 @@ export default function EventSponsorsPage() {
           </div>
           {availableSponsors.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">No available sponsors found.</p>
-              <Link
-                href="/admin/event-sponsors"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-              >
-                Create Your First Sponsor
-              </Link>
+              <div className="bg-gray-50 rounded-lg p-6">
+                <FaUserPlus className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Available Sponsors</h3>
+                <p className="text-gray-500 mb-4">
+                  You need to create sponsors first before you can assign them to events.
+                </p>
+                <p className="text-sm text-gray-400">
+                  Go to the <strong>Global Sponsors</strong> page to create new sponsors, then return here to assign them to this event.
+                </p>
+              </div>
             </div>
           )}
         </div>

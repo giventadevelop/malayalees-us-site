@@ -13,12 +13,12 @@ export async function fetchEventSponsorsServer() {
     const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors`, {
       cache: 'no-store',
     });
-    
+
     if (!response.ok) {
       console.warn('Failed to fetch event sponsors:', response.status, response.statusText);
       return [];
     }
-    
+
     return await response.json();
   } catch (error) {
     console.warn('Error fetching event sponsors:', error);
@@ -44,7 +44,7 @@ export async function createEventSponsorServer(sponsor: Omit<EventSponsorsDTO, '
   const cleanUrlField = (value: string | undefined | null): string | null => {
     return (value && value.trim() !== '') ? value : null;
   };
-  
+
   const currentTime = new Date().toISOString();
   const payload = withTenantId({
     ...sponsor,
@@ -60,18 +60,18 @@ export async function createEventSponsorServer(sponsor: Omit<EventSponsorsDTO, '
     linkedinUrl: cleanUrlField(sponsor.linkedinUrl),
     instagramUrl: cleanUrlField(sponsor.instagramUrl),
   });
-  
+
   const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  
+
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Failed to create event sponsor: ${errorText}`);
   }
-  
+
   return await response.json();
 }
 
@@ -157,18 +157,18 @@ export async function createEventSponsorJoinServer(sponsorJoin: Omit<EventSponso
     createdAt: currentTime,
     updatedAt: currentTime,
   });
-  
+
   const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors-join`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  
+
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Failed to create event sponsor join: ${errorText}`);
   }
-  
+
   return await response.json();
 }
 
