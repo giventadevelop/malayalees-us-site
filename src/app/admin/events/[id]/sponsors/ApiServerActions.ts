@@ -130,7 +130,7 @@ export async function fetchEventSponsorsJoinServer(eventId: number) {
   console.log('🔍 Fetching event sponsors for event ID:', eventId);
   console.log('🔍 API Base URL:', API_BASE_URL);
   console.log('🔍 Full URL:', `${API_BASE_URL}/api/event-sponsors-join/event/${eventId}`);
-  
+
   // Use the specific endpoint for getting sponsors by event ID
   const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors-join/event/${eventId}`, {
     cache: 'no-store',
@@ -143,24 +143,24 @@ export async function fetchEventSponsorsJoinServer(eventId: number) {
     console.error('❌ Failed to fetch event sponsors join with specific endpoint:', response.status, response.statusText);
     const errorText = await response.text();
     console.error('❌ Error response body:', errorText);
-    
+
     // Try fallback with generic endpoint and query parameters
     console.log('🔄 Trying fallback with generic endpoint...');
     const params = new URLSearchParams();
     params.append('eventId.equals', eventId.toString());
-    
+
     const fallbackResponse = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors-join?${params.toString()}`, {
       cache: 'no-store',
     });
-    
+
     if (!fallbackResponse.ok) {
       console.error('❌ Fallback also failed:', fallbackResponse.status, fallbackResponse.statusText);
       throw new Error(`Failed to fetch event sponsors join: ${response.statusText}`);
     }
-    
+
     const fallbackData = await fallbackResponse.json();
     console.log('✅ Fallback data received:', fallbackData);
-    
+
     // Handle fallback data structure
     if (!Array.isArray(fallbackData)) {
       if (fallbackData && Array.isArray(fallbackData.content)) {
@@ -171,7 +171,7 @@ export async function fetchEventSponsorsJoinServer(eventId: number) {
         return fallbackData.results;
       }
     }
-    
+
     return fallbackData;
   }
 
@@ -179,7 +179,7 @@ export async function fetchEventSponsorsJoinServer(eventId: number) {
   console.log('✅ Fetched event sponsors:', data);
   console.log('✅ Data is array:', Array.isArray(data));
   console.log('✅ Data length:', Array.isArray(data) ? data.length : 'Not an array');
-  
+
   // If data is not an array, try to extract the array from it
   if (!Array.isArray(data)) {
     console.log('⚠️ Data is not an array, checking for embedded array...');
@@ -194,7 +194,7 @@ export async function fetchEventSponsorsJoinServer(eventId: number) {
       return data.results;
     }
   }
-  
+
   return data;
 }
 

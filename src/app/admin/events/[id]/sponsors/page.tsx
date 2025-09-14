@@ -92,6 +92,18 @@ export default function EventSponsorsPage() {
       console.log('📊 Event sponsors data received:', eventSponsorsData);
       console.log('📊 Event sponsors data type:', typeof eventSponsorsData);
       console.log('📊 Event sponsors data length:', Array.isArray(eventSponsorsData) ? eventSponsorsData.length : 'Not an array');
+      
+      // Log the structure of each item
+      if (Array.isArray(eventSponsorsData) && eventSponsorsData.length > 0) {
+        console.log('📊 First item structure:', eventSponsorsData[0]);
+        console.log('📊 First item keys:', Object.keys(eventSponsorsData[0]));
+        if (eventSponsorsData[0].sponsor) {
+          console.log('📊 First item sponsor structure:', eventSponsorsData[0].sponsor);
+          console.log('📊 First item sponsor keys:', Object.keys(eventSponsorsData[0].sponsor));
+        }
+      }
+      
+      console.log('📊 Setting event sponsors state with:', eventSponsorsData);
       setEventSponsors(eventSponsorsData);
 
       // Load available sponsors (global sponsors) for assignment
@@ -291,11 +303,24 @@ export default function EventSponsorsPage() {
     setEventSponsors(sorted);
   };
 
-  const filteredEventSponsors = eventSponsors.filter(sponsor =>
-    sponsor.sponsor?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sponsor.sponsor?.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sponsor.sponsor?.companyName?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEventSponsors = eventSponsors.filter(sponsor => {
+    const matches = sponsor.sponsor?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sponsor.sponsor?.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sponsor.sponsor?.companyName?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Debug logging
+    if (eventSponsors.length > 0 && eventSponsors.indexOf(sponsor) === 0) {
+      console.log('🔍 Filtering sponsor:', sponsor);
+      console.log('🔍 Sponsor name:', sponsor.sponsor?.name);
+      console.log('🔍 Search term:', searchTerm);
+      console.log('🔍 Matches:', matches);
+    }
+    
+    return matches;
+  });
+  
+  console.log('🔍 Total event sponsors:', eventSponsors.length);
+  console.log('🔍 Filtered event sponsors:', filteredEventSponsors.length);
 
   const columns: Column<EventSponsorsJoinDTO>[] = [
     {
@@ -385,10 +410,26 @@ export default function EventSponsorsPage() {
         <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
           ? 'bg-green-50 border border-green-200 text-green-700'
           : 'bg-red-50 border border-red-200 text-red-700'
-          }`}>
+        }`}>
           {toastMessage.message}
         </div>
       )}
+
+      {/* Debug Information */}
+      <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <h3 className="font-bold text-yellow-800">Debug Information:</h3>
+        <p className="text-yellow-700">Event Sponsors Count: {eventSponsors.length}</p>
+        <p className="text-yellow-700">Filtered Sponsors Count: {filteredEventSponsors.length}</p>
+        <p className="text-yellow-700">Search Term: "{searchTerm}"</p>
+        {eventSponsors.length > 0 && (
+          <div className="mt-2">
+            <p className="text-yellow-700 font-bold">First Sponsor Data:</p>
+            <pre className="text-xs bg-yellow-100 p-2 rounded overflow-auto">
+              {JSON.stringify(eventSponsors[0], null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
 
       {/* Search and Filter Bar */}
       <div className="mb-6 bg-white rounded-xl shadow-lg border border-gray-200 p-6">
