@@ -8,7 +8,10 @@ const baseUrl = getAppUrl();
 
 // Event Sponsors (available sponsors)
 export async function fetchEventSponsorsServer() {
-  const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors`, {
+  const params = new URLSearchParams();
+  params.append('tenantId.equals', process.env.NEXT_PUBLIC_TENANT_ID || '');
+
+  const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors?${params.toString()}`, {
     cache: 'no-store',
   });
 
