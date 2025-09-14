@@ -169,42 +169,24 @@ export default function EventContactsPage() {
   };
 
   const filteredContacts = contacts.filter(contact =>
-    contact.contactName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.contactType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.organization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     contact.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const columns: Column<EventContactsDTO>[] = [
-    { key: 'contactName', label: 'Name', sortable: true },
-    { key: 'contactType', label: 'Type', sortable: true },
+    { key: 'name', label: 'Name', sortable: true },
     {
-      key: 'organization',
-      label: 'Organization',
+      key: 'phone',
+      label: 'Phone',
       sortable: true,
-      render: (value) => value || '-'
-    },
-    {
-      key: 'title',
-      label: 'Title',
       render: (value) => value || '-'
     },
     {
       key: 'email',
       label: 'Email',
       render: (value) => value || '-'
-    },
-    {
-      key: 'phone',
-      label: 'Phone',
-      render: (value) => value || '-'
-    },
-    {
-      key: 'isPrimary',
-      label: 'Primary',
-      sortable: true,
-      render: (value) => value ? 'Yes' : 'No'
-    },
+    }
   ];
 
   if (!userId) {
