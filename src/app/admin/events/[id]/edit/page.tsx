@@ -80,30 +80,42 @@ export default function EditEventPage() {
                 </Link>
               </>
             )}
-            {/* Event Management Features */}
-            <Link href={`/admin/events/${eventId}/performers`} className="flex flex-col items-center justify-center bg-pink-50 hover:bg-pink-100 text-pink-700 rounded-lg shadow-sm px-4 py-4 transition font-semibold text-sm">
-              <FaMicrophone className="mb-2 text-2xl" />
+          </div>
+        </div>
+      </div>
+
+      {/* Special Event Management Features Card */}
+      <div className="flex justify-center mb-8">
+        <div className="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl shadow-lg p-6 w-full max-w-4xl">
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-bold text-purple-800 mb-2">🎭 Event Management Features</h2>
+            <p className="text-sm text-purple-600">Manage performers, contacts, sponsors, emails, and program directors for this event</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            <Link href={`/admin/events/${eventId}/performers`} className="flex flex-col items-center justify-center bg-pink-50 hover:bg-pink-100 text-pink-700 rounded-lg shadow-sm px-4 py-6 transition font-semibold text-sm border border-pink-200 hover:border-pink-300 hover:shadow-md">
+              <FaMicrophone className="mb-2 text-3xl" />
               Featured Performers
             </Link>
-            <Link href={`/admin/events/${eventId}/contacts`} className="flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg shadow-sm px-4 py-4 transition font-semibold text-sm">
-              <FaAddressBook className="mb-2 text-2xl" />
+            <Link href={`/admin/events/${eventId}/contacts`} className="flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg shadow-sm px-4 py-6 transition font-semibold text-sm border border-emerald-200 hover:border-emerald-300 hover:shadow-md">
+              <FaAddressBook className="mb-2 text-3xl" />
               Event Contacts
             </Link>
-            <Link href={`/admin/events/${eventId}/sponsors`} className="flex flex-col items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg shadow-sm px-4 py-4 transition font-semibold text-sm">
-              <FaHandshake className="mb-2 text-2xl" />
+            <Link href={`/admin/events/${eventId}/sponsors`} className="flex flex-col items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg shadow-sm px-4 py-6 transition font-semibold text-sm border border-amber-200 hover:border-amber-300 hover:shadow-md">
+              <FaHandshake className="mb-2 text-3xl" />
               Event Sponsors
             </Link>
-            <Link href={`/admin/events/${eventId}/emails`} className="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg shadow-sm px-4 py-4 transition font-semibold text-sm">
-              <FaEnvelope className="mb-2 text-2xl" />
+            <Link href={`/admin/events/${eventId}/emails`} className="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg shadow-sm px-4 py-6 transition font-semibold text-sm border border-blue-200 hover:border-blue-300 hover:shadow-md">
+              <FaEnvelope className="mb-2 text-3xl" />
               Event Emails
             </Link>
-            <Link href={`/admin/events/${eventId}/program-directors`} className="flex flex-col items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg shadow-sm px-4 py-4 transition font-semibold text-sm">
-              <FaUserTie className="mb-2 text-2xl" />
+            <Link href={`/admin/events/${eventId}/program-directors`} className="flex flex-col items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg shadow-sm px-4 py-6 transition font-semibold text-sm border border-indigo-200 hover:border-indigo-300 hover:shadow-md">
+              <FaUserTie className="mb-2 text-3xl" />
               Program Directors
             </Link>
           </div>
         </div>
       </div>
+
       <h1 className="text-2xl font-bold mb-4">Edit Event - ID: {eventId}</h1>
       {error && <div className="bg-red-50 text-red-500 p-3 rounded mb-4">{error}</div>}
       <div className="border rounded p-4 bg-white shadow-sm min-h-[200px]">
