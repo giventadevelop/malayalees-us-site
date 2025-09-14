@@ -226,8 +226,8 @@ export default function EventProgramDirectorsPage() {
       {/* Toast Message */}
       {toastMessage && (
         <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
-            ? 'bg-green-50 border border-green-200 text-green-700'
-            : 'bg-red-50 border border-red-200 text-red-700'
+          ? 'bg-green-50 border border-green-200 text-green-700'
+          : 'bg-red-50 border border-red-200 text-red-700'
           }`}>
           {toastMessage.message}
         </div>
@@ -405,21 +405,21 @@ function ProgramDirectorForm({ formData, setFormData, onSubmit, loading, submitT
       </div>
 
       <div className="flex justify-end space-x-3 pt-4">
-          <button
-            type="button"
-            onClick={() => window.history.back()}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-          >
-            {loading ? 'Saving...' : submitText}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+        >
+          {loading ? 'Saving...' : submitText}
+        </button>
+      </div>
     </form>
   );
 }

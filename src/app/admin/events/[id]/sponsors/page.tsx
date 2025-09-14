@@ -233,25 +233,25 @@ export default function EventSponsorsPage() {
 
   const columns: Column<EventSponsorsJoinDTO>[] = [
     {
-      key: 'sponsor',
+      key: 'sponsor.name',
       label: 'Sponsor Name',
       sortable: true,
       render: (value) => value?.name || '-'
     },
     {
-      key: 'sponsor',
+      key: 'sponsor.type',
       label: 'Type',
       sortable: true,
       render: (value) => value?.type || '-'
     },
     {
-      key: 'sponsor',
+      key: 'sponsor.companyName',
       label: 'Company',
       sortable: true,
       render: (value) => value?.companyName || '-'
     },
     {
-      key: 'sponsor',
+      key: 'sponsor.isActive',
       label: 'Active',
       sortable: true,
       render: (value) => value?.isActive ? 'Yes' : 'No'
