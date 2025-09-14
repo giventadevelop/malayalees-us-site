@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FaUsers, FaCalendarAlt, FaEnvelope, FaCreditCard, FaHome, FaUserTie, FaChartLine, FaBuilding, FaCog, FaMicrophone, FaAddressBook, FaHandshake } from 'react-icons/fa';
+import { FaUsers, FaCalendarAlt, FaEnvelope, FaCreditCard, FaHome, FaUserTie, FaChartLine, FaBuilding, FaCog } from 'react-icons/fa';
 
 interface AdminNavigationProps {
   currentPage?: string;
@@ -49,30 +49,6 @@ export default function AdminNavigation({ currentPage, showHome = true }: AdminN
       color: 'indigo',
       active: currentPage === 'event-registrations',
       key: 'event-registrations'
-    },
-    {
-      href: '/admin/event-featured-performers',
-      icon: FaMicrophone,
-      label: 'Performers',
-      color: 'pink',
-      active: currentPage === 'event-featured-performers',
-      key: 'event-featured-performers'
-    },
-    {
-      href: '/admin/event-contacts',
-      icon: FaAddressBook,
-      label: 'Event Contacts',
-      color: 'emerald',
-      active: currentPage === 'event-contacts',
-      key: 'event-contacts'
-    },
-    {
-      href: '/admin/event-sponsors',
-      icon: FaHandshake,
-      label: 'Sponsors',
-      color: 'amber',
-      active: currentPage === 'event-sponsors',
-      key: 'event-sponsors'
     },
     {
       href: '/admin/promotion-emails',

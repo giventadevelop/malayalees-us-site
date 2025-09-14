@@ -1,18 +1,17 @@
 # Task ID: 18
-# Title: Implement tenant organization edit page
+# Title: Implement responsive design for all views
 # Status: pending
-# Dependencies: 9 ⏱️, 16 ⏱️
+# Dependencies: 4 ⏱️, 5 ⏱️, 6 ⏱️, 7 ⏱️, 8 ⏱️, 9 ⏱️, 10 ⏱️, 14 ⏱️
 # Priority: medium
-# Description: Create the page for editing an existing tenant organization.
+# Description: Ensure all UI components and pages are fully responsive across devices.
 # Details:
-Implement the organizations/[id]/edit/page.tsx with:
-- Fetching organization data
-- TenantOrganizationForm component in edit mode
-- Pre-populated form fields
-- Submit and cancel buttons
-- Form submission handling
-- Success and error notifications
-- Redirect after successful update
+- Implement responsive layouts for all pages
+- Create mobile-friendly forms
+- Build responsive data tables
+- Implement mobile navigation
+- Create touch-friendly image upload
+- Build responsive image gallery
+- Implement responsive filtering interface
 
 # Test Strategy:
-Test the edit functionality with valid and invalid data to ensure proper validation and submission handling.
+Test all pages and components across various screen sizes and devices.

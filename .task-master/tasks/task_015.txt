@@ -1,18 +1,18 @@
 # Task ID: 15
-# Title: Implement tenant settings create page
+# Title: Implement advanced filtering and search
 # Status: pending
-# Dependencies: 10 ⏱️
+# Dependencies: 4 ⏱️, 5 ⏱️, 6 ⏱️, 7 ⏱️, 8 ⏱️, 9 ⏱️
 # Priority: medium
-# Description: Create the page for adding new tenant settings.
+# Description: Create advanced filtering and search capabilities for all entity listing pages.
 # Details:
-Implement the settings/new/page.tsx with:
-- Page title and description
-- TenantSettingsForm component in create mode
-- Submit and cancel buttons
-- Breadcrumb navigation
-- Form submission handling
-- Success and error notifications
-- Redirect after successful creation
+- Implement filter panel for each entity type
+- Create saved filter functionality
+- Build advanced search with multiple criteria
+- Implement full-text search across entities
+- Create date range filters
+- Build numeric range filters
+- Implement status/boolean filters
+- Create relationship-based filtering
 
 # Test Strategy:
-Test the create functionality with valid and invalid data to ensure proper validation and submission handling.
+Test all filter combinations, search functionality, and filter persistence.

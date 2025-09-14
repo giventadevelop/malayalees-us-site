@@ -23,13 +23,13 @@ export default function EventSponsorsPage() {
   const [sponsors, setSponsors] = useState<EventSponsorsDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState<EventSponsorsDTO | null>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState<Partial<EventSponsorsDTO>>({
     sponsorName: '',
@@ -99,7 +99,7 @@ export default function EventSponsorsPage() {
 
   const handleEdit = async () => {
     if (!selectedSponsor) return;
-    
+
     try {
       setLoading(true);
       const updatedSponsor = await updateEventSponsorServer(selectedSponsor.id!, formData);
@@ -117,7 +117,7 @@ export default function EventSponsorsPage() {
 
   const handleDelete = async () => {
     if (!selectedSponsor) return;
-    
+
     try {
       setLoading(true);
       await deleteEventSponsorServer(selectedSponsor.id!);
@@ -165,18 +165,18 @@ export default function EventSponsorsPage() {
   const handleSort = (key: string, direction: 'asc' | 'desc') => {
     setSortKey(key);
     setSortDirection(direction);
-    
+
     const sorted = [...sponsors].sort((a, b) => {
       const aVal = a[key as keyof EventSponsorsDTO];
       const bVal = b[key as keyof EventSponsorsDTO];
-      
+
       if (direction === 'asc') {
         return aVal > bVal ? 1 : -1;
       } else {
         return aVal < bVal ? 1 : -1;
       }
     });
-    
+
     setSponsors(sorted);
   };
 
@@ -188,43 +188,43 @@ export default function EventSponsorsPage() {
   );
 
   const columns: Column<EventSponsorsDTO>[] = [
-    { 
-      key: 'sponsorName', 
-      label: 'Sponsor Name', 
-      sortable: true 
+    {
+      key: 'sponsorName',
+      label: 'Sponsor Name',
+      sortable: true
     },
-    { 
-      key: 'contactPerson', 
-      label: 'Contact Person', 
+    {
+      key: 'contactPerson',
+      label: 'Contact Person',
       sortable: true,
       render: (value) => value || '-'
     },
-    { 
-      key: 'sponsorshipLevel', 
-      label: 'Level', 
+    {
+      key: 'sponsorshipLevel',
+      label: 'Level',
       sortable: true,
       render: (value) => value || '-'
     },
-    { 
-      key: 'sponsorshipAmount', 
-      label: 'Amount', 
+    {
+      key: 'sponsorshipAmount',
+      label: 'Amount',
       sortable: true,
       render: (value) => value ? `$${value.toLocaleString()}` : '-'
     },
-    { 
-      key: 'contactEmail', 
-      label: 'Email', 
+    {
+      key: 'contactEmail',
+      label: 'Email',
       render: (value) => value || '-'
     },
-    { 
-      key: 'isActive', 
-      label: 'Active', 
+    {
+      key: 'isActive',
+      label: 'Active',
       sortable: true,
       render: (value) => value ? 'Yes' : 'No'
     },
-    { 
-      key: 'displayOrder', 
-      label: 'Order', 
+    {
+      key: 'displayOrder',
+      label: 'Order',
       sortable: true,
       render: (value) => value || 0
     },
@@ -245,11 +245,10 @@ export default function EventSponsorsPage() {
 
       {/* Toast Message */}
       {toastMessage && (
-        <div className={`mb-4 p-4 rounded-lg ${
-          toastMessage.type === 'success' 
-            ? 'bg-green-50 border border-green-200 text-green-700' 
+        <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-700'
             : 'bg-red-50 border border-red-200 text-red-700'
-        }`}>
+          }`}>
           {toastMessage.message}
         </div>
       )}
@@ -365,7 +364,7 @@ interface SponsorFormProps {
 function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: SponsorFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
@@ -407,7 +406,7 @@ function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: S
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Contact Person
@@ -420,7 +419,7 @@ function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: S
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Contact Email
@@ -433,7 +432,7 @@ function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: S
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Contact Phone
@@ -446,7 +445,7 @@ function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: S
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Website
@@ -459,7 +458,7 @@ function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: S
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Sponsorship Level
@@ -476,7 +475,7 @@ function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: S
             ))}
           </select>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Sponsorship Amount
@@ -491,7 +490,7 @@ function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: S
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Display Order
@@ -547,7 +546,7 @@ function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: S
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Hero Image URL
@@ -560,7 +559,7 @@ function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: S
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Banner Image URL

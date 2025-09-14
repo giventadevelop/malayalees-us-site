@@ -41,14 +41,14 @@ export default function DataTable<T extends Record<string, any>>({
 }: DataTableProps<T>) {
   const handleSort = (key: string) => {
     if (!onSort) return;
-    
+
     const newDirection = sortKey === key && sortDirection === 'asc' ? 'desc' : 'asc';
     onSort(key, newDirection);
   };
 
   const renderSortIcon = (columnKey: string) => {
     if (!onSort || !columns.find(col => col.key === columnKey)?.sortable) return null;
-    
+
     if (sortKey === columnKey) {
       return sortDirection === 'asc' ? <FaSortUp /> : <FaSortDown />;
     }
@@ -77,9 +77,8 @@ export default function DataTable<T extends Record<string, any>>({
               {columns.map((column) => (
                 <th
                   key={String(column.key)}
-                  className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                    column.sortable ? 'cursor-pointer hover:bg-gray-100' : ''
-                  } ${column.className || ''}`}
+                  className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${column.sortable ? 'cursor-pointer hover:bg-gray-100' : ''
+                    } ${column.className || ''}`}
                   style={{ width: column.width }}
                   onClick={() => column.sortable && handleSort(String(column.key))}
                 >

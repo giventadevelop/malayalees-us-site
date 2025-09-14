@@ -56,7 +56,7 @@ export default function Modal({
           className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
           onClick={onClose}
         />
-        
+
         {/* Modal */}
         <div
           className={`relative bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} ${className}`}
@@ -72,7 +72,7 @@ export default function Modal({
               <FaTimes className="w-5 h-5" />
             </button>
           </div>
-          
+
           {/* Body */}
           <div className="p-6">
             {children}

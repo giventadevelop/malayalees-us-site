@@ -1,19 +1,18 @@
 # Task ID: 4
-# Title: Implement API proxy routes for tenant settings
+# Title: Implement EventFeaturedPerformers management UI
 # Status: pending
-# Dependencies: 2 ⏱️
-# Priority: high
-# Description: Create API proxy handlers for tenant settings endpoints following nextjs_api_routes patterns.
+# Dependencies: 2 ⏱️, 3 ⏱️
+# Priority: medium
+# Description: Create UI components for managing featured performers including forms, tables, and detail views.
 # Details:
-Implement API proxy routes for the following tenant settings endpoints:
-- GET /api/tenant-settings
-- GET /api/tenant-settings/{id}
-- POST /api/tenant-settings
-- PUT /api/tenant-settings/{id}
-- PATCH /api/tenant-settings/{id}
-- DELETE /api/tenant-settings/{id}
-
-Ensure proper JWT authentication and tenant ID injection. Use fetchWithJwtRetry for backend API calls.
+- Create performers listing page with filtering and sorting
+- Implement performer detail view
+- Build performer creation form with validation
+- Create performer edit form
+- Implement performer deletion with confirmation
+- Add performer search functionality
+- Create relationship management with events
+- Implement performance ordering and priority ranking UI
 
 # Test Strategy:
-Test each API endpoint to ensure it correctly communicates with the backend and handles authentication properly.
+Test CRUD operations, validation, relationship management, and list filtering.

@@ -1,17 +1,17 @@
 # Task ID: 8
-# Title: Create TenantSettingsList component
+# Title: Implement EventEmails management UI
 # Status: pending
-# Dependencies: 6 ⏱️
+# Dependencies: 2 ⏱️, 3 ⏱️
 # Priority: medium
-# Description: Implement the list view component for tenant settings with pagination, filtering, and sorting.
+# Description: Create UI components for managing event emails including forms, tables, and detail views.
 # Details:
-Create the TenantSettingsList component with the following features:
-- Paginated table display
-- Columns for key information (tenant_id, allow_user_registration, enable_whatsapp_integration, max_events_per_month)
-- Search/filter functionality by tenant_id
-- Sorting by tenant_id, created date
-- Action buttons for View, Edit, Delete
-- Loading states and error handling
+- Create emails listing page with filtering and sorting
+- Implement email detail view
+- Build email creation form with validation
+- Create email edit form
+- Implement email deletion with confirmation
+- Add email search functionality
+- Create relationship management with events
 
 # Test Strategy:
-Test the component with various data sets to ensure pagination, filtering, and sorting work correctly. Verify that all action buttons function as expected.
+Test CRUD operations, validation, relationship management, and list filtering.

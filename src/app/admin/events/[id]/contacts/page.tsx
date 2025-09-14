@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaArrowLeft } from 'react-icons/fa';
 import { useAuth } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/Modal';
-import AdminNavigation from '@/components/AdminNavigation';
-import type { EventContactsDTO } from '@/types';
+import type { EventContactsDTO, EventDetailsDTO } from '@/types';
 import {
   fetchEventContactsServer,
   createEventContactServer,
@@ -19,17 +19,20 @@ import {
 export default function EventContactsPage() {
   const { userId } = useAuth();
   const router = useRouter();
+  const params = useParams();
+  const eventId = params?.id as string;
 
+  const [event, setEvent] = useState<EventDetailsDTO | null>(null);
   const [contacts, setContacts] = useState<EventContactsDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<EventContactsDTO | null>(null);
-
+  
   // Form state
   const [formData, setFormData] = useState<Partial<EventContactsDTO>>({
     contactType: '',
@@ -40,6 +43,7 @@ export default function EventContactsPage() {
     title: '',
     isPrimary: false,
     notes: '',
+    event: { id: parseInt(eventId) } as EventDetailsDTO,
   });
 
   // Search and filter state
@@ -50,10 +54,10 @@ export default function EventContactsPage() {
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
-    if (userId) {
-      loadContacts();
+    if (userId && eventId) {
+      loadEventAndContacts();
     }
-  }, [userId]);
+  }, [userId, eventId]);
 
   useEffect(() => {
     if (toastMessage) {
@@ -62,15 +66,24 @@ export default function EventContactsPage() {
     }
   }, [toastMessage]);
 
-  const loadContacts = async () => {
+  const loadEventAndContacts = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchEventContactsServer();
-      setContacts(data);
+      
+      // Load event details
+      const eventResponse = await fetch(`/api/proxy/event-details/${eventId}`);
+      if (eventResponse.ok) {
+        const eventData = await eventResponse.json();
+        setEvent(eventData);
+      }
+      
+      // Load contacts for this event
+      const contactsData = await fetchEventContactsServer(parseInt(eventId));
+      setContacts(contactsData);
     } catch (err: any) {
-      setError(err.message || 'Failed to load contacts');
-      setToastMessage({ type: 'error', message: err.message || 'Failed to load contacts' });
+      setError(err.message || 'Failed to load event contacts');
+      setToastMessage({ type: 'error', message: err.message || 'Failed to load event contacts' });
     } finally {
       setLoading(false);
     }
@@ -79,7 +92,8 @@ export default function EventContactsPage() {
   const handleCreate = async () => {
     try {
       setLoading(true);
-      const newContact = await createEventContactServer(formData as any);
+      const contactData = { ...formData, event: { id: parseInt(eventId) } as EventDetailsDTO };
+      const newContact = await createEventContactServer(contactData as any);
       setContacts(prev => [...prev, newContact]);
       setIsCreateModalOpen(false);
       resetForm();
@@ -93,7 +107,7 @@ export default function EventContactsPage() {
 
   const handleEdit = async () => {
     if (!selectedContact) return;
-
+    
     try {
       setLoading(true);
       const updatedContact = await updateEventContactServer(selectedContact.id!, formData);
@@ -111,7 +125,7 @@ export default function EventContactsPage() {
 
   const handleDelete = async () => {
     if (!selectedContact) return;
-
+    
     try {
       setLoading(true);
       await deleteEventContactServer(selectedContact.id!);
@@ -136,6 +150,7 @@ export default function EventContactsPage() {
       title: '',
       isPrimary: false,
       notes: '',
+      event: { id: parseInt(eventId) } as EventDetailsDTO,
     });
   };
 
@@ -153,18 +168,18 @@ export default function EventContactsPage() {
   const handleSort = (key: string, direction: 'asc' | 'desc') => {
     setSortKey(key);
     setSortDirection(direction);
-
+    
     const sorted = [...contacts].sort((a, b) => {
       const aVal = a[key as keyof EventContactsDTO];
       const bVal = b[key as keyof EventContactsDTO];
-
+      
       if (direction === 'asc') {
         return aVal > bVal ? 1 : -1;
       } else {
         return aVal < bVal ? 1 : -1;
       }
     });
-
+    
     setContacts(sorted);
   };
 
@@ -178,30 +193,30 @@ export default function EventContactsPage() {
   const columns: Column<EventContactsDTO>[] = [
     { key: 'contactName', label: 'Name', sortable: true },
     { key: 'contactType', label: 'Type', sortable: true },
-    {
-      key: 'organization',
-      label: 'Organization',
+    { 
+      key: 'organization', 
+      label: 'Organization', 
       sortable: true,
       render: (value) => value || '-'
     },
-    {
-      key: 'title',
-      label: 'Title',
+    { 
+      key: 'title', 
+      label: 'Title', 
       render: (value) => value || '-'
     },
-    {
-      key: 'email',
-      label: 'Email',
+    { 
+      key: 'email', 
+      label: 'Email', 
       render: (value) => value || '-'
     },
-    {
-      key: 'phone',
-      label: 'Phone',
+    { 
+      key: 'phone', 
+      label: 'Phone', 
       render: (value) => value || '-'
     },
-    {
-      key: 'isPrimary',
-      label: 'Primary',
+    { 
+      key: 'isPrimary', 
+      label: 'Primary', 
       sortable: true,
       render: (value) => value ? 'Yes' : 'No'
     },
@@ -215,17 +230,41 @@ export default function EventContactsPage() {
     );
   }
 
+  if (!eventId) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Event ID not found</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-8 py-8" style={{ paddingTop: '180px' }}>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Event Contacts</h1>
-      <AdminNavigation />
+      {/* Header with back button */}
+      <div className="flex items-center mb-6">
+        <Link
+          href={`/admin/events/${eventId}/edit`}
+          className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Event
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Event Contacts
+            {event && <span className="text-lg font-normal text-gray-600 ml-2">- {event.title}</span>}
+          </h1>
+          <p className="text-gray-600">Manage contacts for this event</p>
+        </div>
+      </div>
 
       {/* Toast Message */}
       {toastMessage && (
-        <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
-            ? 'bg-green-50 border border-green-200 text-green-700'
+        <div className={`mb-4 p-4 rounded-lg ${
+          toastMessage.type === 'success' 
+            ? 'bg-green-50 border border-green-200 text-green-700' 
             : 'bg-red-50 border border-red-200 text-red-700'
-          }`}>
+        }`}>
           {toastMessage.message}
         </div>
       )}
@@ -270,7 +309,7 @@ export default function EventContactsPage() {
         onDelete={openDeleteModal}
         sortKey={sortKey}
         sortDirection={sortDirection}
-        emptyMessage="No contacts found"
+        emptyMessage="No contacts found for this event"
       />
 
       {/* Create Modal */}
@@ -341,7 +380,7 @@ interface ContactFormProps {
 function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: ContactFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-
+    
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
@@ -382,7 +421,7 @@ function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: C
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Contact Type *
@@ -400,7 +439,7 @@ function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: C
             ))}
           </select>
         </div>
-
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Organization
@@ -413,7 +452,7 @@ function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: C
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Title
@@ -426,7 +465,7 @@ function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: C
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Email
@@ -439,7 +478,7 @@ function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: C
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Phone

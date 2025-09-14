@@ -1,19 +1,17 @@
 # Task ID: 5
-# Title: Implement server actions for tenant organizations
+# Title: Implement EventContacts management UI
 # Status: pending
-# Dependencies: 3 ⏱️
-# Priority: high
-# Description: Create server actions for CRUD operations on tenant organizations.
+# Dependencies: 2 ⏱️, 3 ⏱️
+# Priority: medium
+# Description: Create UI components for managing event contacts including forms, tables, and detail views.
 # Details:
-In the organizations/ApiServerActions.ts file, implement the following server actions:
-- fetchTenantOrganizations(page, pageSize, filters)
-- fetchTenantOrganization(id)
-- createTenantOrganization(data)
-- updateTenantOrganization(id, data)
-- deleteTenantOrganization(id)
-- toggleTenantOrganizationStatus(id, isActive)
-
-Include proper error handling, logging, and use withTenantId utility for DTO preparation.
+- Create contacts listing page with filtering and sorting
+- Implement contact detail view
+- Build contact creation form with validation
+- Create contact edit form
+- Implement contact deletion with confirmation
+- Add contact search functionality
+- Create relationship management with events
 
 # Test Strategy:
-Test each server action to ensure it correctly interacts with the API proxy routes and handles errors appropriately.
+Test CRUD operations, validation, relationship management, and list filtering.

@@ -36,7 +36,7 @@ export default function FormField({
   helpText,
 }: FormFieldProps) {
   const baseInputClasses = `
-    mt-1 block w-full border border-gray-400 rounded-xl 
+    mt-1 block w-full border border-gray-400 rounded-xl
     focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base
     ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
     ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}

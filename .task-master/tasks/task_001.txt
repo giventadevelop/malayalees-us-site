@@ -1,38 +1,16 @@
 # Task ID: 1
-# Title: Set up file structure for tenant management module
+# Title: Set up frontend project structure
 # Status: pending
 # Dependencies: None
 # Priority: high
-# Description: Create the directory structure and empty files for the tenant management module following the technical requirements.
+# Description: Initialize the NextJS project structure with appropriate folder organization for the event management system frontend.
 # Details:
-Create the following directory structure and empty files:
-- src/app/admin/tenant-management/
-  - organizations/
-    - page.tsx
-    - [id]/
-      - page.tsx
-      - edit/
-        - page.tsx
-      - settings/
-        - page.tsx
-    - new/
-      - page.tsx
-    - ApiServerActions.ts
-  - settings/
-    - page.tsx
-    - [id]/
-      - page.tsx
-      - edit/
-        - page.tsx
-    - new/
-      - page.tsx
-    - ApiServerActions.ts
-  - components/
-    - TenantOrganizationForm.tsx
-    - TenantSettingsForm.tsx
-    - TenantOrganizationList.tsx
-    - TenantSettingsList.tsx
-    - TenantDetailsModal.tsx
+- Initialize NextJS project
+- Set up folder structure (pages, components, hooks, utils, styles, etc.)
+- Configure API proxy for backend endpoints
+- Set up authentication integration
+- Implement basic layout components
+- Configure environment variables for API endpoints
 
 # Test Strategy:
-Verify that all directories and files are created with the correct structure and naming.
+Verify project structure is properly set up and the application can be started without errors.

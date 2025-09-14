@@ -1,20 +1,20 @@
 # Task ID: 10
-# Title: Implement TenantSettingsForm component
+# Title: Develop image upload components
 # Status: pending
-# Dependencies: 2 ⏱️, 6 ⏱️
-# Priority: medium
-# Description: Create a reusable form component for creating and editing tenant settings.
+# Dependencies: 3 ⏱️
+# Priority: high
+# Description: Create comprehensive image upload components for all entity types supporting image assets.
 # Details:
-Implement the TenantSettingsForm component with:
-- Form fields for all tenant settings properties
-- Toggle switches for boolean fields
-- Number inputs with validation for numeric fields
-- Text areas for custom CSS/JS with syntax highlighting
-- JSON editor for email provider configuration
-- Client-side validation using React Hook Form
-- Clear error messages and field highlighting
-- Support for both create and edit modes
-- Tenant organization selection dropdown
+- Implement drag & drop image upload interface
+- Create image preview component
+- Build image cropping tool
+- Implement multiple file selection
+- Add upload progress indicators
+- Create file type and size validation
+- Implement image gallery component
+- Build image management interface
+- Create lightbox for image viewing
+- Implement image replacement functionality
 
 # Test Strategy:
-Test the form with valid and invalid inputs to ensure validation works correctly. Verify that the form correctly handles both create and edit operations.
+Test image upload, preview, cropping, validation, and management features with various file types and sizes.

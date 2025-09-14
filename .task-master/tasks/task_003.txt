@@ -1,19 +1,18 @@
 # Task ID: 3
-# Title: Implement API proxy routes for tenant organizations
+# Title: Create base UI components
 # Status: pending
-# Dependencies: 2 ⏱️
+# Dependencies: 1 ⏱️
 # Priority: high
-# Description: Create API proxy handlers for tenant organization endpoints following nextjs_api_routes patterns.
+# Description: Develop reusable UI components that will be used across the application following the UI style guide.
 # Details:
-Implement API proxy routes for the following tenant organization endpoints:
-- GET /api/tenant-organizations
-- GET /api/tenant-organizations/{id}
-- POST /api/tenant-organizations
-- PUT /api/tenant-organizations/{id}
-- PATCH /api/tenant-organizations/{id}
-- DELETE /api/tenant-organizations/{id}
-
-Ensure proper JWT authentication and tenant ID injection. Use fetchWithJwtRetry for backend API calls.
+- Create data table component with sorting, filtering, and pagination
+- Implement form components with validation
+- Build modal/dialog components
+- Create notification system (toast/alerts)
+- Implement loading indicators
+- Build card and list view components
+- Create button and input components
+- Implement responsive layout components
 
 # Test Strategy:
-Test each API endpoint to ensure it correctly communicates with the backend and handles authentication properly.
+Test components for proper rendering, responsiveness, and interaction patterns.

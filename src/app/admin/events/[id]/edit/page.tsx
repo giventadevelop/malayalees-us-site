@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { EventForm } from '@/components/EventForm';
 import type { EventDetailsDTO, EventTypeDetailsDTO } from '@/types';
 import Link from 'next/link';
-import { FaUsers, FaPhotoVideo, FaCalendarAlt, FaTags, FaTicketAlt, FaHome } from 'react-icons/fa';
+import { FaUsers, FaPhotoVideo, FaCalendarAlt, FaTags, FaTicketAlt, FaHome, FaMicrophone, FaAddressBook, FaHandshake, FaEnvelope, FaUserTie } from 'react-icons/fa';
 
 export default function EditEventPage() {
   const router = useRouter();
@@ -80,6 +80,27 @@ export default function EditEventPage() {
                 </Link>
               </>
             )}
+            {/* Event Management Features */}
+            <Link href={`/admin/events/${eventId}/performers`} className="flex flex-col items-center justify-center bg-pink-50 hover:bg-pink-100 text-pink-700 rounded-lg shadow-sm px-4 py-4 transition font-semibold text-sm">
+              <FaMicrophone className="mb-2 text-2xl" />
+              Featured Performers
+            </Link>
+            <Link href={`/admin/events/${eventId}/contacts`} className="flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg shadow-sm px-4 py-4 transition font-semibold text-sm">
+              <FaAddressBook className="mb-2 text-2xl" />
+              Event Contacts
+            </Link>
+            <Link href={`/admin/events/${eventId}/sponsors`} className="flex flex-col items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg shadow-sm px-4 py-4 transition font-semibold text-sm">
+              <FaHandshake className="mb-2 text-2xl" />
+              Event Sponsors
+            </Link>
+            <Link href={`/admin/events/${eventId}/emails`} className="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg shadow-sm px-4 py-4 transition font-semibold text-sm">
+              <FaEnvelope className="mb-2 text-2xl" />
+              Event Emails
+            </Link>
+            <Link href={`/admin/events/${eventId}/program-directors`} className="flex flex-col items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg shadow-sm px-4 py-4 transition font-semibold text-sm">
+              <FaUserTie className="mb-2 text-2xl" />
+              Program Directors
+            </Link>
           </div>
         </div>
       </div>

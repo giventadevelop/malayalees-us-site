@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaFilter } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaArrowLeft } from 'react-icons/fa';
 import { useAuth } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/Modal';
-import { useToast } from '@/components/ui/Toast';
-import AdminNavigation from '@/components/AdminNavigation';
 import type { EventFeaturedPerformersDTO, EventDetailsDTO } from '@/types';
 import {
   fetchEventFeaturedPerformersServer,
@@ -17,21 +16,23 @@ import {
   deleteEventFeaturedPerformerServer,
 } from './ApiServerActions';
 
-export default function EventFeaturedPerformersPage() {
+export default function EventPerformersPage() {
   const { userId } = useAuth();
   const router = useRouter();
-  const { toasts, showSuccess, showError, removeToast } = useToast();
+  const params = useParams();
+  const eventId = params?.id as string;
 
+  const [event, setEvent] = useState<EventDetailsDTO | null>(null);
   const [performers, setPerformers] = useState<EventFeaturedPerformersDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedPerformer, setSelectedPerformer] = useState<EventFeaturedPerformersDTO | null>(null);
-
+  
   // Form state
   const [formData, setFormData] = useState<Partial<EventFeaturedPerformersDTO>>({
     name: '',
@@ -47,6 +48,7 @@ export default function EventFeaturedPerformersPage() {
     isHeadliner: false,
     performanceDuration: 0,
     specialRequirements: '',
+    event: { id: parseInt(eventId) } as EventDetailsDTO,
   });
 
   // Search and filter state
@@ -54,21 +56,39 @@ export default function EventFeaturedPerformersPage() {
   const [sortKey, setSortKey] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  useEffect(() => {
-    if (userId) {
-      loadPerformers();
-    }
-  }, [userId]);
+  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  const loadPerformers = async () => {
+  useEffect(() => {
+    if (userId && eventId) {
+      loadEventAndPerformers();
+    }
+  }, [userId, eventId]);
+
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
+
+  const loadEventAndPerformers = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchEventFeaturedPerformersServer();
-      setPerformers(data);
+      
+      // Load event details
+      const eventResponse = await fetch(`/api/proxy/event-details/${eventId}`);
+      if (eventResponse.ok) {
+        const eventData = await eventResponse.json();
+        setEvent(eventData);
+      }
+      
+      // Load performers for this event
+      const performersData = await fetchEventFeaturedPerformersServer(parseInt(eventId));
+      setPerformers(performersData);
     } catch (err: any) {
-      setError(err.message || 'Failed to load performers');
-      showError('Error', err.message || 'Failed to load performers');
+      setError(err.message || 'Failed to load event performers');
+      setToastMessage({ type: 'error', message: err.message || 'Failed to load event performers' });
     } finally {
       setLoading(false);
     }
@@ -77,13 +97,14 @@ export default function EventFeaturedPerformersPage() {
   const handleCreate = async () => {
     try {
       setLoading(true);
-      const newPerformer = await createEventFeaturedPerformerServer(formData as any);
+      const performerData = { ...formData, event: { id: parseInt(eventId) } as EventDetailsDTO };
+      const newPerformer = await createEventFeaturedPerformerServer(performerData as any);
       setPerformers(prev => [...prev, newPerformer]);
       setIsCreateModalOpen(false);
       resetForm();
-      showSuccess('Success', 'Performer created successfully');
+      setToastMessage({ type: 'success', message: 'Performer created successfully' });
     } catch (err: any) {
-      showError('Error', err.message || 'Failed to create performer');
+      setToastMessage({ type: 'error', message: err.message || 'Failed to create performer' });
     } finally {
       setLoading(false);
     }
@@ -91,7 +112,7 @@ export default function EventFeaturedPerformersPage() {
 
   const handleEdit = async () => {
     if (!selectedPerformer) return;
-
+    
     try {
       setLoading(true);
       const updatedPerformer = await updateEventFeaturedPerformerServer(selectedPerformer.id!, formData);
@@ -99,9 +120,9 @@ export default function EventFeaturedPerformersPage() {
       setIsEditModalOpen(false);
       setSelectedPerformer(null);
       resetForm();
-      showSuccess('Success', 'Performer updated successfully');
+      setToastMessage({ type: 'success', message: 'Performer updated successfully' });
     } catch (err: any) {
-      showError('Error', err.message || 'Failed to update performer');
+      setToastMessage({ type: 'error', message: err.message || 'Failed to update performer' });
     } finally {
       setLoading(false);
     }
@@ -109,16 +130,16 @@ export default function EventFeaturedPerformersPage() {
 
   const handleDelete = async () => {
     if (!selectedPerformer) return;
-
+    
     try {
       setLoading(true);
       await deleteEventFeaturedPerformerServer(selectedPerformer.id!);
       setPerformers(prev => prev.filter(p => p.id !== selectedPerformer.id));
       setIsDeleteModalOpen(false);
       setSelectedPerformer(null);
-      showSuccess('Success', 'Performer deleted successfully');
+      setToastMessage({ type: 'success', message: 'Performer deleted successfully' });
     } catch (err: any) {
-      showError('Error', err.message || 'Failed to delete performer');
+      setToastMessage({ type: 'error', message: err.message || 'Failed to delete performer' });
     } finally {
       setLoading(false);
     }
@@ -139,6 +160,7 @@ export default function EventFeaturedPerformersPage() {
       isHeadliner: false,
       performanceDuration: 0,
       specialRequirements: '',
+      event: { id: parseInt(eventId) } as EventDetailsDTO,
     });
   };
 
@@ -156,18 +178,18 @@ export default function EventFeaturedPerformersPage() {
   const handleSort = (key: string, direction: 'asc' | 'desc') => {
     setSortKey(key);
     setSortDirection(direction);
-
+    
     const sorted = [...performers].sort((a, b) => {
       const aVal = a[key as keyof EventFeaturedPerformersDTO];
       const bVal = b[key as keyof EventFeaturedPerformersDTO];
-
+      
       if (direction === 'asc') {
         return aVal > bVal ? 1 : -1;
       } else {
         return aVal < bVal ? 1 : -1;
       }
     });
-
+    
     setPerformers(sorted);
   };
 
@@ -179,33 +201,33 @@ export default function EventFeaturedPerformersPage() {
 
   const columns: Column<EventFeaturedPerformersDTO>[] = [
     { key: 'name', label: 'Name', sortable: true },
-    {
-      key: 'stageName',
-      label: 'Stage Name',
+    { 
+      key: 'stageName', 
+      label: 'Stage Name', 
       sortable: true,
       render: (value) => value || '-'
     },
-    {
-      key: 'role',
-      label: 'Role',
+    { 
+      key: 'role', 
+      label: 'Role', 
       sortable: true,
       render: (value) => value || '-'
     },
-    {
-      key: 'isHeadliner',
-      label: 'Headliner',
+    { 
+      key: 'isHeadliner', 
+      label: 'Headliner', 
       sortable: true,
       render: (value) => value ? 'Yes' : 'No'
     },
-    {
-      key: 'performanceOrder',
-      label: 'Order',
+    { 
+      key: 'performanceOrder', 
+      label: 'Order', 
       sortable: true,
       render: (value) => value || 0
     },
-    {
-      key: 'contactEmail',
-      label: 'Email',
+    { 
+      key: 'contactEmail', 
+      label: 'Email', 
       render: (value) => value || '-'
     },
   ];
@@ -218,10 +240,44 @@ export default function EventFeaturedPerformersPage() {
     );
   }
 
+  if (!eventId) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Event ID not found</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-8 py-8" style={{ paddingTop: '180px' }}>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Event Featured Performers</h1>
-      <AdminNavigation />
+      {/* Header with back button */}
+      <div className="flex items-center mb-6">
+        <Link
+          href={`/admin/events/${eventId}/edit`}
+          className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
+        >
+          <FaArrowLeft className="mr-2" />
+          Back to Event
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Event Performers
+            {event && <span className="text-lg font-normal text-gray-600 ml-2">- {event.title}</span>}
+          </h1>
+          <p className="text-gray-600">Manage featured performers for this event</p>
+        </div>
+      </div>
+
+      {/* Toast Message */}
+      {toastMessage && (
+        <div className={`mb-4 p-4 rounded-lg ${
+          toastMessage.type === 'success' 
+            ? 'bg-green-50 border border-green-200 text-green-700' 
+            : 'bg-red-50 border border-red-200 text-red-700'
+        }`}>
+          {toastMessage.message}
+        </div>
+      )}
 
       {/* Search and Filter Bar */}
       <div className="mb-6 bg-white rounded-xl shadow-lg border border-gray-200 p-6">
@@ -263,7 +319,7 @@ export default function EventFeaturedPerformersPage() {
         onDelete={openDeleteModal}
         sortKey={sortKey}
         sortDirection={sortDirection}
-        emptyMessage="No performers found"
+        emptyMessage="No performers found for this event"
       />
 
       {/* Create Modal */}
@@ -318,28 +374,6 @@ export default function EventFeaturedPerformersPage() {
         confirmText="Delete"
         variant="danger"
       />
-
-      {/* Toast Container */}
-      {toasts.length > 0 && (
-        <div className="fixed top-4 right-4 z-50 space-y-2">
-          {toasts.map((toast) => (
-            <div key={toast.id} className="bg-white shadow-lg rounded-lg p-4 border-l-4 border-blue-500">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium text-gray-900">{toast.title}</p>
-                  {toast.message && <p className="text-sm text-gray-600">{toast.message}</p>}
-                </div>
-                <button
-                  onClick={() => removeToast(toast.id)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -356,7 +390,7 @@ interface PerformerFormProps {
 function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }: PerformerFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-
+    
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
@@ -388,7 +422,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Stage Name
@@ -401,7 +435,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Role
@@ -414,7 +448,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Performance Order
@@ -428,7 +462,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Performance Duration (minutes)
@@ -442,7 +476,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-
+        
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -496,7 +530,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-
+        
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Contact Phone
