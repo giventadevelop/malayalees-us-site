@@ -41,6 +41,12 @@ export async function createEventContactServer(contact: Omit<EventContactsDTO, '
     updatedAt: currentTime,
   });
   
+  // Debug logging
+  console.log('🔍 Event Contact Creation Debug:');
+  console.log('📥 Input contact:', contact);
+  console.log('📤 Final payload:', payload);
+  console.log('⏰ Timestamps:', { createdAt: currentTime, updatedAt: currentTime });
+  
   const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-contacts`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -49,6 +55,7 @@ export async function createEventContactServer(contact: Omit<EventContactsDTO, '
   
   if (!response.ok) {
     const errorText = await response.text();
+    console.error('❌ Event Contact Creation Failed:', errorText);
     throw new Error(`Failed to create event contact: ${errorText}`);
   }
   

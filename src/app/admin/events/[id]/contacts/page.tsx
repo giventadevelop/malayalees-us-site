@@ -106,6 +106,12 @@ export default function EventContactsPage() {
         event: { id: parseInt(eventId) } as EventDetailsDTO,
       };
       
+      // Debug logging
+      console.log('🔍 Frontend Event Contact Debug:');
+      console.log('📝 Form data:', formData);
+      console.log('📤 Contact data being sent:', contactData);
+      console.log('🎯 Event ID:', eventId);
+      
       const newContact = await createEventContactServer(contactData);
       setContacts(prev => [...prev, newContact]);
       setIsCreateModalOpen(false);
