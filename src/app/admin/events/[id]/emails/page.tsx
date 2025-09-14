@@ -26,13 +26,13 @@ export default function EventEmailsPage() {
   const [emails, setEmails] = useState<EventEmailsDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState<EventEmailsDTO | null>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState<Partial<EventEmailsDTO>>({
     email: '',
@@ -63,14 +63,14 @@ export default function EventEmailsPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Load event details
       const eventResponse = await fetch(`/api/proxy/event-details/${eventId}`);
       if (eventResponse.ok) {
         const eventData = await eventResponse.json();
         setEvent(eventData);
       }
-      
+
       // Load emails for this event
       const emailsData = await fetchEventEmailsServer(parseInt(eventId));
       setEmails(emailsData);
@@ -100,7 +100,7 @@ export default function EventEmailsPage() {
 
   const handleEdit = async () => {
     if (!selectedEmail) return;
-    
+
     try {
       setLoading(true);
       const updatedEmail = await updateEventEmailServer(selectedEmail.id!, formData);
@@ -118,7 +118,7 @@ export default function EventEmailsPage() {
 
   const handleDelete = async () => {
     if (!selectedEmail) return;
-    
+
     try {
       setLoading(true);
       await deleteEventEmailServer(selectedEmail.id!);
@@ -154,18 +154,18 @@ export default function EventEmailsPage() {
   const handleSort = (key: string, direction: 'asc' | 'desc') => {
     setSortKey(key);
     setSortDirection(direction);
-    
+
     const sorted = [...emails].sort((a, b) => {
       const aVal = a[key as keyof EventEmailsDTO];
       const bVal = b[key as keyof EventEmailsDTO];
-      
+
       if (direction === 'asc') {
         return aVal > bVal ? 1 : -1;
       } else {
         return aVal < bVal ? 1 : -1;
       }
     });
-    
+
     setEmails(sorted);
   };
 
@@ -215,11 +215,10 @@ export default function EventEmailsPage() {
 
       {/* Toast Message */}
       {toastMessage && (
-        <div className={`mb-4 p-4 rounded-lg ${
-          toastMessage.type === 'success' 
-            ? 'bg-green-50 border border-green-200 text-green-700' 
+        <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-700'
             : 'bg-red-50 border border-red-200 text-red-700'
-        }`}>
+          }`}>
           {toastMessage.message}
         </div>
       )}
@@ -335,7 +334,7 @@ interface EmailFormProps {
 function EmailForm({ formData, setFormData, onSubmit, loading, submitText }: EmailFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
@@ -352,39 +351,37 @@ function EmailForm({ formData, setFormData, onSubmit, loading, submitText }: Ema
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email Address *
-          </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email || ''}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter email address"
-          />
-        </div>
-
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Email Address *
+        </label>
+        <input
+          type="email"
+          name="email"
+          value={formData.email || ''}
+          onChange={handleChange}
+          required
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Enter email address"
+        />
+      </div>
 
       <div className="flex justify-end space-x-3 pt-4">
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-        >
-          {loading ? 'Saving...' : submitText}
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : submitText}
+          </button>
+        </div>
     </form>
   );
 }

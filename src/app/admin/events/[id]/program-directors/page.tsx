@@ -26,13 +26,13 @@ export default function EventProgramDirectorsPage() {
   const [programDirectors, setProgramDirectors] = useState<EventProgramDirectorsDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedDirector, setSelectedDirector] = useState<EventProgramDirectorsDTO | null>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState<Partial<EventProgramDirectorsDTO>>({
     name: '',
@@ -65,14 +65,14 @@ export default function EventProgramDirectorsPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Load event details
       const eventResponse = await fetch(`/api/proxy/event-details/${eventId}`);
       if (eventResponse.ok) {
         const eventData = await eventResponse.json();
         setEvent(eventData);
       }
-      
+
       // Load program directors for this event
       const directorsData = await fetchEventProgramDirectorsServer(parseInt(eventId));
       setProgramDirectors(directorsData);
@@ -102,7 +102,7 @@ export default function EventProgramDirectorsPage() {
 
   const handleEdit = async () => {
     if (!selectedDirector) return;
-    
+
     try {
       setLoading(true);
       const updatedDirector = await updateEventProgramDirectorServer(selectedDirector.id!, formData);
@@ -120,7 +120,7 @@ export default function EventProgramDirectorsPage() {
 
   const handleDelete = async () => {
     if (!selectedDirector) return;
-    
+
     try {
       setLoading(true);
       await deleteEventProgramDirectorServer(selectedDirector.id!);
@@ -158,18 +158,18 @@ export default function EventProgramDirectorsPage() {
   const handleSort = (key: string, direction: 'asc' | 'desc') => {
     setSortKey(key);
     setSortDirection(direction);
-    
+
     const sorted = [...programDirectors].sort((a, b) => {
       const aVal = a[key as keyof EventProgramDirectorsDTO];
       const bVal = b[key as keyof EventProgramDirectorsDTO];
-      
+
       if (direction === 'asc') {
         return aVal > bVal ? 1 : -1;
       } else {
         return aVal < bVal ? 1 : -1;
       }
     });
-    
+
     setProgramDirectors(sorted);
   };
 
@@ -180,9 +180,9 @@ export default function EventProgramDirectorsPage() {
 
   const columns: Column<EventProgramDirectorsDTO>[] = [
     { key: 'name', label: 'Name', sortable: true },
-    { 
-      key: 'bio', 
-      label: 'Bio', 
+    {
+      key: 'bio',
+      label: 'Bio',
       render: (value) => value ? (value.length > 50 ? value.substring(0, 50) + '...' : value) : '-'
     },
   ];
@@ -225,11 +225,10 @@ export default function EventProgramDirectorsPage() {
 
       {/* Toast Message */}
       {toastMessage && (
-        <div className={`mb-4 p-4 rounded-lg ${
-          toastMessage.type === 'success' 
-            ? 'bg-green-50 border border-green-200 text-green-700' 
+        <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-700'
             : 'bg-red-50 border border-red-200 text-red-700'
-        }`}>
+          }`}>
           {toastMessage.message}
         </div>
       )}
@@ -345,7 +344,7 @@ interface ProgramDirectorFormProps {
 function ProgramDirectorForm({ formData, setFormData, onSubmit, loading, submitText }: ProgramDirectorFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
@@ -375,7 +374,7 @@ function ProgramDirectorForm({ formData, setFormData, onSubmit, loading, submitT
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Photo URL
@@ -390,62 +389,62 @@ function ProgramDirectorForm({ formData, setFormData, onSubmit, loading, submitT
           />
         </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Bio
-        </label>
-        <textarea
-          name="bio"
-          value={formData.bio || ''}
-          onChange={handleChange}
-          rows={4}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Bio
+          </label>
+          <textarea
+            name="bio"
+            value={formData.bio || ''}
+            onChange={handleChange}
+            rows={4}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Responsibilities
-        </label>
-        <textarea
-          name="responsibilities"
-          value={formData.responsibilities || ''}
-          onChange={handleChange}
-          rows={3}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Responsibilities
+          </label>
+          <textarea
+            name="responsibilities"
+            value={formData.responsibilities || ''}
+            onChange={handleChange}
+            rows={3}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Social Media Links
-        </label>
-        <textarea
-          name="socialMediaLinks"
-          value={formData.socialMediaLinks || ''}
-          onChange={handleChange}
-          rows={2}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter social media links separated by commas"
-        />
-      </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Social Media Links
+          </label>
+          <textarea
+            name="socialMediaLinks"
+            value={formData.socialMediaLinks || ''}
+            onChange={handleChange}
+            rows={2}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter social media links separated by commas"
+          />
+        </div>
 
-      <div className="flex justify-end space-x-3 pt-4">
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-        >
-          {loading ? 'Saving...' : submitText}
-        </button>
-      </div>
+        <div className="flex justify-end space-x-3 pt-4">
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : submitText}
+          </button>
+        </div>
     </form>
   );
 }

@@ -31,7 +31,7 @@ export default function EventSponsorsPage() {
   const [eventSponsors, setEventSponsors] = useState<EventSponsorsJoinDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -39,7 +39,7 @@ export default function EventSponsorsPage() {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedSponsor, setSelectedSponsor] = useState<EventSponsorsJoinDTO | null>(null);
   const [selectedAvailableSponsor, setSelectedAvailableSponsor] = useState<EventSponsorsDTO | null>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState<Partial<EventSponsorsDTO>>({
     name: '',
@@ -86,20 +86,20 @@ export default function EventSponsorsPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Load event details
       const eventResponse = await fetch(`/api/proxy/event-details/${eventId}`);
       if (eventResponse.ok) {
         const eventData = await eventResponse.json();
         setEvent(eventData);
       }
-      
+
       // Load available sponsors and event sponsors
       const [availableSponsorsData, eventSponsorsData] = await Promise.all([
         fetchEventSponsorsServer(),
         fetchEventSponsorsJoinServer(parseInt(eventId))
       ]);
-      
+
       setAvailableSponsors(availableSponsorsData);
       setEventSponsors(eventSponsorsData);
     } catch (err: any) {
@@ -112,11 +112,11 @@ export default function EventSponsorsPage() {
 
   const handleAssignSponsor = async () => {
     if (!selectedAvailableSponsor) return;
-    
+
     try {
       setLoading(true);
-      const sponsorJoinData = { 
-        ...formData, 
+      const sponsorJoinData = {
+        ...formData,
         event: { id: parseInt(eventId) } as EventDetailsDTO,
         sponsor: selectedAvailableSponsor
       };
@@ -135,7 +135,7 @@ export default function EventSponsorsPage() {
 
   const handleEdit = async () => {
     if (!selectedSponsor) return;
-    
+
     try {
       setLoading(true);
       const updatedSponsorJoin = await updateEventSponsorJoinServer(selectedSponsor.id!, formData);
@@ -153,7 +153,7 @@ export default function EventSponsorsPage() {
 
   const handleDelete = async () => {
     if (!selectedSponsor) return;
-    
+
     try {
       setLoading(true);
       await deleteEventSponsorJoinServer(selectedSponsor.id!);
@@ -210,18 +210,18 @@ export default function EventSponsorsPage() {
   const handleSort = (key: string, direction: 'asc' | 'desc') => {
     setSortKey(key);
     setSortDirection(direction);
-    
+
     const sorted = [...eventSponsors].sort((a, b) => {
       const aVal = a[key as keyof EventSponsorsJoinDTO];
       const bVal = b[key as keyof EventSponsorsJoinDTO];
-      
+
       if (direction === 'asc') {
         return aVal > bVal ? 1 : -1;
       } else {
         return aVal < bVal ? 1 : -1;
       }
     });
-    
+
     setEventSponsors(sorted);
   };
 
@@ -232,27 +232,27 @@ export default function EventSponsorsPage() {
   );
 
   const columns: Column<EventSponsorsJoinDTO>[] = [
-    { 
-      key: 'sponsor', 
-      label: 'Sponsor Name', 
+    {
+      key: 'sponsor',
+      label: 'Sponsor Name',
       sortable: true,
       render: (value) => value?.name || '-'
     },
-    { 
-      key: 'sponsor', 
-      label: 'Type', 
+    {
+      key: 'sponsor',
+      label: 'Type',
       sortable: true,
       render: (value) => value?.type || '-'
     },
-    { 
-      key: 'sponsor', 
-      label: 'Company', 
+    {
+      key: 'sponsor',
+      label: 'Company',
       sortable: true,
       render: (value) => value?.companyName || '-'
     },
-    { 
-      key: 'sponsor', 
-      label: 'Active', 
+    {
+      key: 'sponsor',
+      label: 'Active',
       sortable: true,
       render: (value) => value?.isActive ? 'Yes' : 'No'
     },
@@ -296,11 +296,10 @@ export default function EventSponsorsPage() {
 
       {/* Toast Message */}
       {toastMessage && (
-        <div className={`mb-4 p-4 rounded-lg ${
-          toastMessage.type === 'success' 
-            ? 'bg-green-50 border border-green-200 text-green-700' 
+        <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-700'
             : 'bg-red-50 border border-red-200 text-red-700'
-        }`}>
+          }`}>
           {toastMessage.message}
         </div>
       )}
@@ -448,7 +447,7 @@ interface SponsorJoinFormProps {
 function SponsorJoinForm({ formData, setFormData, onSubmit, loading, submitText }: SponsorJoinFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
@@ -492,7 +491,7 @@ function SponsorJoinForm({ formData, setFormData, onSubmit, loading, submitText 
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Type *
@@ -510,7 +509,7 @@ function SponsorJoinForm({ formData, setFormData, onSubmit, loading, submitText 
             ))}
           </select>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Company Name
@@ -523,7 +522,7 @@ function SponsorJoinForm({ formData, setFormData, onSubmit, loading, submitText 
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div className="flex items-center">
           <input
             type="checkbox"
