@@ -47,7 +47,7 @@ export default function EventPerformersPage() {
     portraitImageUrl: '',
     performanceImageUrl: '',
     galleryImageUrls: '',
-    performanceDurationMinutes: 0,
+    performanceDurationMinutes: 1,
     performanceOrder: 0,
     isHeadliner: false,
     facebookUrl: '',
@@ -487,9 +487,9 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
           <input
             type="number"
             name="performanceDurationMinutes"
-            value={formData.performanceDurationMinutes || 0}
+            value={formData.performanceDurationMinutes || 1}
             onChange={handleChange}
-            min="0"
+            min="1"
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
