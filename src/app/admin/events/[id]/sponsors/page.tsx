@@ -87,7 +87,11 @@ export default function EventSponsorsPage() {
       }
 
       // Load event sponsors for this specific event
+      console.log('🔍 Loading event sponsors for event ID:', eventId);
       const eventSponsorsData = await fetchEventSponsorsJoinServer(parseInt(eventId));
+      console.log('📊 Event sponsors data received:', eventSponsorsData);
+      console.log('📊 Event sponsors data type:', typeof eventSponsorsData);
+      console.log('📊 Event sponsors data length:', Array.isArray(eventSponsorsData) ? eventSponsorsData.length : 'Not an array');
       setEventSponsors(eventSponsorsData);
 
       // Load available sponsors (global sponsors) for assignment
@@ -110,18 +114,18 @@ export default function EventSponsorsPage() {
   const handleCreateSponsor = async () => {
     try {
       setLoading(true);
-      
+
       // Validate required fields
       if (!sponsorFormData.name?.trim()) {
         setToastMessage({ type: 'error', message: 'Sponsor name is required' });
         return;
       }
-      
+
       if (!sponsorFormData.type?.trim()) {
         setToastMessage({ type: 'error', message: 'Sponsor type is required' });
         return;
       }
-      
+
       const sponsorData = {
         name: sponsorFormData.name.trim(),
         type: sponsorFormData.type.trim(),
@@ -130,9 +134,9 @@ export default function EventSponsorsPage() {
         contactPhone: sponsorFormData.contactPhone?.trim() || undefined,
         isActive: sponsorFormData.isActive || true,
       };
-      
+
       console.log('🔍 Creating new sponsor:', sponsorData);
-      
+
       const newSponsor = await createEventSponsorServer(sponsorData);
       setAvailableSponsors(prev => [...prev, newSponsor]);
       setIsCreateSponsorModalOpen(false);
@@ -151,19 +155,19 @@ export default function EventSponsorsPage() {
 
     try {
       setLoading(true);
-      
+
       // Create sponsor join record
       const sponsorJoinData = {
         event: { id: parseInt(eventId) } as EventDetailsDTO,
         sponsor: selectedAvailableSponsor
       };
-      
+
       console.log('🔍 Assigning sponsor to event:', {
         eventId: parseInt(eventId),
         sponsorId: selectedAvailableSponsor.id,
         sponsorName: selectedAvailableSponsor.name
       });
-      
+
       const newSponsorJoin = await createEventSponsorJoinServer(sponsorJoinData);
       setEventSponsors(prev => [...prev, newSponsorJoin]);
       setIsAssignModalOpen(false);
@@ -231,6 +235,18 @@ export default function EventSponsorsPage() {
       contactPhone: '',
       isActive: true,
     });
+  };
+
+  const testApiCall = async () => {
+    console.log('🧪 Testing API call for event ID:', eventId);
+    try {
+      const data = await fetchEventSponsorsJoinServer(parseInt(eventId));
+      console.log('🧪 Test API result:', data);
+      setToastMessage({ type: 'success', message: `API test successful. Found ${Array.isArray(data) ? data.length : 'unknown'} sponsors.` });
+    } catch (error: any) {
+      console.error('🧪 Test API error:', error);
+      setToastMessage({ type: 'error', message: `API test failed: ${error.message}` });
+    }
   };
 
   const openEditModal = (sponsor: EventSponsorsJoinDTO) => {
@@ -339,21 +355,29 @@ export default function EventSponsorsPage() {
   return (
     <div className="max-w-7xl mx-auto px-8 py-8" style={{ paddingTop: '180px' }}>
       {/* Header with back button */}
-      <div className="flex items-center mb-6">
-        <Link
-          href={`/admin/events/${eventId}/edit`}
-          className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
-        >
-          <FaArrowLeft className="mr-2" />
-          Back to Event
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Event Sponsors
-            {event && <span className="text-lg font-normal text-gray-600 ml-2">- {event.title}</span>}
-          </h1>
-          <p className="text-gray-600">Manage sponsor assignments for this specific event only</p>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <Link
+            href={`/admin/events/${eventId}/edit`}
+            className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
+          >
+            <FaArrowLeft className="mr-2" />
+            Back to Event
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Event Sponsors
+              {event && <span className="text-lg font-normal text-gray-600 ml-2">- {event.title}</span>}
+            </h1>
+            <p className="text-gray-600">Manage sponsor assignments for this specific event only</p>
+          </div>
         </div>
+        <button
+          onClick={testApiCall}
+          className="bg-purple-600 text-white px-4 py-2 rounded-lg shadow font-medium flex items-center gap-2 hover:bg-purple-700 transition"
+        >
+          🧪 Test API
+        </button>
       </div>
 
       {/* Toast Message */}
