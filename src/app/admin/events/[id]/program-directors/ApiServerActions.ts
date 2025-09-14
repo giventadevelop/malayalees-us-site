@@ -38,24 +38,27 @@ export async function createEventProgramDirectorServer(director: Omit<EventProgr
   const cleanUrlField = (value: string | undefined | null): string | null => {
     return (value && value.trim() !== '') ? value : null;
   };
-
+  
+  const currentTime = new Date().toISOString();
   const payload = withTenantId({
     ...director,
+    createdAt: currentTime,
+    updatedAt: currentTime,
     // Convert empty URL fields to null to satisfy database constraints
     photoUrl: cleanUrlField(director.photoUrl),
   });
-
+  
   const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-program-directors`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-
+  
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Failed to create event program director: ${errorText}`);
   }
-
+  
   return await response.json();
 }
 

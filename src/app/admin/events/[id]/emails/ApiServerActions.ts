@@ -34,7 +34,12 @@ export async function fetchEventEmailServer(id: number) {
 }
 
 export async function createEventEmailServer(email: Omit<EventEmailsDTO, 'id' | 'createdAt' | 'updatedAt'>) {
-  const payload = withTenantId(email);
+  const currentTime = new Date().toISOString();
+  const payload = withTenantId({
+    ...email,
+    createdAt: currentTime,
+    updatedAt: currentTime,
+  });
   
   const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-emails`, {
     method: 'POST',

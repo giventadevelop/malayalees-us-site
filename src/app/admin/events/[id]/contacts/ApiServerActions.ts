@@ -34,7 +34,12 @@ export async function fetchEventContactServer(id: number) {
 }
 
 export async function createEventContactServer(contact: Omit<EventContactsDTO, 'id' | 'createdAt' | 'updatedAt'>) {
-  const payload = withTenantId(contact);
+  const currentTime = new Date().toISOString();
+  const payload = withTenantId({
+    ...contact,
+    createdAt: currentTime,
+    updatedAt: currentTime,
+  });
   
   const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-contacts`, {
     method: 'POST',
