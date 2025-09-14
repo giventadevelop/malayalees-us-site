@@ -41,12 +41,24 @@ export default function EventSponsorsPage() {
   const [selectedAvailableSponsor, setSelectedAvailableSponsor] = useState<EventSponsorsDTO | null>(null);
   
   // Form state
-  const [formData, setFormData] = useState<Partial<EventSponsorsJoinDTO>>({
-    sponsorshipLevel: '',
-    sponsorshipAmount: 0,
-    benefits: '',
+  const [formData, setFormData] = useState<Partial<EventSponsorsDTO>>({
+    name: '',
+    type: '',
+    companyName: '',
+    tagline: '',
+    description: '',
+    websiteUrl: '',
+    contactEmail: '',
+    contactPhone: '',
+    logoUrl: '',
+    heroImageUrl: '',
+    bannerImageUrl: '',
     isActive: true,
-    displayOrder: 0,
+    priorityRanking: 0,
+    facebookUrl: '',
+    twitterUrl: '',
+    linkedinUrl: '',
+    instagramUrl: '',
     event: { id: parseInt(eventId) } as EventDetailsDTO,
   });
 
@@ -158,11 +170,23 @@ export default function EventSponsorsPage() {
 
   const resetForm = () => {
     setFormData({
-      sponsorshipLevel: '',
-      sponsorshipAmount: 0,
-      benefits: '',
+      name: '',
+      type: '',
+      companyName: '',
+      tagline: '',
+      description: '',
+      websiteUrl: '',
+      contactEmail: '',
+      contactPhone: '',
+      logoUrl: '',
+      heroImageUrl: '',
+      bannerImageUrl: '',
       isActive: true,
-      displayOrder: 0,
+      priorityRanking: 0,
+      facebookUrl: '',
+      twitterUrl: '',
+      linkedinUrl: '',
+      instagramUrl: '',
       event: { id: parseInt(eventId) } as EventDetailsDTO,
     });
   };
@@ -202,8 +226,9 @@ export default function EventSponsorsPage() {
   };
 
   const filteredEventSponsors = eventSponsors.filter(sponsor =>
-    sponsor.sponsor?.sponsorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sponsor.sponsorshipLevel?.toLowerCase().includes(searchTerm.toLowerCase())
+    sponsor.sponsor?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sponsor.sponsor?.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sponsor.sponsor?.companyName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const columns: Column<EventSponsorsJoinDTO>[] = [
@@ -211,31 +236,25 @@ export default function EventSponsorsPage() {
       key: 'sponsor', 
       label: 'Sponsor Name', 
       sortable: true,
-      render: (value) => value?.sponsorName || '-'
+      render: (value) => value?.name || '-'
     },
     { 
-      key: 'sponsorshipLevel', 
-      label: 'Level', 
+      key: 'sponsor', 
+      label: 'Type', 
       sortable: true,
-      render: (value) => value || '-'
+      render: (value) => value?.type || '-'
     },
     { 
-      key: 'sponsorshipAmount', 
-      label: 'Amount', 
+      key: 'sponsor', 
+      label: 'Company', 
       sortable: true,
-      render: (value) => value ? `$${value.toLocaleString()}` : '-'
+      render: (value) => value?.companyName || '-'
     },
     { 
-      key: 'isActive', 
+      key: 'sponsor', 
       label: 'Active', 
       sortable: true,
-      render: (value) => value ? 'Yes' : 'No'
-    },
-    { 
-      key: 'displayOrder', 
-      label: 'Order', 
-      sortable: true,
-      render: (value) => value || 0
+      render: (value) => value?.isActive ? 'Yes' : 'No'
     },
   ];
 
@@ -445,13 +464,15 @@ function SponsorJoinForm({ formData, setFormData, onSubmit, loading, submitText 
     onSubmit();
   };
 
-  const sponsorshipLevels = [
+  const sponsorTypes = [
     'Platinum',
     'Gold',
     'Silver',
     'Bronze',
     'Community Partner',
-    'In-Kind',
+    'Media Partner',
+    'Food & Beverage',
+    'Entertainment',
     'Other'
   ];
 
@@ -460,46 +481,45 @@ function SponsorJoinForm({ formData, setFormData, onSubmit, loading, submitText 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Sponsorship Level
-          </label>
-          <select
-            name="sponsorshipLevel"
-            value={formData.sponsorshipLevel || ''}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">Select sponsorship level</option>
-            {sponsorshipLevels.map(level => (
-              <option key={level} value={level}>{level}</option>
-            ))}
-          </select>
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Sponsorship Amount
+            Sponsor Name *
           </label>
           <input
-            type="number"
-            name="sponsorshipAmount"
-            value={formData.sponsorshipAmount || 0}
+            type="text"
+            name="name"
+            value={formData.name || ''}
             onChange={handleChange}
-            min="0"
-            step="0.01"
+            required
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Display Order
+            Type *
+          </label>
+          <select
+            name="type"
+            value={formData.type || ''}
+            onChange={handleChange}
+            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Select sponsor type</option>
+            {sponsorTypes.map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Company Name
           </label>
           <input
-            type="number"
-            name="displayOrder"
-            value={formData.displayOrder || 0}
+            type="text"
+            name="companyName"
+            value={formData.companyName || ''}
             onChange={handleChange}
-            min="0"
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -520,15 +540,15 @@ function SponsorJoinForm({ formData, setFormData, onSubmit, loading, submitText 
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Benefits
+          Description
         </label>
         <textarea
-          name="benefits"
-          value={formData.benefits || ''}
+          name="description"
+          value={formData.description || ''}
           onChange={handleChange}
           rows={4}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="List the benefits provided to the sponsor for this event"
+          placeholder="Describe the sponsor and their contribution"
         />
       </div>
 

@@ -35,13 +35,7 @@ export default function EventEmailsPage() {
   
   // Form state
   const [formData, setFormData] = useState<Partial<EventEmailsDTO>>({
-    emailType: '',
-    subject: '',
-    emailBody: '',
-    recipientList: '',
-    scheduledSendTime: '',
-    isSent: false,
-    sentTime: null,
+    email: '',
     event: { id: parseInt(eventId) } as EventDetailsDTO,
   });
 
@@ -141,13 +135,7 @@ export default function EventEmailsPage() {
 
   const resetForm = () => {
     setFormData({
-      emailType: '',
-      subject: '',
-      emailBody: '',
-      recipientList: '',
-      scheduledSendTime: '',
-      isSent: false,
-      sentTime: null,
+      email: '',
       event: { id: parseInt(eventId) } as EventDetailsDTO,
     });
   };
@@ -182,37 +170,11 @@ export default function EventEmailsPage() {
   };
 
   const filteredEmails = emails.filter(email =>
-    email.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    email.emailType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    email.recipientList?.toLowerCase().includes(searchTerm.toLowerCase())
+    email.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const columns: Column<EventEmailsDTO>[] = [
-    { key: 'subject', label: 'Subject', sortable: true },
-    { key: 'emailType', label: 'Type', sortable: true },
-    { 
-      key: 'recipientList', 
-      label: 'Recipients', 
-      render: (value) => value || '-'
-    },
-    { 
-      key: 'scheduledSendTime', 
-      label: 'Scheduled', 
-      sortable: true,
-      render: (value) => value ? new Date(value).toLocaleDateString() : '-'
-    },
-    { 
-      key: 'isSent', 
-      label: 'Sent', 
-      sortable: true,
-      render: (value) => value ? 'Yes' : 'No'
-    },
-    { 
-      key: 'sentTime', 
-      label: 'Sent Time', 
-      sortable: true,
-      render: (value) => value ? new Date(value).toLocaleDateString() : '-'
-    },
+    { key: 'email', label: 'Email Address', sortable: true },
   ];
 
   if (!userId) {
@@ -353,7 +315,7 @@ export default function EventEmailsPage() {
         }}
         onConfirm={handleDelete}
         title="Delete Email"
-        message={`Are you sure you want to delete "${selectedEmail?.subject}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete "${selectedEmail?.email}"? This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
       />
@@ -387,108 +349,25 @@ function EmailForm({ formData, setFormData, onSubmit, loading, submitText }: Ema
     onSubmit();
   };
 
-  const emailTypes = [
-    'Event Announcement',
-    'Registration Confirmation',
-    'Event Reminder',
-    'Cancellation Notice',
-    'Welcome Email',
-    'Thank You',
-    'Survey',
-    'Newsletter',
-    'Other'
-  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email Type *
+            Email Address *
           </label>
-          <select
-            name="emailType"
-            value={formData.emailType || ''}
+          <input
+            type="email"
+            name="email"
+            value={formData.email || ''}
             onChange={handleChange}
             required
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">Select email type</option>
-            {emailTypes.map(type => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Scheduled Send Time
-          </label>
-          <input
-            type="datetime-local"
-            name="scheduledSendTime"
-            value={formData.scheduledSendTime || ''}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter email address"
           />
         </div>
-      </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Subject *
-        </label>
-        <input
-          type="text"
-          name="subject"
-          value={formData.subject || ''}
-          onChange={handleChange}
-          required
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Recipient List
-        </label>
-        <textarea
-          name="recipientList"
-          value={formData.recipientList || ''}
-          onChange={handleChange}
-          rows={3}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter email addresses separated by commas"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Email Body *
-        </label>
-        <textarea
-          name="emailBody"
-          value={formData.emailBody || ''}
-          onChange={handleChange}
-          required
-          rows={8}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter the email content"
-        />
-      </div>
-
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          name="isSent"
-          checked={formData.isSent || false}
-          onChange={handleChange}
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-        />
-        <label className="ml-2 block text-sm text-gray-900">
-          Mark as sent
-        </label>
-      </div>
 
       <div className="flex justify-end space-x-3 pt-4">
         <button

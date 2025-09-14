@@ -35,14 +35,9 @@ export default function EventProgramDirectorsPage() {
   
   // Form state
   const [formData, setFormData] = useState<Partial<EventProgramDirectorsDTO>>({
-    directorName: '',
-    title: '',
+    name: '',
+    photoUrl: '',
     bio: '',
-    contactEmail: '',
-    contactPhone: '',
-    socialMediaLinks: '',
-    isLeadDirector: false,
-    responsibilities: '',
     event: { id: parseInt(eventId) } as EventDetailsDTO,
   });
 
@@ -142,14 +137,9 @@ export default function EventProgramDirectorsPage() {
 
   const resetForm = () => {
     setFormData({
-      directorName: '',
-      title: '',
+      name: '',
+      photoUrl: '',
       bio: '',
-      contactEmail: '',
-      contactPhone: '',
-      socialMediaLinks: '',
-      isLeadDirector: false,
-      responsibilities: '',
       event: { id: parseInt(eventId) } as EventDetailsDTO,
     });
   };
@@ -184,34 +174,16 @@ export default function EventProgramDirectorsPage() {
   };
 
   const filteredDirectors = programDirectors.filter(director =>
-    director.directorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    director.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    director.contactEmail?.toLowerCase().includes(searchTerm.toLowerCase())
+    director.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    director.bio?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const columns: Column<EventProgramDirectorsDTO>[] = [
-    { key: 'directorName', label: 'Name', sortable: true },
+    { key: 'name', label: 'Name', sortable: true },
     { 
-      key: 'title', 
-      label: 'Title', 
-      sortable: true,
-      render: (value) => value || '-'
-    },
-    { 
-      key: 'contactEmail', 
-      label: 'Email', 
-      render: (value) => value || '-'
-    },
-    { 
-      key: 'contactPhone', 
-      label: 'Phone', 
-      render: (value) => value || '-'
-    },
-    { 
-      key: 'isLeadDirector', 
-      label: 'Lead Director', 
-      sortable: true,
-      render: (value) => value ? 'Yes' : 'No'
+      key: 'bio', 
+      label: 'Bio', 
+      render: (value) => value ? (value.length > 50 ? value.substring(0, 50) + '...' : value) : '-'
     },
   ];
 
@@ -353,7 +325,7 @@ export default function EventProgramDirectorsPage() {
         }}
         onConfirm={handleDelete}
         title="Delete Program Director"
-        message={`Are you sure you want to delete "${selectedDirector?.directorName}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete "${selectedDirector?.name}"? This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
       />
@@ -392,12 +364,12 @@ function ProgramDirectorForm({ formData, setFormData, onSubmit, loading, submitT
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Director Name *
+            Name *
           </label>
           <input
             type="text"
-            name="directorName"
-            value={formData.directorName || ''}
+            name="name"
+            value={formData.name || ''}
             onChange={handleChange}
             required
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -406,56 +378,17 @@ function ProgramDirectorForm({ formData, setFormData, onSubmit, loading, submitT
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Title
+            Photo URL
           </label>
           <input
-            type="text"
-            name="title"
-            value={formData.title || ''}
+            type="url"
+            name="photoUrl"
+            value={formData.photoUrl || ''}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="https://example.com/photo.jpg"
           />
         </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Contact Email
-          </label>
-          <input
-            type="email"
-            name="contactEmail"
-            value={formData.contactEmail || ''}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Contact Phone
-          </label>
-          <input
-            type="tel"
-            name="contactPhone"
-            value={formData.contactPhone || ''}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          name="isLeadDirector"
-          checked={formData.isLeadDirector || false}
-          onChange={handleChange}
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-        />
-        <label className="ml-2 block text-sm text-gray-900">
-          Lead Program Director
-        </label>
-      </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -26,13 +26,13 @@ export default function EventContactsPage() {
   const [contacts, setContacts] = useState<EventContactsDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<EventContactsDTO | null>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState<Partial<EventContactsDTO>>({
     name: '',
@@ -65,14 +65,14 @@ export default function EventContactsPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Load event details
       const eventResponse = await fetch(`/api/proxy/event-details/${eventId}`);
       if (eventResponse.ok) {
         const eventData = await eventResponse.json();
         setEvent(eventData);
       }
-      
+
       // Load contacts for this event
       const contactsData = await fetchEventContactsServer(parseInt(eventId));
       setContacts(contactsData);
@@ -102,7 +102,7 @@ export default function EventContactsPage() {
 
   const handleEdit = async () => {
     if (!selectedContact) return;
-    
+
     try {
       setLoading(true);
       const updatedContact = await updateEventContactServer(selectedContact.id!, formData);
@@ -120,7 +120,7 @@ export default function EventContactsPage() {
 
   const handleDelete = async () => {
     if (!selectedContact) return;
-    
+
     try {
       setLoading(true);
       await deleteEventContactServer(selectedContact.id!);
@@ -158,18 +158,18 @@ export default function EventContactsPage() {
   const handleSort = (key: string, direction: 'asc' | 'desc') => {
     setSortKey(key);
     setSortDirection(direction);
-    
+
     const sorted = [...contacts].sort((a, b) => {
       const aVal = a[key as keyof EventContactsDTO];
       const bVal = b[key as keyof EventContactsDTO];
-      
+
       if (direction === 'asc') {
         return aVal > bVal ? 1 : -1;
       } else {
         return aVal < bVal ? 1 : -1;
       }
     });
-    
+
     setContacts(sorted);
   };
 
@@ -181,14 +181,14 @@ export default function EventContactsPage() {
 
   const columns: Column<EventContactsDTO>[] = [
     { key: 'name', label: 'Name', sortable: true },
-    { 
-      key: 'phone', 
-      label: 'Phone', 
+    {
+      key: 'phone',
+      label: 'Phone',
       render: (value) => value || '-'
     },
-    { 
-      key: 'email', 
-      label: 'Email', 
+    {
+      key: 'email',
+      label: 'Email',
       render: (value) => value || '-'
     },
   ];
@@ -231,11 +231,10 @@ export default function EventContactsPage() {
 
       {/* Toast Message */}
       {toastMessage && (
-        <div className={`mb-4 p-4 rounded-lg ${
-          toastMessage.type === 'success' 
-            ? 'bg-green-50 border border-green-200 text-green-700' 
+        <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-700'
             : 'bg-red-50 border border-red-200 text-red-700'
-        }`}>
+          }`}>
           {toastMessage.message}
         </div>
       )}
@@ -351,7 +350,7 @@ interface ContactFormProps {
 function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: ContactFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
@@ -382,8 +381,8 @@ function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: C
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
-        
+
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Email
@@ -396,7 +395,7 @@ function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: C
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Phone *
