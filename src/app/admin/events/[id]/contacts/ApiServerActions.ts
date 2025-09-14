@@ -34,6 +34,7 @@ export async function fetchEventContactServer(id: number) {
 }
 
 export async function createEventContactServer(contact: Omit<EventContactsDTO, 'id' | 'createdAt' | 'updatedAt'>) {
+  console.log('🎯 createEventContactServer called!');
   const currentTime = new Date().toISOString();
   const payload = withTenantId({
     ...contact,

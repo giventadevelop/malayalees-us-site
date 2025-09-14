@@ -85,6 +85,7 @@ export default function EventContactsPage() {
   };
 
   const handleCreate = async () => {
+    console.log('🚀 handleCreate called!');
     try {
       setLoading(true);
       
