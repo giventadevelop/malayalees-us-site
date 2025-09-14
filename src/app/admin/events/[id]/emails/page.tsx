@@ -182,8 +182,8 @@ export default function EventEmailsPage() {
   };
 
   const filteredEmails = emails.filter(email =>
-    email.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    email.emailType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    email.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    email.emailType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     email.recipientList?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

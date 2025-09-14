@@ -184,8 +184,8 @@ export default function EventContactsPage() {
   };
 
   const filteredContacts = contacts.filter(contact =>
-    contact.contactName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.contactType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.contactType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     contact.organization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     contact.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );

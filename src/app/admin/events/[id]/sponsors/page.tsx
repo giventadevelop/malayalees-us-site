@@ -202,7 +202,7 @@ export default function EventSponsorsPage() {
   };
 
   const filteredEventSponsors = eventSponsors.filter(sponsor =>
-    sponsor.sponsor?.sponsorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sponsor.sponsor?.sponsorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     sponsor.sponsorshipLevel?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

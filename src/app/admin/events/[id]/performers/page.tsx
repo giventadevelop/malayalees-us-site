@@ -204,7 +204,7 @@ export default function EventPerformersPage() {
   };
 
   const filteredPerformers = performers.filter(performer =>
-    performer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    performer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     performer.stageName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     performer.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     performer.email?.toLowerCase().includes(searchTerm.toLowerCase())

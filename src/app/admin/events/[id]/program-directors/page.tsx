@@ -184,7 +184,7 @@ export default function EventProgramDirectorsPage() {
   };
 
   const filteredDirectors = programDirectors.filter(director =>
-    director.directorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    director.directorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     director.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     director.contactEmail?.toLowerCase().includes(searchTerm.toLowerCase())
   );
