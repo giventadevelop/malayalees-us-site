@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FaUsers, FaCalendarAlt, FaEnvelope, FaCreditCard, FaHome, FaUserTie, FaChartLine, FaBuilding, FaCog } from 'react-icons/fa';
+import { FaUsers, FaCalendarAlt, FaEnvelope, FaCreditCard, FaHome, FaUserTie, FaChartLine, FaBuilding, FaCog, FaMicrophone, FaPhone, FaHandshake, FaMailBulk, FaUserCheck } from 'react-icons/fa';
 
 interface AdminNavigationProps {
   currentPage?: string;
@@ -97,6 +97,47 @@ export default function AdminNavigation({ currentPage, showHome = true }: AdminN
       color: 'red',
       active: currentPage === 'tenant-test',
       key: 'tenant-test'
+    },
+    // Global Event Management Features
+    {
+      href: '/admin/event-featured-performers',
+      icon: FaMicrophone,
+      label: 'Global Performers',
+      color: 'pink',
+      active: currentPage === 'event-featured-performers',
+      key: 'global-performers'
+    },
+    {
+      href: '/admin/event-contacts',
+      icon: FaPhone,
+      label: 'Global Contacts',
+      color: 'emerald',
+      active: currentPage === 'event-contacts',
+      key: 'global-contacts'
+    },
+    {
+      href: '/admin/event-sponsors',
+      icon: FaHandshake,
+      label: 'Global Sponsors',
+      color: 'amber',
+      active: currentPage === 'event-sponsors',
+      key: 'global-sponsors'
+    },
+    {
+      href: '/admin/event-emails',
+      icon: FaMailBulk,
+      label: 'Global Emails',
+      color: 'cyan',
+      active: currentPage === 'event-emails',
+      key: 'global-emails'
+    },
+    {
+      href: '/admin/event-program-directors',
+      icon: FaUserCheck,
+      label: 'Global Directors',
+      color: 'indigo',
+      active: currentPage === 'event-program-directors',
+      key: 'global-directors'
     }
   ];
 
