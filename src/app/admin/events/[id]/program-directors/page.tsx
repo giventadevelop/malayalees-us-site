@@ -389,7 +389,7 @@ function ProgramDirectorForm({ formData, setFormData, onSubmit, loading, submitT
           />
         </div>
 
-        <div>
+        <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Bio
           </label>
@@ -399,37 +399,12 @@ function ProgramDirectorForm({ formData, setFormData, onSubmit, loading, submitT
             onChange={handleChange}
             rows={4}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter director's bio and background information"
           />
         </div>
+      </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Responsibilities
-          </label>
-          <textarea
-            name="responsibilities"
-            value={formData.responsibilities || ''}
-            onChange={handleChange}
-            rows={3}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Social Media Links
-          </label>
-          <textarea
-            name="socialMediaLinks"
-            value={formData.socialMediaLinks || ''}
-            onChange={handleChange}
-            rows={2}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter social media links separated by commas"
-          />
-        </div>
-
-        <div className="flex justify-end space-x-3 pt-4">
+      <div className="flex justify-end space-x-3 pt-4">
           <button
             type="button"
             onClick={() => window.history.back()}
