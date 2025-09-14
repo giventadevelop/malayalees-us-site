@@ -39,15 +39,25 @@ export default function EventPerformersPage() {
     stageName: '',
     role: '',
     bio: '',
-    performanceDescription: '',
-    socialMediaLinks: '',
-    website: '',
-    contactEmail: '',
-    contactPhone: '',
+    nationality: '',
+    dateOfBirth: '',
+    email: '',
+    phone: '',
+    websiteUrl: '',
+    portraitImageUrl: '',
+    performanceImageUrl: '',
+    galleryImageUrls: '',
+    performanceDurationMinutes: 0,
     performanceOrder: 0,
     isHeadliner: false,
-    performanceDuration: 0,
-    specialRequirements: '',
+    facebookUrl: '',
+    twitterUrl: '',
+    instagramUrl: '',
+    youtubeUrl: '',
+    linkedinUrl: '',
+    tiktokUrl: '',
+    isActive: true,
+    priorityRanking: 0,
     event: { id: parseInt(eventId) } as EventDetailsDTO,
   });
 
@@ -196,7 +206,8 @@ export default function EventPerformersPage() {
   const filteredPerformers = performers.filter(performer =>
     performer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     performer.stageName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    performer.role?.toLowerCase().includes(searchTerm.toLowerCase())
+    performer.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    performer.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const columns: Column<EventFeaturedPerformersDTO>[] = [
@@ -226,9 +237,15 @@ export default function EventPerformersPage() {
       render: (value) => value || 0
     },
     { 
-      key: 'contactEmail', 
+      key: 'email', 
       label: 'Email', 
       render: (value) => value || '-'
+    },
+    { 
+      key: 'isActive', 
+      label: 'Active', 
+      sortable: true,
+      render: (value) => value ? 'Yes' : 'No'
     },
   ];
 
@@ -469,8 +486,8 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
           </label>
           <input
             type="number"
-            name="performanceDuration"
-            value={formData.performanceDuration || 0}
+            name="performanceDurationMinutes"
+            value={formData.performanceDurationMinutes || 0}
             onChange={handleChange}
             min="0"
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -504,28 +521,16 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Performance Description
-        </label>
-        <textarea
-          name="performanceDescription"
-          value={formData.performanceDescription || ''}
-          onChange={handleChange}
-          rows={3}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Contact Email
+            Email
           </label>
           <input
             type="email"
-            name="contactEmail"
-            value={formData.contactEmail || ''}
+            name="email"
+            value={formData.email || ''}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
@@ -533,12 +538,12 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Contact Phone
+            Phone
           </label>
           <input
             type="tel"
-            name="contactPhone"
-            value={formData.contactPhone || ''}
+            name="phone"
+            value={formData.phone || ''}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
@@ -547,42 +552,150 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Website
+          Website URL
         </label>
         <input
           type="url"
-          name="website"
-          value={formData.website || ''}
+          name="websiteUrl"
+          value={formData.websiteUrl || ''}
           onChange={handleChange}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Social Media Links
-        </label>
-        <textarea
-          name="socialMediaLinks"
-          value={formData.socialMediaLinks || ''}
-          onChange={handleChange}
-          rows={2}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter social media links separated by commas"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Nationality
+          </label>
+          <input
+            type="text"
+            name="nationality"
+            value={formData.nationality || ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Date of Birth
+          </label>
+          <input
+            type="date"
+            name="dateOfBirth"
+            value={formData.dateOfBirth || ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Priority Ranking
+          </label>
+          <input
+            type="number"
+            name="priorityRanking"
+            value={formData.priorityRanking || 0}
+            onChange={handleChange}
+            min="0"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            name="isActive"
+            checked={formData.isActive || false}
+            onChange={handleChange}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label className="ml-2 block text-sm text-gray-900">
+            Is Active
+          </label>
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Special Requirements
-        </label>
-        <textarea
-          name="specialRequirements"
-          value={formData.specialRequirements || ''}
-          onChange={handleChange}
-          rows={2}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Facebook URL
+          </label>
+          <input
+            type="url"
+            name="facebookUrl"
+            value={formData.facebookUrl || ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Twitter URL
+          </label>
+          <input
+            type="url"
+            name="twitterUrl"
+            value={formData.twitterUrl || ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Instagram URL
+          </label>
+          <input
+            type="url"
+            name="instagramUrl"
+            value={formData.instagramUrl || ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            YouTube URL
+          </label>
+          <input
+            type="url"
+            name="youtubeUrl"
+            value={formData.youtubeUrl || ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            LinkedIn URL
+          </label>
+          <input
+            type="url"
+            name="linkedinUrl"
+            value={formData.linkedinUrl || ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            TikTok URL
+          </label>
+          <input
+            type="url"
+            name="tiktokUrl"
+            value={formData.tiktokUrl || ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
       </div>
 
       <div className="flex justify-end space-x-3 pt-4">
