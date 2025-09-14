@@ -1,20 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaSearch, FaArrowLeft, FaHandshake } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaArrowLeft, FaHandshake, FaUserPlus } from 'react-icons/fa';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import DataTable, { Column } from '@/components/ui/DataTable';
-import Modal from '@/components/ui/Modal';
-import ConfirmModal from '@/components/ui/Modal';
+import Modal, { ConfirmModal } from '@/components/ui/Modal';
 import type { EventSponsorsDTO, EventSponsorsJoinDTO, EventDetailsDTO } from '@/types';
 import {
   fetchEventSponsorsServer,
   fetchEventSponsorsJoinServer,
-  createEventSponsorServer,
-  updateEventSponsorServer,
-  deleteEventSponsorServer,
   createEventSponsorJoinServer,
   updateEventSponsorJoinServer,
   deleteEventSponsorJoinServer,
@@ -40,26 +36,10 @@ export default function EventSponsorsPage() {
   const [selectedSponsor, setSelectedSponsor] = useState<EventSponsorsJoinDTO | null>(null);
   const [selectedAvailableSponsor, setSelectedAvailableSponsor] = useState<EventSponsorsDTO | null>(null);
 
-  // Form state
-  const [formData, setFormData] = useState<Partial<EventSponsorsDTO>>({
-    name: '',
-    type: '',
-    companyName: '',
-    tagline: '',
-    description: '',
-    websiteUrl: '',
-    contactEmail: '',
-    contactPhone: '',
-    logoUrl: '',
-    heroImageUrl: '',
-    bannerImageUrl: '',
-    isActive: true,
-    priorityRanking: 0,
-    facebookUrl: '',
-    twitterUrl: '',
-    linkedinUrl: '',
-    instagramUrl: '',
+  // Form state for creating new sponsor join
+  const [formData, setFormData] = useState<Partial<EventSponsorsJoinDTO>>({
     event: { id: parseInt(eventId) } as EventDetailsDTO,
+    sponsor: undefined,
   });
 
   // Search and filter state
@@ -94,14 +74,19 @@ export default function EventSponsorsPage() {
         setEvent(eventData);
       }
 
-      // Load available sponsors and event sponsors
-      const [availableSponsorsData, eventSponsorsData] = await Promise.all([
-        fetchEventSponsorsServer(),
-        fetchEventSponsorsJoinServer(parseInt(eventId))
-      ]);
-
-      setAvailableSponsors(availableSponsorsData);
+      // Load event sponsors for this specific event
+      const eventSponsorsData = await fetchEventSponsorsJoinServer(parseInt(eventId));
       setEventSponsors(eventSponsorsData);
+
+      // Load available sponsors (global sponsors) for assignment
+      try {
+        const availableSponsorsData = await fetchEventSponsorsServer();
+        setAvailableSponsors(availableSponsorsData);
+      } catch (sponsorErr) {
+        console.warn('Failed to load available sponsors:', sponsorErr);
+        // Don't fail the whole page if available sponsors can't be loaded
+        setAvailableSponsors([]);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load event sponsors');
       setToastMessage({ type: 'error', message: err.message || 'Failed to load event sponsors' });
@@ -115,18 +100,27 @@ export default function EventSponsorsPage() {
 
     try {
       setLoading(true);
+      
+      // Create sponsor join record
       const sponsorJoinData = {
-        ...formData,
         event: { id: parseInt(eventId) } as EventDetailsDTO,
         sponsor: selectedAvailableSponsor
       };
-      const newSponsorJoin = await createEventSponsorJoinServer(sponsorJoinData as any);
+      
+      console.log('🔍 Assigning sponsor to event:', {
+        eventId: parseInt(eventId),
+        sponsorId: selectedAvailableSponsor.id,
+        sponsorName: selectedAvailableSponsor.name
+      });
+      
+      const newSponsorJoin = await createEventSponsorJoinServer(sponsorJoinData);
       setEventSponsors(prev => [...prev, newSponsorJoin]);
       setIsAssignModalOpen(false);
       setSelectedAvailableSponsor(null);
       resetForm();
       setToastMessage({ type: 'success', message: 'Sponsor assigned to event successfully' });
     } catch (err: any) {
+      console.error('❌ Failed to assign sponsor:', err);
       setToastMessage({ type: 'error', message: err.message || 'Failed to assign sponsor' });
     } finally {
       setLoading(false);
@@ -143,9 +137,10 @@ export default function EventSponsorsPage() {
       setIsEditModalOpen(false);
       setSelectedSponsor(null);
       resetForm();
-      setToastMessage({ type: 'success', message: 'Sponsor updated successfully' });
+      setToastMessage({ type: 'success', message: 'Sponsor assignment updated successfully' });
     } catch (err: any) {
-      setToastMessage({ type: 'error', message: err.message || 'Failed to update sponsor' });
+      console.error('❌ Failed to update sponsor assignment:', err);
+      setToastMessage({ type: 'error', message: err.message || 'Failed to update sponsor assignment' });
     } finally {
       setLoading(false);
     }
@@ -162,7 +157,8 @@ export default function EventSponsorsPage() {
       setSelectedSponsor(null);
       setToastMessage({ type: 'success', message: 'Sponsor removed from event successfully' });
     } catch (err: any) {
-      setToastMessage({ type: 'error', message: err.message || 'Failed to remove sponsor' });
+      console.error('❌ Failed to remove sponsor from event:', err);
+      setToastMessage({ type: 'error', message: err.message || 'Failed to remove sponsor from event' });
     } finally {
       setLoading(false);
     }
@@ -170,30 +166,17 @@ export default function EventSponsorsPage() {
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      type: '',
-      companyName: '',
-      tagline: '',
-      description: '',
-      websiteUrl: '',
-      contactEmail: '',
-      contactPhone: '',
-      logoUrl: '',
-      heroImageUrl: '',
-      bannerImageUrl: '',
-      isActive: true,
-      priorityRanking: 0,
-      facebookUrl: '',
-      twitterUrl: '',
-      linkedinUrl: '',
-      instagramUrl: '',
       event: { id: parseInt(eventId) } as EventDetailsDTO,
+      sponsor: undefined,
     });
   };
 
   const openEditModal = (sponsor: EventSponsorsJoinDTO) => {
     setSelectedSponsor(sponsor);
-    setFormData(sponsor);
+    setFormData({
+      event: sponsor.event,
+      sponsor: sponsor.sponsor,
+    });
     setIsEditModalOpen(true);
   };
 
@@ -214,6 +197,11 @@ export default function EventSponsorsPage() {
     const sorted = [...eventSponsors].sort((a, b) => {
       const aVal = a[key as keyof EventSponsorsJoinDTO];
       const bVal = b[key as keyof EventSponsorsJoinDTO];
+
+      // Handle undefined values
+      if (aVal === undefined && bVal === undefined) return 0;
+      if (aVal === undefined) return direction === 'asc' ? 1 : -1;
+      if (bVal === undefined) return direction === 'asc' ? -1 : 1;
 
       if (direction === 'asc') {
         return aVal > bVal ? 1 : -1;
@@ -236,25 +224,37 @@ export default function EventSponsorsPage() {
       key: 'sponsor.name',
       label: 'Sponsor Name',
       sortable: true,
-      render: (value) => value?.name || '-'
+      render: (row) => row.sponsor?.name || '-'
     },
     {
       key: 'sponsor.type',
       label: 'Type',
       sortable: true,
-      render: (value) => value?.type || '-'
+      render: (row) => row.sponsor?.type || '-'
     },
     {
       key: 'sponsor.companyName',
       label: 'Company',
       sortable: true,
-      render: (value) => value?.companyName || '-'
+      render: (row) => row.sponsor?.companyName || '-'
+    },
+    {
+      key: 'sponsor.contactEmail',
+      label: 'Contact Email',
+      sortable: true,
+      render: (row) => row.sponsor?.contactEmail || '-'
     },
     {
       key: 'sponsor.isActive',
       label: 'Active',
       sortable: true,
-      render: (value) => value?.isActive ? 'Yes' : 'No'
+      render: (row) => row.sponsor?.isActive ? 'Yes' : 'No'
+    },
+    {
+      key: 'createdAt',
+      label: 'Assigned Date',
+      sortable: true,
+      render: (row) => row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '-'
     },
   ];
 
@@ -337,13 +337,22 @@ export default function EventSponsorsPage() {
 
       {/* Available Sponsors Section */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Available Sponsors</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Available Sponsors</h2>
+          <Link
+            href="/admin/event-sponsors"
+            className="bg-green-600 text-white px-4 py-2 rounded-lg shadow font-bold flex items-center gap-2 hover:bg-green-700 transition"
+          >
+            <FaUserPlus />
+            Create New Sponsor
+          </Link>
+        </div>
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {availableSponsors.map((sponsor) => (
               <div key={sponsor.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-medium text-gray-900">{sponsor.sponsorName}</h3>
+                  <h3 className="font-medium text-gray-900">{sponsor.name}</h3>
                   <button
                     onClick={() => openAssignModal(sponsor)}
                     className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition"
@@ -351,20 +360,29 @@ export default function EventSponsorsPage() {
                     Assign
                   </button>
                 </div>
-                <p className="text-sm text-gray-600">{sponsor.contactPerson || 'No contact person'}</p>
-                <p className="text-sm text-gray-500">{sponsor.sponsorshipLevel || 'No level set'}</p>
+                <p className="text-sm text-gray-600">{sponsor.type || 'No type set'}</p>
+                <p className="text-sm text-gray-500">{sponsor.companyName || 'No company name'}</p>
+                <p className="text-sm text-gray-500">{sponsor.contactEmail || 'No contact email'}</p>
               </div>
             ))}
           </div>
           {availableSponsors.length === 0 && (
-            <p className="text-gray-500 text-center py-8">No available sponsors found. Create sponsors first.</p>
+            <div className="text-center py-8">
+              <p className="text-gray-500 mb-4">No available sponsors found.</p>
+              <Link
+                href="/admin/event-sponsors"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+              >
+                Create Your First Sponsor
+              </Link>
+            </div>
           )}
         </div>
       </div>
 
       {/* Event Sponsors Table */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Event Sponsors</h2>
+        <h2 className="text-xl font-semibold mb-4">Event Sponsors ({filteredEventSponsors.length})</h2>
         <DataTable
           data={filteredEventSponsors}
           columns={columns}
@@ -374,7 +392,7 @@ export default function EventSponsorsPage() {
           onDelete={openDeleteModal}
           sortKey={sortKey}
           sortDirection={sortDirection}
-          emptyMessage="No sponsors assigned to this event"
+          emptyMessage="No sponsors assigned to this event yet. Assign sponsors from the available sponsors above."
         />
       </div>
 
@@ -386,7 +404,7 @@ export default function EventSponsorsPage() {
           setSelectedAvailableSponsor(null);
           resetForm();
         }}
-        title={`Assign Sponsor: ${selectedAvailableSponsor?.sponsorName}`}
+        title={`Assign Sponsor: ${selectedAvailableSponsor?.name}`}
         size="lg"
       >
         <SponsorJoinForm
@@ -395,6 +413,7 @@ export default function EventSponsorsPage() {
           onSubmit={handleAssignSponsor}
           loading={loading}
           submitText="Assign Sponsor"
+          selectedSponsor={selectedAvailableSponsor}
         />
       </Modal>
 
@@ -406,7 +425,7 @@ export default function EventSponsorsPage() {
           setSelectedSponsor(null);
           resetForm();
         }}
-        title="Edit Event Sponsor"
+        title="Edit Sponsor Assignment"
         size="lg"
       >
         <SponsorJoinForm
@@ -414,7 +433,8 @@ export default function EventSponsorsPage() {
           setFormData={setFormData}
           onSubmit={handleEdit}
           loading={loading}
-          submitText="Update Sponsor"
+          submitText="Update Assignment"
+          selectedSponsor={selectedSponsor?.sponsor}
         />
       </Modal>
 
@@ -427,7 +447,7 @@ export default function EventSponsorsPage() {
         }}
         onConfirm={handleDelete}
         title="Remove Sponsor"
-        message={`Are you sure you want to remove "${selectedSponsor?.sponsor?.sponsorName}" from this event? This action cannot be undone.`}
+        message={`Are you sure you want to remove "${selectedSponsor?.sponsor?.name}" from this event? This action cannot be undone.`}
         confirmText="Remove"
         variant="danger"
       />
@@ -442,113 +462,61 @@ interface SponsorJoinFormProps {
   onSubmit: () => void;
   loading: boolean;
   submitText: string;
+  selectedSponsor?: EventSponsorsDTO | null;
 }
 
-function SponsorJoinForm({ formData, setFormData, onSubmit, loading, submitText }: SponsorJoinFormProps) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
-    } else if (type === 'number') {
-      setFormData(prev => ({ ...prev, [name]: Number(value) }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
+function SponsorJoinForm({ formData, setFormData, onSubmit, loading, submitText, selectedSponsor }: SponsorJoinFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit();
   };
 
-  const sponsorTypes = [
-    'Platinum',
-    'Gold',
-    'Silver',
-    'Bronze',
-    'Community Partner',
-    'Media Partner',
-    'Food & Beverage',
-    'Entertainment',
-    'Other'
-  ];
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Sponsor Name *
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name || ''}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
+      {/* Sponsor Information Display */}
+      {selectedSponsor && (
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Sponsor Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Name</label>
+              <p className="text-sm text-gray-900">{selectedSponsor.name}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Type</label>
+              <p className="text-sm text-gray-900">{selectedSponsor.type}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Company</label>
+              <p className="text-sm text-gray-900">{selectedSponsor.companyName || 'Not specified'}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Contact Email</label>
+              <p className="text-sm text-gray-900">{selectedSponsor.contactEmail || 'Not specified'}</p>
+            </div>
+          </div>
         </div>
+      )}
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Type *
-          </label>
-          <select
-            name="type"
-            value={formData.type || ''}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">Select sponsor type</option>
-            {sponsorTypes.map(type => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
+      {/* Assignment Confirmation */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <FaHandshake className="h-5 w-5 text-blue-400" />
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-blue-800">
+              {selectedSponsor ? 'Assign Sponsor to Event' : 'Update Sponsor Assignment'}
+            </h3>
+            <div className="mt-2 text-sm text-blue-700">
+              {selectedSponsor ? (
+                <p>This will assign <strong>{selectedSponsor.name}</strong> to the current event. The sponsor will be visible on the event page and can be managed from this event's sponsor list.</p>
+              ) : (
+                <p>This will update the sponsor assignment for the current event.</p>
+              )}
+            </div>
+          </div>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Company Name
-          </label>
-          <input
-            type="text"
-            name="companyName"
-            value={formData.companyName || ''}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            name="isActive"
-            checked={formData.isActive || false}
-            onChange={handleChange}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label className="ml-2 block text-sm text-gray-900">
-            Active Sponsor
-          </label>
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description
-        </label>
-        <textarea
-          name="description"
-          value={formData.description || ''}
-          onChange={handleChange}
-          rows={4}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Describe the sponsor and their contribution"
-        />
       </div>
 
       <div className="flex justify-end space-x-3 pt-4">
@@ -556,6 +524,7 @@ function SponsorJoinForm({ formData, setFormData, onSubmit, loading, submitText 
           type="button"
           onClick={() => window.history.back()}
           className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          disabled={loading}
         >
           Cancel
         </button>
@@ -564,7 +533,7 @@ function SponsorJoinForm({ formData, setFormData, onSubmit, loading, submitText 
           disabled={loading}
           className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
         >
-          {loading ? 'Saving...' : submitText}
+          {loading ? 'Processing...' : submitText}
         </button>
       </div>
     </form>

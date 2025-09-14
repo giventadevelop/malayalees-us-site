@@ -64,22 +64,22 @@ export default function GlobalEventEmailsPage() {
     console.log('🚀 Global handleCreate called!');
     try {
       setLoading(true);
-      
+
       // Validate required fields
       if (!formData.email?.trim()) {
         setToastMessage({ type: 'error', message: 'Email is required' });
         return;
       }
-      
+
       const emailData = {
         email: formData.email.trim(),
       };
-      
+
       // Debug logging
       console.log('🔍 Global Frontend Event Email Debug:');
       console.log('📝 Form data:', formData);
       console.log('📤 Email data being sent:', emailData);
-      
+
       const newEmail = await createEventEmailServer(emailData);
       setEmails(prev => [...prev, newEmail]);
       setIsCreateModalOpen(false);
@@ -153,10 +153,10 @@ export default function GlobalEventEmailsPage() {
 
   const sortedEmails = [...filteredEmails].sort((a, b) => {
     if (!sortKey) return 0;
-    
+
     const aValue = a[sortKey as keyof EventEmailsDTO];
     const bValue = b[sortKey as keyof EventEmailsDTO];
-    
+
     if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
     return 0;
@@ -186,7 +186,7 @@ export default function GlobalEventEmailsPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AdminNavigation currentPage="event-emails" />
-        
+
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
@@ -237,9 +237,8 @@ export default function GlobalEventEmailsPage() {
 
         {/* Toast Message */}
         {toastMessage && (
-          <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-            toastMessage.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-          }`}>
+          <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${toastMessage.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`}>
             {toastMessage.message}
             <button
               onClick={() => setToastMessage(null)}
@@ -346,7 +345,7 @@ function EmailForm({ formData, setFormData, onSubmit, loading, submitText }: Ema
       <div className="flex justify-end space-x-3 pt-4">
         <button
           type="button"
-          onClick={() => {/* Close modal logic handled by parent */}}
+          onClick={() => {/* Close modal logic handled by parent */ }}
           className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
           disabled={loading}
         >

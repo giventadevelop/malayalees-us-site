@@ -7,29 +7,24 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const baseUrl = getAppUrl();
 
 // Event Sponsors (available sponsors)
-// TEMPORARY WORKAROUND: Backend has null filter bug in EventSponsorsQueryService
-// Using empty array for now until backend is fixed
 export async function fetchEventSponsorsServer() {
-  console.warn('⚠️ Using temporary workaround for event sponsors - backend has null filter bug');
-  
-  // TODO: Remove this workaround when backend EventSponsorsQueryService is fixed
-  // The backend is throwing: Cannot invoke "StringFilter.getEquals()" because "filter" is null
-  return [];
-  
-  // Original code (commented out due to backend bug):
-  // const params = new URLSearchParams();
-  // params.append('tenantId.equals', process.env.NEXT_PUBLIC_TENANT_ID || '');
-  // params.append('id.greaterThan', '0');
-  // 
-  // const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors?${params.toString()}`, {
-  //   cache: 'no-store',
-  // });
-  // 
-  // if (!response.ok) {
-  //   throw new Error(`Failed to fetch event sponsors: ${response.statusText}`);
-  // }
-  // 
-  // return await response.json();
+  try {
+    // Try to fetch all available sponsors without complex filters first
+    const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors`, {
+      cache: 'no-store',
+    });
+    
+    if (!response.ok) {
+      console.warn('Failed to fetch event sponsors:', response.status, response.statusText);
+      return [];
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.warn('Error fetching event sponsors:', error);
+    // Return empty array instead of throwing to prevent page crashes
+    return [];
+  }
 }
 
 export async function fetchEventSponsorServer(id: number) {

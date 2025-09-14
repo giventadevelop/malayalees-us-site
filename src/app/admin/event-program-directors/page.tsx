@@ -66,24 +66,24 @@ export default function GlobalEventProgramDirectorsPage() {
     console.log('🚀 Global handleCreate called!');
     try {
       setLoading(true);
-      
+
       // Validate required fields
       if (!formData.name?.trim()) {
         setToastMessage({ type: 'error', message: 'Name is required' });
         return;
       }
-      
+
       const directorData = {
         name: formData.name.trim(),
         photoUrl: formData.photoUrl?.trim() || undefined,
         bio: formData.bio?.trim() || undefined,
       };
-      
+
       // Debug logging
       console.log('🔍 Global Frontend Event Program Director Debug:');
       console.log('📝 Form data:', formData);
       console.log('📤 Director data being sent:', directorData);
-      
+
       const newDirector = await createEventProgramDirectorServer(directorData);
       setDirectors(prev => [...prev, newDirector]);
       setIsCreateModalOpen(false);
@@ -162,10 +162,10 @@ export default function GlobalEventProgramDirectorsPage() {
 
   const sortedDirectors = [...filteredDirectors].sort((a, b) => {
     if (!sortKey) return 0;
-    
+
     const aValue = a[sortKey as keyof EventProgramDirectorsDTO];
     const bValue = b[sortKey as keyof EventProgramDirectorsDTO];
-    
+
     if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
     return 0;
@@ -196,7 +196,7 @@ export default function GlobalEventProgramDirectorsPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AdminNavigation currentPage="event-program-directors" />
-        
+
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
@@ -247,9 +247,8 @@ export default function GlobalEventProgramDirectorsPage() {
 
         {/* Toast Message */}
         {toastMessage && (
-          <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
-            toastMessage.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-          }`}>
+          <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${toastMessage.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`}>
             {toastMessage.message}
             <button
               onClick={() => setToastMessage(null)}
@@ -384,7 +383,7 @@ function DirectorForm({ formData, setFormData, onSubmit, loading, submitText }: 
       <div className="flex justify-end space-x-3 pt-4">
         <button
           type="button"
-          onClick={() => {/* Close modal logic handled by parent */}}
+          onClick={() => {/* Close modal logic handled by parent */ }}
           className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
           disabled={loading}
         >
