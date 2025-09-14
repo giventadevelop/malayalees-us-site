@@ -9,19 +9,22 @@ const baseUrl = getAppUrl();
 // Event Sponsors (available sponsors)
 export async function fetchEventSponsorsServer() {
   try {
+    console.log('🔍 Fetching available sponsors...');
     // Try to fetch all available sponsors without complex filters first
     const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors`, {
       cache: 'no-store',
     });
-
+    
     if (!response.ok) {
-      console.warn('Failed to fetch event sponsors:', response.status, response.statusText);
+      console.warn('❌ Failed to fetch event sponsors:', response.status, response.statusText);
       return [];
     }
-
-    return await response.json();
+    
+    const data = await response.json();
+    console.log('✅ Fetched available sponsors:', data);
+    return data;
   } catch (error) {
-    console.warn('Error fetching event sponsors:', error);
+    console.warn('❌ Error fetching event sponsors:', error);
     // Return empty array instead of throwing to prevent page crashes
     return [];
   }
@@ -124,18 +127,21 @@ export async function deleteEventSponsorServer(id: number) {
 
 // Event Sponsors Join (sponsor assignments to events)
 export async function fetchEventSponsorsJoinServer(eventId: number) {
-  const params = new URLSearchParams();
-  params.append('eventId.equals', eventId.toString());
-
-  const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors-join?${params.toString()}`, {
+  console.log('🔍 Fetching event sponsors for event ID:', eventId);
+  
+  // Use the specific endpoint for getting sponsors by event ID
+  const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors-join/event/${eventId}`, {
     cache: 'no-store',
   });
 
   if (!response.ok) {
+    console.error('❌ Failed to fetch event sponsors join:', response.status, response.statusText);
     throw new Error(`Failed to fetch event sponsors join: ${response.statusText}`);
   }
 
-  return await response.json();
+  const data = await response.json();
+  console.log('✅ Fetched event sponsors:', data);
+  return data;
 }
 
 export async function fetchEventSponsorJoinServer(id: number) {

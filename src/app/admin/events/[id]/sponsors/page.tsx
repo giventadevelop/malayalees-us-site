@@ -11,6 +11,7 @@ import type { EventSponsorsDTO, EventSponsorsJoinDTO, EventDetailsDTO } from '@/
 import {
   fetchEventSponsorsServer,
   fetchEventSponsorsJoinServer,
+  createEventSponsorServer,
   createEventSponsorJoinServer,
   updateEventSponsorJoinServer,
   deleteEventSponsorJoinServer,
@@ -29,6 +30,7 @@ export default function EventSponsorsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Modal states
+  const [isCreateSponsorModalOpen, setIsCreateSponsorModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -40,6 +42,16 @@ export default function EventSponsorsPage() {
   const [formData, setFormData] = useState<Partial<EventSponsorsJoinDTO>>({
     event: { id: parseInt(eventId) } as EventDetailsDTO,
     sponsor: undefined,
+  });
+
+  // Form state for creating new sponsor
+  const [sponsorFormData, setSponsorFormData] = useState<Partial<EventSponsorsDTO>>({
+    name: '',
+    type: '',
+    companyName: '',
+    contactEmail: '',
+    contactPhone: '',
+    isActive: true,
   });
 
   // Search and filter state
@@ -95,24 +107,63 @@ export default function EventSponsorsPage() {
     }
   };
 
+  const handleCreateSponsor = async () => {
+    try {
+      setLoading(true);
+      
+      // Validate required fields
+      if (!sponsorFormData.name?.trim()) {
+        setToastMessage({ type: 'error', message: 'Sponsor name is required' });
+        return;
+      }
+      
+      if (!sponsorFormData.type?.trim()) {
+        setToastMessage({ type: 'error', message: 'Sponsor type is required' });
+        return;
+      }
+      
+      const sponsorData = {
+        name: sponsorFormData.name.trim(),
+        type: sponsorFormData.type.trim(),
+        companyName: sponsorFormData.companyName?.trim() || undefined,
+        contactEmail: sponsorFormData.contactEmail?.trim() || undefined,
+        contactPhone: sponsorFormData.contactPhone?.trim() || undefined,
+        isActive: sponsorFormData.isActive || true,
+      };
+      
+      console.log('🔍 Creating new sponsor:', sponsorData);
+      
+      const newSponsor = await createEventSponsorServer(sponsorData);
+      setAvailableSponsors(prev => [...prev, newSponsor]);
+      setIsCreateSponsorModalOpen(false);
+      resetSponsorForm();
+      setToastMessage({ type: 'success', message: 'Sponsor created successfully' });
+    } catch (err: any) {
+      console.error('❌ Failed to create sponsor:', err);
+      setToastMessage({ type: 'error', message: err.message || 'Failed to create sponsor' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAssignSponsor = async () => {
     if (!selectedAvailableSponsor) return;
 
     try {
       setLoading(true);
-
+      
       // Create sponsor join record
       const sponsorJoinData = {
         event: { id: parseInt(eventId) } as EventDetailsDTO,
         sponsor: selectedAvailableSponsor
       };
-
+      
       console.log('🔍 Assigning sponsor to event:', {
         eventId: parseInt(eventId),
         sponsorId: selectedAvailableSponsor.id,
         sponsorName: selectedAvailableSponsor.name
       });
-
+      
       const newSponsorJoin = await createEventSponsorJoinServer(sponsorJoinData);
       setEventSponsors(prev => [...prev, newSponsorJoin]);
       setIsAssignModalOpen(false);
@@ -168,6 +219,17 @@ export default function EventSponsorsPage() {
     setFormData({
       event: { id: parseInt(eventId) } as EventDetailsDTO,
       sponsor: undefined,
+    });
+  };
+
+  const resetSponsorForm = () => {
+    setSponsorFormData({
+      name: '',
+      type: '',
+      companyName: '',
+      contactEmail: '',
+      contactPhone: '',
+      isActive: true,
     });
   };
 
@@ -330,11 +392,20 @@ export default function EventSponsorsPage() {
 
       {/* Available Sponsors Section */}
       <div className="mb-8">
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold">Available Sponsors to Assign</h2>
-          <p className="text-gray-600 text-sm mt-1">
-            Select from existing sponsors to assign them to this event. To create new sponsors, use the global sponsors management.
-          </p>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h2 className="text-xl font-semibold">Available Sponsors to Assign</h2>
+            <p className="text-gray-600 text-sm mt-1">
+              Select from existing sponsors to assign them to this event, or create a new sponsor.
+            </p>
+          </div>
+          <button
+            onClick={() => setIsCreateSponsorModalOpen(true)}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg shadow font-bold flex items-center gap-2 hover:bg-green-700 transition"
+          >
+            <FaPlus />
+            Create New Sponsor
+          </button>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -361,11 +432,14 @@ export default function EventSponsorsPage() {
                 <FaUserPlus className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No Available Sponsors</h3>
                 <p className="text-gray-500 mb-4">
-                  You need to create sponsors first before you can assign them to events.
+                  Create your first sponsor to get started with event sponsorships.
                 </p>
-                <p className="text-sm text-gray-400">
-                  Go to the <strong>Global Sponsors</strong> page to create new sponsors, then return here to assign them to this event.
-                </p>
+                <button
+                  onClick={() => setIsCreateSponsorModalOpen(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                >
+                  Create Your First Sponsor
+                </button>
               </div>
             </div>
           )}
@@ -443,6 +517,25 @@ export default function EventSponsorsPage() {
         confirmText="Remove"
         variant="danger"
       />
+
+      {/* Create New Sponsor Modal */}
+      <Modal
+        isOpen={isCreateSponsorModalOpen}
+        onClose={() => {
+          setIsCreateSponsorModalOpen(false);
+          resetSponsorForm();
+        }}
+        title="Create New Sponsor"
+        size="lg"
+      >
+        <SponsorForm
+          formData={sponsorFormData}
+          setFormData={setSponsorFormData}
+          onSubmit={handleCreateSponsor}
+          loading={loading}
+          submitText="Create Sponsor"
+        />
+      </Modal>
     </div>
   );
 }
@@ -526,6 +619,157 @@ function SponsorJoinForm({ formData, setFormData, onSubmit, loading, submitText,
           className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
         >
           {loading ? 'Processing...' : submitText}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// Sponsor Form Component
+interface SponsorFormProps {
+  formData: Partial<EventSponsorsDTO>;
+  setFormData: React.Dispatch<React.SetStateAction<Partial<EventSponsorsDTO>>>;
+  onSubmit: () => void;
+  loading: boolean;
+  submitText: string;
+}
+
+function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: SponsorFormProps) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit();
+  };
+
+  const sponsorTypes = [
+    'Platinum',
+    'Gold',
+    'Silver',
+    'Bronze',
+    'Community Partner',
+    'Media Partner',
+    'Food & Beverage',
+    'Entertainment',
+    'Other'
+  ];
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Sponsor Name *
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name || ''}
+            onChange={handleChange}
+            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter sponsor name"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Type *
+          </label>
+          <select
+            name="type"
+            value={formData.type || ''}
+            onChange={handleChange}
+            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Select sponsor type</option>
+            {sponsorTypes.map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Company Name
+          </label>
+          <input
+            type="text"
+            name="companyName"
+            value={formData.companyName || ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter company name"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Contact Email
+          </label>
+          <input
+            type="email"
+            name="contactEmail"
+            value={formData.contactEmail || ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter contact email"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Contact Phone
+          </label>
+          <input
+            type="tel"
+            name="contactPhone"
+            value={formData.contactPhone || ''}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter contact phone"
+          />
+        </div>
+
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            name="isActive"
+            checked={formData.isActive || false}
+            onChange={handleChange}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label className="ml-2 block text-sm text-gray-900">
+            Active Sponsor
+          </label>
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-4">
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          disabled={loading}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+        >
+          {loading ? 'Creating...' : submitText}
         </button>
       </div>
     </form>
