@@ -26,13 +26,13 @@ export default function EventPerformersPage() {
   const [performers, setPerformers] = useState<EventFeaturedPerformersDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedPerformer, setSelectedPerformer] = useState<EventFeaturedPerformersDTO | null>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState<Partial<EventFeaturedPerformersDTO>>({
     name: '',
@@ -85,14 +85,14 @@ export default function EventPerformersPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Load event details
       const eventResponse = await fetch(`/api/proxy/event-details/${eventId}`);
       if (eventResponse.ok) {
         const eventData = await eventResponse.json();
         setEvent(eventData);
       }
-      
+
       // Load performers for this event
       const performersData = await fetchEventFeaturedPerformersServer(parseInt(eventId));
       setPerformers(performersData);
@@ -122,7 +122,7 @@ export default function EventPerformersPage() {
 
   const handleEdit = async () => {
     if (!selectedPerformer) return;
-    
+
     try {
       setLoading(true);
       const updatedPerformer = await updateEventFeaturedPerformerServer(selectedPerformer.id!, formData);
@@ -140,7 +140,7 @@ export default function EventPerformersPage() {
 
   const handleDelete = async () => {
     if (!selectedPerformer) return;
-    
+
     try {
       setLoading(true);
       await deleteEventFeaturedPerformerServer(selectedPerformer.id!);
@@ -188,18 +188,18 @@ export default function EventPerformersPage() {
   const handleSort = (key: string, direction: 'asc' | 'desc') => {
     setSortKey(key);
     setSortDirection(direction);
-    
+
     const sorted = [...performers].sort((a, b) => {
       const aVal = a[key as keyof EventFeaturedPerformersDTO];
       const bVal = b[key as keyof EventFeaturedPerformersDTO];
-      
+
       if (direction === 'asc') {
         return aVal > bVal ? 1 : -1;
       } else {
         return aVal < bVal ? 1 : -1;
       }
     });
-    
+
     setPerformers(sorted);
   };
 
@@ -212,38 +212,38 @@ export default function EventPerformersPage() {
 
   const columns: Column<EventFeaturedPerformersDTO>[] = [
     { key: 'name', label: 'Name', sortable: true },
-    { 
-      key: 'stageName', 
-      label: 'Stage Name', 
+    {
+      key: 'stageName',
+      label: 'Stage Name',
       sortable: true,
       render: (value) => value || '-'
     },
-    { 
-      key: 'role', 
-      label: 'Role', 
+    {
+      key: 'role',
+      label: 'Role',
       sortable: true,
       render: (value) => value || '-'
     },
-    { 
-      key: 'isHeadliner', 
-      label: 'Headliner', 
+    {
+      key: 'isHeadliner',
+      label: 'Headliner',
       sortable: true,
       render: (value) => value ? 'Yes' : 'No'
     },
-    { 
-      key: 'performanceOrder', 
-      label: 'Order', 
+    {
+      key: 'performanceOrder',
+      label: 'Order',
       sortable: true,
       render: (value) => value || 0
     },
-    { 
-      key: 'email', 
-      label: 'Email', 
+    {
+      key: 'email',
+      label: 'Email',
       render: (value) => value || '-'
     },
-    { 
-      key: 'isActive', 
-      label: 'Active', 
+    {
+      key: 'isActive',
+      label: 'Active',
       sortable: true,
       render: (value) => value ? 'Yes' : 'No'
     },
@@ -287,11 +287,10 @@ export default function EventPerformersPage() {
 
       {/* Toast Message */}
       {toastMessage && (
-        <div className={`mb-4 p-4 rounded-lg ${
-          toastMessage.type === 'success' 
-            ? 'bg-green-50 border border-green-200 text-green-700' 
+        <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-700'
             : 'bg-red-50 border border-red-200 text-red-700'
-        }`}>
+          }`}>
           {toastMessage.message}
         </div>
       )}
@@ -407,7 +406,7 @@ interface PerformerFormProps {
 function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }: PerformerFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
@@ -439,7 +438,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Stage Name
@@ -452,7 +451,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Role
@@ -465,7 +464,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Performance Order
@@ -479,7 +478,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Performance Duration (minutes)
@@ -493,7 +492,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -535,7 +534,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Phone
@@ -576,7 +575,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Date of Birth
@@ -589,7 +588,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Priority Ranking
@@ -603,7 +602,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -631,7 +630,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Twitter URL
@@ -644,7 +643,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Instagram URL
@@ -657,7 +656,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             YouTube URL
@@ -670,7 +669,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             LinkedIn URL
@@ -683,7 +682,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             TikTok URL
