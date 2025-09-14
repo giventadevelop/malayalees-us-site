@@ -35,14 +35,9 @@ export default function EventContactsPage() {
   
   // Form state
   const [formData, setFormData] = useState<Partial<EventContactsDTO>>({
-    contactType: '',
-    contactName: '',
-    email: '',
+    name: '',
     phone: '',
-    organization: '',
-    title: '',
-    isPrimary: false,
-    notes: '',
+    email: '',
     event: { id: parseInt(eventId) } as EventDetailsDTO,
   });
 
@@ -142,14 +137,9 @@ export default function EventContactsPage() {
 
   const resetForm = () => {
     setFormData({
-      contactType: '',
-      contactName: '',
-      email: '',
+      name: '',
       phone: '',
-      organization: '',
-      title: '',
-      isPrimary: false,
-      notes: '',
+      email: '',
       event: { id: parseInt(eventId) } as EventDetailsDTO,
     });
   };
@@ -184,41 +174,22 @@ export default function EventContactsPage() {
   };
 
   const filteredContacts = contacts.filter(contact =>
-    contact.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.contactType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.organization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     contact.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const columns: Column<EventContactsDTO>[] = [
-    { key: 'contactName', label: 'Name', sortable: true },
-    { key: 'contactType', label: 'Type', sortable: true },
-    { 
-      key: 'organization', 
-      label: 'Organization', 
-      sortable: true,
-      render: (value) => value || '-'
-    },
-    { 
-      key: 'title', 
-      label: 'Title', 
-      render: (value) => value || '-'
-    },
-    { 
-      key: 'email', 
-      label: 'Email', 
-      render: (value) => value || '-'
-    },
+    { key: 'name', label: 'Name', sortable: true },
     { 
       key: 'phone', 
       label: 'Phone', 
       render: (value) => value || '-'
     },
     { 
-      key: 'isPrimary', 
-      label: 'Primary', 
-      sortable: true,
-      render: (value) => value ? 'Yes' : 'No'
+      key: 'email', 
+      label: 'Email', 
+      render: (value) => value || '-'
     },
   ];
 
@@ -360,7 +331,7 @@ export default function EventContactsPage() {
         }}
         onConfirm={handleDelete}
         title="Delete Contact"
-        message={`Are you sure you want to delete "${selectedContact?.contactName}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete "${selectedContact?.name}"? This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
       />
@@ -394,77 +365,24 @@ function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: C
     onSubmit();
   };
 
-  const contactTypes = [
-    'Organizer',
-    'Coordinator',
-    'Technical Support',
-    'Venue Contact',
-    'Media Contact',
-    'Sponsor Contact',
-    'Performer Contact',
-    'Other'
-  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Contact Name *
+            Name *
           </label>
           <input
             type="text"
-            name="contactName"
-            value={formData.contactName || ''}
+            name="name"
+            value={formData.name || ''}
             onChange={handleChange}
             required
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
         
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Contact Type *
-          </label>
-          <select
-            name="contactType"
-            value={formData.contactType || ''}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">Select contact type</option>
-            {contactTypes.map(type => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Organization
-          </label>
-          <input
-            type="text"
-            name="organization"
-            value={formData.organization || ''}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Title
-          </label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title || ''}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -481,43 +399,19 @@ function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: C
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Phone
+            Phone *
           </label>
           <input
             type="tel"
             name="phone"
             value={formData.phone || ''}
             onChange={handleChange}
+            required
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
       </div>
 
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          name="isPrimary"
-          checked={formData.isPrimary || false}
-          onChange={handleChange}
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-        />
-        <label className="ml-2 block text-sm text-gray-900">
-          Primary Contact
-        </label>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Notes
-        </label>
-        <textarea
-          name="notes"
-          value={formData.notes || ''}
-          onChange={handleChange}
-          rows={3}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
 
       <div className="flex justify-end space-x-3 pt-4">
         <button
