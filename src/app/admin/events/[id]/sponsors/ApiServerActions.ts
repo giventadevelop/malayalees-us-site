@@ -179,23 +179,54 @@ export async function fetchEventSponsorsJoinServer(eventId: number) {
   console.log('✅ Fetched event sponsors:', data);
   console.log('✅ Data is array:', Array.isArray(data));
   console.log('✅ Data length:', Array.isArray(data) ? data.length : 'Not an array');
-
+  
   // If data is not an array, try to extract the array from it
+  let sponsorsArray = data;
   if (!Array.isArray(data)) {
     console.log('⚠️ Data is not an array, checking for embedded array...');
     if (data && Array.isArray(data.content)) {
       console.log('✅ Found content array with length:', data.content.length);
-      return data.content;
+      sponsorsArray = data.content;
     } else if (data && Array.isArray(data.data)) {
       console.log('✅ Found data array with length:', data.data.length);
-      return data.data;
+      sponsorsArray = data.data;
     } else if (data && Array.isArray(data.results)) {
       console.log('✅ Found results array with length:', data.results.length);
-      return data.results;
+      sponsorsArray = data.results;
     }
   }
-
-  return data;
+  
+  // Populate sponsor details for each join record
+  console.log('🔄 Populating sponsor details...');
+  const populatedSponsors = await Promise.all(
+    sponsorsArray.map(async (joinRecord: any) => {
+      if (joinRecord.sponsor && joinRecord.sponsor.id && !joinRecord.sponsor.name) {
+        console.log('🔍 Fetching sponsor details for ID:', joinRecord.sponsor.id);
+        try {
+          const sponsorResponse = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors/${joinRecord.sponsor.id}`, {
+            cache: 'no-store',
+          });
+          
+          if (sponsorResponse.ok) {
+            const sponsorDetails = await sponsorResponse.json();
+            console.log('✅ Fetched sponsor details:', sponsorDetails);
+            return {
+              ...joinRecord,
+              sponsor: sponsorDetails
+            };
+          } else {
+            console.warn('⚠️ Failed to fetch sponsor details for ID:', joinRecord.sponsor.id);
+          }
+        } catch (error) {
+          console.warn('⚠️ Error fetching sponsor details:', error);
+        }
+      }
+      return joinRecord;
+    })
+  );
+  
+  console.log('✅ Populated sponsors:', populatedSponsors);
+  return populatedSponsors;
 }
 
 export async function fetchEventSponsorJoinServer(id: number) {
