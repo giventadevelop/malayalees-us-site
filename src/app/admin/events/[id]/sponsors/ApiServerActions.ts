@@ -10,6 +10,8 @@ const baseUrl = getAppUrl();
 export async function fetchEventSponsorsServer() {
   const params = new URLSearchParams();
   params.append('tenantId.equals', process.env.NEXT_PUBLIC_TENANT_ID || '');
+  // Add default range filter to prevent backend null filter error
+  params.append('id.greaterThan', '0');
 
   const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-sponsors?${params.toString()}`, {
     cache: 'no-store',
