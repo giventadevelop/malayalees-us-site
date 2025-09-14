@@ -304,6 +304,11 @@ export default function EventSponsorsPage() {
   };
 
   const filteredEventSponsors = eventSponsors.filter(sponsor => {
+    // Add safety check for sponsor object
+    if (!sponsor || !sponsor.sponsor) {
+      return false;
+    }
+    
     const matches = sponsor.sponsor?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       sponsor.sponsor?.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       sponsor.sponsor?.companyName?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -327,37 +332,37 @@ export default function EventSponsorsPage() {
       key: 'sponsor.name',
       label: 'Sponsor Name',
       sortable: true,
-      render: (row) => row.sponsor?.name || '-'
+      render: (row) => row?.sponsor?.name || '-'
     },
     {
       key: 'sponsor.type',
       label: 'Type',
       sortable: true,
-      render: (row) => row.sponsor?.type || '-'
+      render: (row) => row?.sponsor?.type || '-'
     },
     {
       key: 'sponsor.companyName',
       label: 'Company',
       sortable: true,
-      render: (row) => row.sponsor?.companyName || '-'
+      render: (row) => row?.sponsor?.companyName || '-'
     },
     {
       key: 'sponsor.contactEmail',
       label: 'Contact Email',
       sortable: true,
-      render: (row) => row.sponsor?.contactEmail || '-'
+      render: (row) => row?.sponsor?.contactEmail || '-'
     },
     {
       key: 'sponsor.isActive',
       label: 'Active',
       sortable: true,
-      render: (row) => row.sponsor?.isActive ? 'Yes' : 'No'
+      render: (row) => row?.sponsor?.isActive ? 'Yes' : 'No'
     },
     {
       key: 'createdAt',
       label: 'Assigned Date',
       sortable: true,
-      render: (row) => row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '-'
+      render: (row) => row?.createdAt ? new Date(row.createdAt).toLocaleDateString() : '-'
     },
   ];
 
@@ -515,7 +520,7 @@ export default function EventSponsorsPage() {
       <div>
         <h2 className="text-xl font-semibold mb-4">Event Sponsors ({filteredEventSponsors.length})</h2>
         <DataTable
-          data={filteredEventSponsors}
+          data={filteredEventSponsors || []}
           columns={columns}
           loading={loading}
           onSort={handleSort}
