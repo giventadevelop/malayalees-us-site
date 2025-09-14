@@ -647,3 +647,134 @@ export interface ExecutiveCommitteeTeamMemberDTO {
   priorityOrder?: number;
   websiteUrl?: string;
 }
+
+/**
+ * DTO for event featured performers, matches backend OpenAPI schema.
+ */
+export interface EventFeaturedPerformersDTO {
+  id?: number;
+  tenantId?: string;
+  name: string;
+  stageName?: string;
+  role?: string;
+  bio?: string;
+  performanceDescription?: string;
+  socialMediaLinks?: string;
+  website?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  performanceOrder?: number;
+  isHeadliner?: boolean;
+  performanceDuration?: number; // in minutes
+  specialRequirements?: string;
+  createdAt: string;
+  updatedAt: string;
+  event?: EventDetailsDTO;
+}
+
+/**
+ * DTO for event contacts, matches backend OpenAPI schema.
+ */
+export interface EventContactsDTO {
+  id?: number;
+  tenantId?: string;
+  contactType: string;
+  contactName: string;
+  email?: string;
+  phone?: string;
+  organization?: string;
+  title?: string;
+  isPrimary?: boolean;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  event?: EventDetailsDTO;
+}
+
+/**
+ * DTO for event sponsors, matches backend OpenAPI schema.
+ */
+export interface EventSponsorsDTO {
+  id?: number;
+  tenantId?: string;
+  sponsorName: string;
+  contactPerson?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  website?: string;
+  description?: string;
+  logoUrl?: string;
+  heroImageUrl?: string;
+  bannerImageUrl?: string;
+  sponsorshipLevel?: string;
+  sponsorshipAmount?: number;
+  benefits?: string;
+  isActive?: boolean;
+  displayOrder?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * DTO for event sponsors join (many-to-many relationship), matches backend OpenAPI schema.
+ */
+export interface EventSponsorsJoinDTO {
+  id?: number;
+  tenantId?: string;
+  sponsorshipLevel?: string;
+  sponsorshipAmount?: number;
+  benefits?: string;
+  isActive?: boolean;
+  displayOrder?: number;
+  createdAt: string;
+  updatedAt: string;
+  event?: EventDetailsDTO;
+  sponsor?: EventSponsorsDTO;
+}
+
+/**
+ * DTO for event emails, matches backend OpenAPI schema.
+ */
+export interface EventEmailsDTO {
+  id?: number;
+  tenantId?: string;
+  emailType: string;
+  subject: string;
+  bodyHtml?: string;
+  bodyText?: string;
+  recipientList?: string;
+  sentDate?: string;
+  scheduledDate?: string;
+  status: string;
+  openCount?: number;
+  clickCount?: number;
+  bounceCount?: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  event?: EventDetailsDTO;
+}
+
+/**
+ * DTO for event program directors, matches backend OpenAPI schema.
+ */
+export interface EventProgramDirectorsDTO {
+  id?: number;
+  tenantId?: string;
+  firstName: string;
+  lastName: string;
+  title?: string;
+  bio?: string;
+  email?: string;
+  phone?: string;
+  photoUrl?: string;
+  expertise?: string;
+  experience?: string;
+  achievements?: string;
+  socialMediaLinks?: string;
+  isActive?: boolean;
+  displayOrder?: number;
+  createdAt: string;
+  updatedAt: string;
+  event?: EventDetailsDTO;
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { FaUsers, FaCalendarAlt, FaEnvelope, FaCreditCard, FaHome, FaUserTie, FaChartLine, FaBuilding, FaCog } from 'react-icons/fa';
+import { FaUsers, FaCalendarAlt, FaEnvelope, FaCreditCard, FaHome, FaUserTie, FaChartLine, FaBuilding, FaCog, FaMicrophone, FaAddressBook, FaHandshake } from 'react-icons/fa';
 
 interface AdminNavigationProps {
   currentPage?: string;
@@ -49,6 +49,30 @@ export default function AdminNavigation({ currentPage, showHome = true }: AdminN
       color: 'indigo',
       active: currentPage === 'event-registrations',
       key: 'event-registrations'
+    },
+    {
+      href: '/admin/event-featured-performers',
+      icon: FaMicrophone,
+      label: 'Performers',
+      color: 'pink',
+      active: currentPage === 'event-featured-performers',
+      key: 'event-featured-performers'
+    },
+    {
+      href: '/admin/event-contacts',
+      icon: FaAddressBook,
+      label: 'Event Contacts',
+      color: 'emerald',
+      active: currentPage === 'event-contacts',
+      key: 'event-contacts'
+    },
+    {
+      href: '/admin/event-sponsors',
+      icon: FaHandshake,
+      label: 'Sponsors',
+      color: 'amber',
+      active: currentPage === 'event-sponsors',
+      key: 'event-sponsors'
     },
     {
       href: '/admin/promotion-emails',
@@ -112,7 +136,10 @@ export default function AdminNavigation({ currentPage, showHome = true }: AdminN
       indigo: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700',
       cyan: 'bg-cyan-50 hover:bg-cyan-100 text-cyan-700',
       slate: 'bg-slate-50 hover:bg-slate-100 text-slate-700',
-      red: 'bg-red-50 hover:bg-red-100 text-red-700'
+      red: 'bg-red-50 hover:bg-red-100 text-red-700',
+      pink: 'bg-pink-50 hover:bg-pink-100 text-pink-700',
+      emerald: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700',
+      amber: 'bg-amber-50 hover:bg-amber-100 text-amber-700'
     };
 
     const activeColors = {
@@ -126,7 +153,10 @@ export default function AdminNavigation({ currentPage, showHome = true }: AdminN
       indigo: 'bg-indigo-200 text-indigo-800',
       cyan: 'bg-cyan-200 text-cyan-800',
       slate: 'bg-slate-200 text-slate-800',
-      red: 'bg-red-200 text-red-800'
+      red: 'bg-red-200 text-red-800',
+      pink: 'bg-pink-200 text-pink-800',
+      emerald: 'bg-emerald-200 text-emerald-800',
+      amber: 'bg-amber-200 text-amber-800'
     };
 
     return isActive ? activeColors[color as keyof typeof activeColors] : baseColors[color as keyof typeof baseColors];
