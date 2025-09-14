@@ -87,8 +87,26 @@ export default function EventContactsPage() {
   const handleCreate = async () => {
     try {
       setLoading(true);
-      const contactData = { ...formData, event: { id: parseInt(eventId) } as EventDetailsDTO };
-      const newContact = await createEventContactServer(contactData as any);
+      
+      // Validate required fields
+      if (!formData.name?.trim()) {
+        setToastMessage({ type: 'error', message: 'Name is required' });
+        return;
+      }
+      
+      if (!formData.phone?.trim()) {
+        setToastMessage({ type: 'error', message: 'Phone is required' });
+        return;
+      }
+      
+      const contactData = {
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email?.trim() || undefined,
+        event: { id: parseInt(eventId) } as EventDetailsDTO,
+      };
+      
+      const newContact = await createEventContactServer(contactData);
       setContacts(prev => [...prev, newContact]);
       setIsCreateModalOpen(false);
       resetForm();
