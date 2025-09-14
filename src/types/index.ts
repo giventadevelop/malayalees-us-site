@@ -658,15 +658,25 @@ export interface EventFeaturedPerformersDTO {
   stageName?: string;
   role?: string;
   bio?: string;
-  performanceDescription?: string;
-  socialMediaLinks?: string;
-  website?: string;
-  contactEmail?: string;
-  contactPhone?: string;
+  nationality?: string;
+  dateOfBirth?: string;
+  email?: string;
+  phone?: string;
+  websiteUrl?: string;
+  portraitImageUrl?: string;
+  performanceImageUrl?: string;
+  galleryImageUrls?: string;
+  performanceDurationMinutes?: number;
   performanceOrder?: number;
-  isHeadliner?: boolean;
-  performanceDuration?: number; // in minutes
-  specialRequirements?: string;
+  isHeadliner: boolean;
+  facebookUrl?: string;
+  twitterUrl?: string;
+  instagramUrl?: string;
+  youtubeUrl?: string;
+  linkedinUrl?: string;
+  tiktokUrl?: string;
+  isActive: boolean;
+  priorityRanking?: number;
   createdAt: string;
   updatedAt: string;
   event?: EventDetailsDTO;
@@ -678,14 +688,9 @@ export interface EventFeaturedPerformersDTO {
 export interface EventContactsDTO {
   id?: number;
   tenantId?: string;
-  contactType: string;
-  contactName: string;
+  name: string;
+  phone: string;
   email?: string;
-  phone?: string;
-  organization?: string;
-  title?: string;
-  isPrimary?: boolean;
-  notes?: string;
   createdAt: string;
   updatedAt: string;
   event?: EventDetailsDTO;
@@ -697,20 +702,23 @@ export interface EventContactsDTO {
 export interface EventSponsorsDTO {
   id?: number;
   tenantId?: string;
-  sponsorName: string;
-  contactPerson?: string;
+  name: string;
+  type: string;
+  companyName?: string;
+  tagline?: string;
+  description?: string;
+  websiteUrl?: string;
   contactEmail?: string;
   contactPhone?: string;
-  website?: string;
-  description?: string;
   logoUrl?: string;
   heroImageUrl?: string;
   bannerImageUrl?: string;
-  sponsorshipLevel?: string;
-  sponsorshipAmount?: number;
-  benefits?: string;
-  isActive?: boolean;
-  displayOrder?: number;
+  isActive: boolean;
+  priorityRanking?: number;
+  facebookUrl?: string;
+  twitterUrl?: string;
+  linkedinUrl?: string;
+  instagramUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -721,13 +729,7 @@ export interface EventSponsorsDTO {
 export interface EventSponsorsJoinDTO {
   id?: number;
   tenantId?: string;
-  sponsorshipLevel?: string;
-  sponsorshipAmount?: number;
-  benefits?: string;
-  isActive?: boolean;
-  displayOrder?: number;
   createdAt: string;
-  updatedAt: string;
   event?: EventDetailsDTO;
   sponsor?: EventSponsorsDTO;
 }
@@ -738,18 +740,7 @@ export interface EventSponsorsJoinDTO {
 export interface EventEmailsDTO {
   id?: number;
   tenantId?: string;
-  emailType: string;
-  subject: string;
-  bodyHtml?: string;
-  bodyText?: string;
-  recipientList?: string;
-  sentDate?: string;
-  scheduledDate?: string;
-  status: string;
-  openCount?: number;
-  clickCount?: number;
-  bounceCount?: number;
-  notes?: string;
+  email: string;
   createdAt: string;
   updatedAt: string;
   event?: EventDetailsDTO;
@@ -761,19 +752,9 @@ export interface EventEmailsDTO {
 export interface EventProgramDirectorsDTO {
   id?: number;
   tenantId?: string;
-  firstName: string;
-  lastName: string;
-  title?: string;
-  bio?: string;
-  email?: string;
-  phone?: string;
+  name: string;
   photoUrl?: string;
-  expertise?: string;
-  experience?: string;
-  achievements?: string;
-  socialMediaLinks?: string;
-  isActive?: boolean;
-  displayOrder?: number;
+  bio?: string;
   createdAt: string;
   updatedAt: string;
   event?: EventDetailsDTO;
