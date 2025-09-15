@@ -25,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const response = await fetchWithJwtRetry(url, {
       method: 'POST',
       body: req,
+      duplex: 'half', // Required for Node.js 18+ when sending a body
       headers: {
         // Don't set Content-Type, let fetch handle it for multipart
       },

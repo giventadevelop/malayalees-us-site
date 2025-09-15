@@ -64,7 +64,7 @@ export default function ImageUpload({
       // Call the backend API directly for image upload
       console.log('🖼️ ImageUpload: Uploading to URL:', apiUrl);
       console.log('🖼️ ImageUpload: Entity info:', { entityType, entityId, imageType, eventId });
-      
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
