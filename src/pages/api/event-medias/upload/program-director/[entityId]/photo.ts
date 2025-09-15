@@ -21,6 +21,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const tenantId = getTenantId();
     const url = `${API_BASE_URL}/api/event-medias/upload/program-director/${entityId}/photo?eventId=${eventId}&title=${title || 'photo'}&description=${description || 'Uploaded photo'}&tenantId=${tenantId}&isPublic=${isPublic || 'true'}&isTeamMemberProfileImage=true`;
 
+    console.log('🔍 Program Director Upload Debug:');
+    console.log('📋 Query params:', { entityId, eventId, title, description, isPublic });
+    console.log('🔗 Backend URL:', url);
+
     // Forward the multipart form data to the backend
     const response = await fetchWithJwtRetry(url, {
       method: 'POST',
