@@ -385,7 +385,7 @@ export default function EventContactsPage() {
         }}
         onConfirm={handleDelete}
         title="Delete Contact"
-        message={`Are you sure you want to delete "${selectedContact?.name}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete "${selectedContact?.name || 'this contact'}"? This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
       />
