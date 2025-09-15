@@ -317,7 +317,7 @@ export default function EventSponsorsPage() {
     if (!sponsor || !sponsor.sponsor) {
       return false;
     }
-    
+
     return sponsor.sponsor?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       sponsor.sponsor?.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       sponsor.sponsor?.companyName?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -411,7 +411,7 @@ export default function EventSponsorsPage() {
         <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
           ? 'bg-green-50 border border-green-200 text-green-700'
           : 'bg-red-50 border border-red-200 text-red-700'
-        }`}>
+          }`}>
           {toastMessage.message}
         </div>
       )}
@@ -500,7 +500,7 @@ export default function EventSponsorsPage() {
       {/* Event Sponsors Table */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Event Sponsors ({filteredEventSponsors.length})</h2>
-        
+
         {/* Debug Info */}
         <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
           <p><strong>Debug:</strong> filteredEventSponsors.length = {filteredEventSponsors.length}</p>
@@ -512,7 +512,7 @@ export default function EventSponsorsPage() {
             </div>
           )}
         </div>
-        
+
         <DataTable
           data={filteredEventSponsors || []}
           columns={columns}
