@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       body: req,
       duplex: 'half', // Required for Node.js 18+ when sending a body
       headers: {
-        // Don't set Content-Type, let fetch handle it for multipart
+        'Content-Type': req.headers['content-type'] || 'multipart/form-data',
       },
     });
 
