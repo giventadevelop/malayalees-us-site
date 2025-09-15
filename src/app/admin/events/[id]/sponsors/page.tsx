@@ -271,8 +271,31 @@ export default function EventSponsorsPage() {
     setSortDirection(direction);
 
     const sorted = [...eventSponsors].sort((a, b) => {
-      const aVal = a[key as keyof EventSponsorsJoinDTO];
-      const bVal = b[key as keyof EventSponsorsJoinDTO];
+      let aVal: any;
+      let bVal: any;
+
+      if (key === 'sponsorName') {
+        aVal = a.sponsor?.name;
+        bVal = b.sponsor?.name;
+      } else if (key === 'sponsorType') {
+        aVal = a.sponsor?.type;
+        bVal = b.sponsor?.type;
+      } else if (key === 'sponsorCompany') {
+        aVal = a.sponsor?.companyName;
+        bVal = b.sponsor?.companyName;
+      } else if (key === 'sponsorEmail') {
+        aVal = a.sponsor?.contactEmail;
+        bVal = b.sponsor?.contactEmail;
+      } else if (key === 'sponsorActive') {
+        aVal = a.sponsor?.isActive;
+        bVal = b.sponsor?.isActive;
+      } else if (key === 'createdAt') {
+        aVal = a.createdAt;
+        bVal = b.createdAt;
+      } else {
+        aVal = a[key as keyof EventSponsorsJoinDTO];
+        bVal = b[key as keyof EventSponsorsJoinDTO];
+      }
 
       // Handle undefined values
       if (aVal === undefined && bVal === undefined) return 0;
@@ -302,40 +325,40 @@ export default function EventSponsorsPage() {
 
   const columns: Column<EventSponsorsJoinDTO>[] = [
     {
-      key: 'sponsor.name',
+      key: 'sponsorName',
       label: 'Sponsor Name',
       sortable: true,
-      render: (row) => row?.sponsor?.name || '-'
+      render: (value, row) => row?.sponsor?.name || '-'
     },
     {
-      key: 'sponsor.type',
+      key: 'sponsorType',
       label: 'Type',
       sortable: true,
-      render: (row) => row?.sponsor?.type || '-'
+      render: (value, row) => row?.sponsor?.type || '-'
     },
     {
-      key: 'sponsor.companyName',
+      key: 'sponsorCompany',
       label: 'Company',
       sortable: true,
-      render: (row) => row?.sponsor?.companyName || '-'
+      render: (value, row) => row?.sponsor?.companyName || '-'
     },
     {
-      key: 'sponsor.contactEmail',
+      key: 'sponsorEmail',
       label: 'Contact Email',
       sortable: true,
-      render: (row) => row?.sponsor?.contactEmail || '-'
+      render: (value, row) => row?.sponsor?.contactEmail || '-'
     },
     {
-      key: 'sponsor.isActive',
+      key: 'sponsorActive',
       label: 'Active',
       sortable: true,
-      render: (row) => row?.sponsor?.isActive ? 'Yes' : 'No'
+      render: (value, row) => row?.sponsor?.isActive ? 'Yes' : 'No'
     },
     {
       key: 'createdAt',
       label: 'Assigned Date',
       sortable: true,
-      render: (row) => row?.createdAt ? new Date(row.createdAt).toLocaleDateString() : '-'
+      render: (value, row) => row?.createdAt ? new Date(row.createdAt).toLocaleDateString() : '-'
     },
   ];
 
@@ -477,6 +500,19 @@ export default function EventSponsorsPage() {
       {/* Event Sponsors Table */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Event Sponsors ({filteredEventSponsors.length})</h2>
+        
+        {/* Debug Info */}
+        <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+          <p><strong>Debug:</strong> filteredEventSponsors.length = {filteredEventSponsors.length}</p>
+          <p><strong>Debug:</strong> eventSponsors.length = {eventSponsors.length}</p>
+          {filteredEventSponsors.length > 0 && (
+            <div>
+              <p><strong>First sponsor name:</strong> {filteredEventSponsors[0]?.sponsor?.name || 'undefined'}</p>
+              <p><strong>First sponsor type:</strong> {filteredEventSponsors[0]?.sponsor?.type || 'undefined'}</p>
+            </div>
+          )}
+        </div>
+        
         <DataTable
           data={filteredEventSponsors || []}
           columns={columns}
