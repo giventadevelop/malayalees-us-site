@@ -28,6 +28,8 @@ export default function Modal({
   size = 'md',
   className = '',
 }: ModalProps) {
+  console.log('🔍 Modal render:', { isOpen, title, size, hasChildren: !!children });
+  
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -46,7 +48,10 @@ export default function Modal({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    console.log('🔍 Modal not open, returning null');
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -106,7 +111,7 @@ export function ConfirmModal({
   variant = 'danger',
 }: ConfirmModalProps) {
   console.log('🔍 ConfirmModal render:', { isOpen, title, message, variant });
-  
+
   const variantClasses = {
     danger: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
     warning: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
@@ -123,8 +128,8 @@ export function ConfirmModal({
       <div className="space-y-6">
         <div className="flex items-center space-x-3">
           <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${variant === 'danger' ? 'bg-red-100 text-red-600' :
-              variant === 'warning' ? 'bg-yellow-100 text-yellow-600' :
-                'bg-blue-100 text-blue-600'
+            variant === 'warning' ? 'bg-yellow-100 text-yellow-600' :
+              'bg-blue-100 text-blue-600'
             }`}>
             {variant === 'danger' ? '⚠️' : variant === 'warning' ? '⚠️' : 'ℹ️'}
           </div>

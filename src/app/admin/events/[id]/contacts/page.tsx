@@ -54,6 +54,15 @@ export default function EventContactsPage() {
     }
   }, [userId, eventId]);
 
+  // Debug modal state changes
+  useEffect(() => {
+    console.log('🔍 Modal state changed:', { 
+      isDeleteModalOpen, 
+      selectedContact: selectedContact?.name,
+      hasSelectedContact: !!selectedContact 
+    });
+  }, [isDeleteModalOpen, selectedContact]);
+
   useEffect(() => {
     if (toastMessage) {
       const timer = setTimeout(() => setToastMessage(null), 5000);
@@ -368,11 +377,6 @@ export default function EventContactsPage() {
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      {console.log('🔍 Rendering ConfirmModal with:', { 
-        isOpen: isDeleteModalOpen, 
-        selectedContact: selectedContact?.name,
-        hasSelectedContact: !!selectedContact 
-      })}
       <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
