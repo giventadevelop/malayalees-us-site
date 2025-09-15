@@ -117,16 +117,25 @@ export default function EventEmailsPage() {
   };
 
   const handleDelete = async () => {
-    if (!selectedEmail) return;
+    if (!selectedEmail) {
+      console.log('❌ No selected email for deletion');
+      return;
+    }
+
+    console.log('🗑️ Deleting email:', selectedEmail);
 
     try {
       setLoading(true);
+      console.log('🔄 Calling deleteEventEmailServer with ID:', selectedEmail.id);
       await deleteEventEmailServer(selectedEmail.id!);
+      
+      console.log('✅ Email deleted successfully, updating UI');
       setEmails(prev => prev.filter(e => e.id !== selectedEmail.id));
       setIsDeleteModalOpen(false);
       setSelectedEmail(null);
       setToastMessage({ type: 'success', message: 'Email deleted successfully' });
     } catch (err: any) {
+      console.error('❌ Delete error:', err);
       setToastMessage({ type: 'error', message: err.message || 'Failed to delete email' });
     } finally {
       setLoading(false);
@@ -147,6 +156,7 @@ export default function EventEmailsPage() {
   };
 
   const openDeleteModal = (email: EventEmailsDTO) => {
+    console.log('🗑️ Opening delete modal for email:', email);
     setSelectedEmail(email);
     setIsDeleteModalOpen(true);
   };

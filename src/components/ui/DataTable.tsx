@@ -133,19 +133,22 @@ export default function DataTable<T extends Record<string, any>>({
                         {onEdit && (
                           <button
                             onClick={() => onEdit(item)}
-                            className="text-indigo-600 hover:text-indigo-900 p-1 rounded"
+                            className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 p-2 rounded-md transition-colors duration-200 border border-transparent hover:border-indigo-200 mr-2"
                             title="Edit"
                           >
-                            <FaEdit />
+                            <FaEdit className="text-sm" />
                           </button>
                         )}
                         {onDelete && (
                           <button
-                            onClick={() => onDelete(item)}
-                            className="text-red-600 hover:text-red-900 p-1 rounded"
+                            onClick={() => {
+                              console.log('🗑️ Delete button clicked for item:', item);
+                              onDelete(item);
+                            }}
+                            className="text-red-600 hover:text-red-900 hover:bg-red-50 p-2 rounded-md transition-colors duration-200 border border-transparent hover:border-red-200"
                             title="Delete"
                           >
-                            <FaTrash />
+                            <FaTrash className="text-sm" />
                           </button>
                         )}
                       </div>

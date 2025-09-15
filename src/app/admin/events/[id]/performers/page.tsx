@@ -140,16 +140,25 @@ export default function EventPerformersPage() {
   };
 
   const handleDelete = async () => {
-    if (!selectedPerformer) return;
+    if (!selectedPerformer) {
+      console.log('❌ No selected performer for deletion');
+      return;
+    }
+
+    console.log('🗑️ Deleting performer:', selectedPerformer);
 
     try {
       setLoading(true);
+      console.log('🔄 Calling deleteEventFeaturedPerformerServer with ID:', selectedPerformer.id);
       await deleteEventFeaturedPerformerServer(selectedPerformer.id!);
+      
+      console.log('✅ Performer deleted successfully, updating UI');
       setPerformers(prev => prev.filter(p => p.id !== selectedPerformer.id));
       setIsDeleteModalOpen(false);
       setSelectedPerformer(null);
       setToastMessage({ type: 'success', message: 'Performer deleted successfully' });
     } catch (err: any) {
+      console.error('❌ Delete error:', err);
       setToastMessage({ type: 'error', message: err.message || 'Failed to delete performer' });
     } finally {
       setLoading(false);
@@ -182,6 +191,7 @@ export default function EventPerformersPage() {
   };
 
   const openDeleteModal = (performer: EventFeaturedPerformersDTO) => {
+    console.log('🗑️ Opening delete modal for performer:', performer);
     setSelectedPerformer(performer);
     setIsDeleteModalOpen(true);
   };
@@ -289,8 +299,8 @@ export default function EventPerformersPage() {
       {/* Toast Message */}
       {toastMessage && (
         <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
-            ? 'bg-green-50 border border-green-200 text-green-700'
-            : 'bg-red-50 border border-red-200 text-red-700'
+          ? 'bg-green-50 border border-green-200 text-green-700'
+          : 'bg-red-50 border border-red-200 text-red-700'
           }`}>
           {toastMessage.message}
         </div>
@@ -718,7 +728,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
                 disabled={loading}
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Performance Image
@@ -734,7 +744,7 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
                 disabled={loading}
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Gallery Images

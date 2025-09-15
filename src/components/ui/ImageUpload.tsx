@@ -82,7 +82,7 @@ export default function ImageUpload({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragActive(false);
-    
+
     const file = e.dataTransfer.files?.[0];
     if (file) {
       handleFileSelect(file);
@@ -115,7 +115,7 @@ export default function ImageUpload({
         className="hidden"
         disabled={disabled || isUploading}
       />
-      
+
       <div
         onClick={handleClick}
         onDrop={handleDrop}

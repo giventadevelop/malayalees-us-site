@@ -144,16 +144,25 @@ export default function EventContactsPage() {
   };
 
   const handleDelete = async () => {
-    if (!selectedContact) return;
+    if (!selectedContact) {
+      console.log('❌ No selected contact for deletion');
+      return;
+    }
+
+    console.log('🗑️ Deleting contact:', selectedContact);
 
     try {
       setLoading(true);
+      console.log('🔄 Calling deleteEventContactServer with ID:', selectedContact.id);
       await deleteEventContactServer(selectedContact.id!);
+      
+      console.log('✅ Contact deleted successfully, updating UI');
       setContacts(prev => prev.filter(c => c.id !== selectedContact.id));
       setIsDeleteModalOpen(false);
       setSelectedContact(null);
       setToastMessage({ type: 'success', message: 'Contact deleted successfully' });
     } catch (err: any) {
+      console.error('❌ Delete error:', err);
       setToastMessage({ type: 'error', message: err.message || 'Failed to delete contact' });
     } finally {
       setLoading(false);
@@ -176,6 +185,7 @@ export default function EventContactsPage() {
   };
 
   const openDeleteModal = (contact: EventContactsDTO) => {
+    console.log('🗑️ Opening delete modal for contact:', contact);
     setSelectedContact(contact);
     setIsDeleteModalOpen(true);
   };
