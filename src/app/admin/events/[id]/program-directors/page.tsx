@@ -292,6 +292,7 @@ export default function EventProgramDirectorsPage() {
           onSubmit={handleCreate}
           loading={loading}
           submitText="Create Program Director"
+          eventId={eventId}
         />
       </Modal>
 
@@ -312,6 +313,7 @@ export default function EventProgramDirectorsPage() {
           onSubmit={handleEdit}
           loading={loading}
           submitText="Update Program Director"
+          eventId={eventId}
         />
       </Modal>
 
@@ -339,9 +341,10 @@ interface ProgramDirectorFormProps {
   onSubmit: () => void;
   loading: boolean;
   submitText: string;
+  eventId: string;
 }
 
-function ProgramDirectorForm({ formData, setFormData, onSubmit, loading, submitText }: ProgramDirectorFormProps) {
+function ProgramDirectorForm({ formData, setFormData, onSubmit, loading, submitText, eventId }: ProgramDirectorFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 

@@ -364,6 +364,7 @@ export default function EventPerformersPage() {
           onSubmit={handleCreate}
           loading={loading}
           submitText="Create Performer"
+          eventId={eventId}
         />
       </Modal>
 
@@ -384,6 +385,7 @@ export default function EventPerformersPage() {
           onSubmit={handleEdit}
           loading={loading}
           submitText="Update Performer"
+          eventId={eventId}
         />
       </Modal>
 
@@ -411,9 +413,10 @@ interface PerformerFormProps {
   onSubmit: () => void;
   loading: boolean;
   submitText: string;
+  eventId: string;
 }
 
-function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }: PerformerFormProps) {
+function PerformerForm({ formData, setFormData, onSubmit, loading, submitText, eventId }: PerformerFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 
