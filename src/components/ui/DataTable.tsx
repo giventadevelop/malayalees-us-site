@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FaSort, FaSortUp, FaSortDown, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
+import { FaSort, FaSortUp, FaSortDown, FaEdit, FaTrashAlt, FaEye } from 'react-icons/fa';
 
 export interface Column<T> {
   key: keyof T | string;
@@ -124,7 +124,7 @@ export default function DataTable<T extends Record<string, any>>({
                         {onView && (
                           <button
                             onClick={() => onView(item)}
-                            className="text-blue-600 hover:text-blue-900 p-1 rounded"
+                            className="icon-btn icon-btn-view mr-2"
                             title="View"
                           >
                             <FaEye />
@@ -133,10 +133,10 @@ export default function DataTable<T extends Record<string, any>>({
                         {onEdit && (
                           <button
                             onClick={() => onEdit(item)}
-                            className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 p-2 rounded-md transition-colors duration-200 border border-transparent hover:border-indigo-200 mr-2"
+                            className="icon-btn icon-btn-edit mr-2"
                             title="Edit"
                           >
-                            <FaEdit className="text-sm" />
+                            <FaEdit />
                           </button>
                         )}
                         {onDelete && (
@@ -145,10 +145,10 @@ export default function DataTable<T extends Record<string, any>>({
                               console.log('🗑️ Delete button clicked for item:', item);
                               onDelete(item);
                             }}
-                            className="text-red-600 hover:text-red-900 hover:bg-red-50 p-2 rounded-md transition-colors duration-200 border border-transparent hover:border-red-200"
+                            className="icon-btn icon-btn-delete"
                             title="Delete"
                           >
-                            <FaTrash className="text-sm" />
+                            <FaTrashAlt />
                           </button>
                         )}
                       </div>

@@ -105,11 +105,18 @@ export function ConfirmModal({
   cancelText = 'Cancel',
   variant = 'danger',
 }: ConfirmModalProps) {
+  console.log('🔍 ConfirmModal render:', { isOpen, title, message, variant });
+  
   const variantClasses = {
     danger: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
     warning: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
     info: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
   };
+
+  if (!isOpen) {
+    console.log('🔍 ConfirmModal not open, returning null');
+    return null;
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">

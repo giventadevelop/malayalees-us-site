@@ -192,6 +192,8 @@ export default function EventContactsPage() {
 
   const openDeleteModal = (contact: EventContactsDTO) => {
     console.log('🗑️ Opening delete modal for contact:', contact);
+    console.log('🗑️ Setting selectedContact to:', contact);
+    console.log('🗑️ Setting isDeleteModalOpen to true');
     setSelectedContact(contact);
     setIsDeleteModalOpen(true);
   };
@@ -366,9 +368,15 @@ export default function EventContactsPage() {
       </Modal>
 
       {/* Delete Confirmation Modal */}
+      {console.log('🔍 Rendering ConfirmModal with:', { 
+        isOpen: isDeleteModalOpen, 
+        selectedContact: selectedContact?.name,
+        hasSelectedContact: !!selectedContact 
+      })}
       <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
+          console.log('🔍 ConfirmModal onClose called');
           setIsDeleteModalOpen(false);
           setSelectedContact(null);
         }}
