@@ -51,14 +51,30 @@ export default function ImageUpload({
       const formData = new FormData();
       formData.append('file', file);
 
+      // Build the correct API URL based on entity type
+      let apiUrl: string;
+      if (entityType === 'program-director') {
+        // Program director has a different endpoint structure
+        apiUrl = `/api/event-medias/upload/${entityType}/${entityId}/photo?eventId=${eventId}&title=${imageType}&description=Uploaded image&tenantId=${process.env.NEXT_PUBLIC_TENANT_ID}&isPublic=true`;
+      } else {
+        // Other entity types use the generic pattern
+        apiUrl = `/api/event-medias/upload/${entityType}/${entityId}/${imageType}?eventId=${eventId}&title=${imageType}&description=Uploaded image&tenantId=${process.env.NEXT_PUBLIC_TENANT_ID}&isPublic=true`;
+      }
+
       // Call the backend API directly for image upload
-      const response = await fetch(`/api/event-medias/upload/${entityType}/${entityId}/${imageType}?eventId=${eventId}&title=${imageType}&description=Uploaded image&tenantId=${process.env.NEXT_PUBLIC_TENANT_ID}&isPublic=true`, {
+      console.log('🖼️ ImageUpload: Uploading to URL:', apiUrl);
+      console.log('🖼️ ImageUpload: Entity info:', { entityType, entityId, imageType, eventId });
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
       });
 
+      console.log('🖼️ ImageUpload: Response status:', response.status);
+
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('🖼️ ImageUpload: Upload failed:', errorText);
         throw new Error(`Upload failed: ${errorText}`);
       }
 
