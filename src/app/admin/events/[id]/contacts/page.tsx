@@ -6,8 +6,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import DataTable, { Column } from '@/components/ui/DataTable';
-import Modal from '@/components/ui/Modal';
-import ConfirmModal from '@/components/ui/Modal';
+import Modal, { ConfirmModal } from '@/components/ui/Modal';
 import type { EventContactsDTO, EventDetailsDTO } from '@/types';
 import {
   fetchEventContactsServer,
@@ -56,10 +55,10 @@ export default function EventContactsPage() {
 
   // Debug modal state changes
   useEffect(() => {
-    console.log('🔍 Modal state changed:', { 
-      isDeleteModalOpen, 
+    console.log('🔍 Modal state changed:', {
+      isDeleteModalOpen,
       selectedContact: selectedContact?.name,
-      hasSelectedContact: !!selectedContact 
+      hasSelectedContact: !!selectedContact
     });
   }, [isDeleteModalOpen, selectedContact]);
 

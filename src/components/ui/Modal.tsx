@@ -29,7 +29,7 @@ export default function Modal({
   className = '',
 }: ModalProps) {
   console.log('🔍 Modal render:', { isOpen, title, size, hasChildren: !!children });
-  
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
