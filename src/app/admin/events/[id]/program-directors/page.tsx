@@ -407,39 +407,21 @@ function ProgramDirectorForm({ formData, setFormData, onSubmit, loading, submitT
       {/* Image Upload Section */}
       {formData.id && (
         <div className="border-t pt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Images</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Profile Photo
-              </label>
-              <ImageUpload
-                entityId={formData.id}
-                entityType="program-director"
-                imageType="photo"
-                eventId={parseInt(eventId)}
-                currentImageUrl={formData.profileImageUrl}
-                onImageUploaded={(url) => setFormData(prev => ({ ...prev, profileImageUrl: url }))}
-                onError={(error) => console.error('Profile photo upload error:', error)}
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Banner Image
-              </label>
-              <ImageUpload
-                entityId={formData.id}
-                entityType="program-director"
-                imageType="banner"
-                eventId={parseInt(eventId)}
-                currentImageUrl={formData.bannerImageUrl}
-                onImageUploaded={(url) => setFormData(prev => ({ ...prev, bannerImageUrl: url }))}
-                onError={(error) => console.error('Banner upload error:', error)}
-                disabled={loading}
-              />
-            </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Profile Photo</h3>
+          <div className="max-w-md">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Upload Profile Photo
+            </label>
+            <ImageUpload
+              entityId={formData.id}
+              entityType="program-director"
+              imageType="photo"
+              eventId={parseInt(eventId)}
+              currentImageUrl={formData.photoUrl}
+              onImageUploaded={(url) => setFormData(prev => ({ ...prev, photoUrl: url }))}
+              onError={(error) => console.error('Profile photo upload error:', error)}
+              disabled={loading}
+            />
           </div>
         </div>
       )}
