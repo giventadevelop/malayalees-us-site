@@ -19,9 +19,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const tenantId = getTenantId();
-    
-    // Try using the general upload endpoint instead of the specific program-director endpoint
-    const url = `${API_BASE_URL}/api/event-medias/upload?eventId=${eventId}&executiveTeamMemberID=${entityId}&title=${title || 'photo'}&description=${description || 'Uploaded photo'}&tenantId=${tenantId}&isPublic=${isPublic || 'true'}&isTeamMemberProfileImage=true`;
+
+    // Back to the original program-director endpoint with isTeamMemberProfileImage=false
+    const url = `${API_BASE_URL}/api/event-medias/upload/program-director/${entityId}/photo?eventId=${eventId}&title=${title || 'photo'}&description=${description || 'Uploaded photo'}&tenantId=${tenantId}&isPublic=${isPublic || 'true'}&isTeamMemberProfileImage=false`;
 
     console.log('🔍 Program Director Upload Debug:');
     console.log('📋 Query params:', { entityId, eventId, title, description, isPublic });
