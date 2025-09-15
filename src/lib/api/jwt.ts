@@ -40,22 +40,29 @@ export async function generateApiJwt() {
     rememberMe: true,
   };
 
-  const res = await fetch(apiUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+  try {
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch JWT from backend: ${res.status} ${res.statusText}`);
-  }
+    if (!res.ok) {
+      console.error('[JWT DEBUG] Fetch failed:', res.status, res.statusText);
+      throw new Error(`Failed to fetch JWT from backend: ${res.status} ${res.statusText}`);
+    }
 
-  const data = await res.json();
-  // The backend should return { id_token: '...' }
-  if (!data.id_token) {
-    throw new Error('No id_token returned from backend');
+    const data = await res.json();
+    if (!data.id_token) {
+      console.error('[JWT DEBUG] No id_token in response:', data);
+      throw new Error('No id_token returned from backend');
+    }
+
+    return data.id_token;
+  } catch (error) {
+    console.error('[JWT DEBUG] Error during fetch:', error);
+    throw new Error('Error fetching JWT from backend');
   }
-  return data.id_token;
 }
 
 let cachedToken: string | null = null;

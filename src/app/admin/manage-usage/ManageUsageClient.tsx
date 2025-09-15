@@ -7,6 +7,7 @@ import { FaEye, FaCheck, FaEdit, FaTimes, FaUsers, FaPhotoVideo, FaCalendarAlt, 
 import * as XLSX from 'xlsx';
 import { getTenantId } from '@/lib/env';
 import { fetchUsersServer, patchUserProfileServer, bulkUploadUsersServer } from './ApiServerActions';
+import AdminNavigation from '@/components/AdminNavigation';
 
 // Import UserDetailsTooltip and EditUserModal from the same file or extract if needed
 // ... (copy UserDetailsTooltip and EditUserModal here or import them)
@@ -514,26 +515,8 @@ export default function ManageUsageClient({ adminProfile }: { adminProfile: User
   const totalPages = Math.ceil(totalUsers / pageSize) || 1;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ paddingTop: '118px' }}>
-      <div className="flex justify-center mb-8">
-        <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 justify-items-center mx-auto">
-            <Link href="/admin" className="w-48 max-w-xs mx-auto flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-md shadow p-1 sm:p-2 text-xs sm:text-xs transition-all">
-              <FaHome className="text-base sm:text-lg mb-1 mx-auto" />
-              <span className="font-semibold text-center leading-tight">Admin Home</span>
-            </Link>
-            <Link href="/admin/manage-usage" className="w-48 max-w-xs mx-auto flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md shadow p-1 sm:p-2 text-xs sm:text-xs transition-all">
-              <FaUsers className="text-base sm:text-lg mb-1 mx-auto" />
-              <span className="font-semibold text-center leading-tight">Manage Users [Usage]</span>
-              <span className="text-xs text-blue-500 mt-1">[Users]</span>
-            </Link>
-            <Link href="/admin" className="w-48 max-w-xs mx-auto flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 text-green-700 rounded-md shadow p-1 sm:p-2 text-xs sm:text-xs transition-all">
-              <FaCalendarAlt className="text-base sm:text-lg mb-1 mx-auto" />
-              <span className="font-semibold text-center leading-tight">Manage Events</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ paddingTop: '180px' }}>
+      <AdminNavigation />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Manage Users</h1>
         <div className="flex items-center gap-2">

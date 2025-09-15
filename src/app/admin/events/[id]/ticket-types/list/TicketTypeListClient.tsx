@@ -63,7 +63,7 @@ function TicketTypeDetailsTooltip({ ticketType, anchorRect, onClose }: { ticketT
           &times;
         </button>
       </div>
-      
+
       {/* Tooltip content */}
       <div className="space-y-3">
         <div>
@@ -96,11 +96,10 @@ function TicketTypeDetailsTooltip({ ticketType, anchorRect, onClose }: { ticketT
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Status:</span>
-            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-              ticketType.isActive 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
+            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ticketType.isActive
+              ? 'bg-green-100 text-green-800'
+              : 'bg-red-100 text-red-800'
+              }`}>
               {ticketType.isActive ? 'Active' : 'Inactive'}
             </span>
           </div>
@@ -124,11 +123,12 @@ interface TicketTypeListClientProps {
 }
 
 export default function TicketTypeListClient({ eventId, eventDetails, ticketTypes: initialTicketTypes }: TicketTypeListClientProps) {
-  const [ticketTypes, setTicketTypes] = useState<EventTicketTypeDTO[]>(initialTicketTypes);
+  const [ticketTypes, setTicketTypes] = useState<EventTicketTypeDTO[]>(initialTicketTypes || []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [isCheckingCode, setIsCheckingCode] = useState(false);
 
   const [editingTicketType, setEditingTicketType] = useState<EventTicketTypeDTO | null>(null);
   const [deletingTicketType, setDeletingTicketType] = useState<EventTicketTypeDTO | null>(null);
@@ -224,6 +224,20 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
     });
   };
 
+  const checkDuplicateCode = (code: string, excludeId?: number): boolean => {
+    return ticketTypes.some(tt =>
+      tt.code.toLowerCase() === code.toLowerCase() &&
+      tt.id !== excludeId
+    );
+  };
+
+  const checkDuplicateName = (name: string, excludeId?: number): boolean => {
+    return ticketTypes.some(tt =>
+      tt.name.toLowerCase() === name.toLowerCase() &&
+      tt.id !== excludeId
+    );
+  };
+
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
     if (!formData.name?.trim()) newErrors.name = 'Name is required.';
@@ -232,8 +246,80 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
     if (Number(formData.price) <= 0) newErrors.price = 'Price must be greater than zero.';
     if (Number(formData.availableQuantity) <= 0) newErrors.availableQuantity = 'Available quantity must be greater than zero.';
 
+    // Check for duplicate name
+    if (formData.name?.trim()) {
+      const isDuplicateName = checkDuplicateName(formData.name.trim(), editingTicketType?.id);
+      if (isDuplicateName) {
+        newErrors.name = 'A ticket type with this name already exists for this event.';
+      }
+    }
+
+    // Check for duplicate code
+    if (formData.code?.trim()) {
+      const isDuplicate = checkDuplicateCode(formData.code.trim(), editingTicketType?.id);
+      if (isDuplicate) {
+        newErrors.code = 'A ticket type with this code already exists for this event.';
+      }
+    }
+
     setValidationErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNameChange = (value: string) => {
+    setFormData(prev => ({ ...prev, name: value }));
+
+    // Clear existing name error when user starts typing
+    if (validationErrors.name) {
+      setValidationErrors(prev => ({ ...prev, name: '' }));
+    }
+  };
+
+  const handleNameBlur = () => {
+    // Validate name on blur for immediate feedback
+    if (formData.name?.trim()) {
+      setIsCheckingCode(true);
+
+      // Simulate a brief delay for better UX
+      setTimeout(() => {
+        const isDuplicate = checkDuplicateName(formData.name?.trim() || '', editingTicketType?.id);
+        if (isDuplicate) {
+          setValidationErrors(prev => ({
+            ...prev,
+            name: 'A ticket type with this name already exists for this event.'
+          }));
+        }
+        setIsCheckingCode(false);
+      }, 300);
+    }
+  };
+
+  const handleCodeChange = (value: string) => {
+    setFormData(prev => ({ ...prev, code: value }));
+
+    // Clear existing code error when user starts typing
+    if (validationErrors.code) {
+      setValidationErrors(prev => ({ ...prev, code: '' }));
+    }
+  };
+
+  const handleCodeBlur = () => {
+    // Validate code on blur for immediate feedback
+    if (formData.code?.trim()) {
+      setIsCheckingCode(true);
+
+      // Simulate a brief delay for better UX
+      setTimeout(() => {
+        const isDuplicate = checkDuplicateCode(formData.code?.trim() || '', editingTicketType?.id);
+        if (isDuplicate) {
+          setValidationErrors(prev => ({
+            ...prev,
+            code: 'A ticket type with this code already exists for this event.'
+          }));
+        }
+        setIsCheckingCode(false);
+      }, 300);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -281,81 +367,88 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-8 py-8">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Ticket Types for {eventDetails?.title}</h2>
-          <button
-            onClick={handleAddNewClick}
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
-          >
-            <FaPlus /> Add New Ticket Type
-          </button>
-        </div>
-        
-        {/* Hint message */}
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
-          <div className="flex">
-            <div className="ml-3">
-              <p className="text-sm text-blue-700">
-                <strong>Note:</strong> Ticket types may not be immediately deletable but you can make them inactive by clicking the edit button and unchecking the Active checkbox.
-              </p>
-              <p className="text-sm text-blue-700 mt-2">
-                <strong>Tip:</strong> Hover over the Name, Price, or Available columns to see detailed information about each ticket type.
-              </p>
-            </div>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-gray-800">Ticket Types for {eventDetails?.title}</h2>
+        <button
+          onClick={handleAddNewClick}
+          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
+        >
+          <FaPlus /> Add New Ticket Type
+        </button>
+      </div>
+
+      {/* Hint message */}
+      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+        <div className="flex">
+          <div className="ml-3">
+            <p className="text-sm text-blue-700">
+              <strong>Note:</strong> Ticket types may not be immediately deletable but you can make them inactive by clicking the edit button and unchecking the Active checkbox.
+            </p>
+            <p className="text-sm text-blue-700 mt-2">
+              <strong>Tip:</strong> Hover over the Name, Price, or Available columns to see detailed information about each ticket type.
+            </p>
           </div>
         </div>
-        
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Available</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {ticketTypes.map((ticketType) => (
-                <tr key={ticketType.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
-                    {ticketType.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
-                    ${ticketType.price.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
-                    {ticketType.availableQuantity}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      ticketType.isActive 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service Fee</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Available</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {ticketTypes && ticketTypes.length > 0 ? ticketTypes.map((ticketType) => (
+              <tr key={ticketType.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
+                  {ticketType.name}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
+                  ${ticketType.price.toFixed(2)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
+                  ${(ticketType.serviceFee || 0).toFixed(2)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onMouseEnter={(e) => handleMouseEnter(ticketType, e)} onMouseLeave={handleMouseLeave}>
+                  {ticketType.availableQuantity}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${ticketType.isActive
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
                     }`}>
-                      {ticketType.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center justify-center gap-4">
-                      <button onClick={() => handleEditClick(ticketType)} className="flex flex-col items-center text-blue-600 hover:text-blue-800 focus:outline-none">
-                        <FaEdit className="w-7 h-7" />
-                        <span className="text-[10px] text-gray-600 mt-1 block font-bold">Edit</span>
-                      </button>
-                      <button onClick={() => handleDeleteClick(ticketType)} className="flex flex-col items-center text-red-600 hover:text-red-800 focus:outline-none">
-                        <FaTrashAlt className="w-7 h-7" />
-                        <span className="text-[10px] text-gray-600 mt-1 block font-bold">Delete</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    {ticketType.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center justify-center gap-4">
+                    <button onClick={() => handleEditClick(ticketType)} className="flex flex-col items-center text-blue-600 hover:text-blue-800 focus:outline-none">
+                      <FaEdit className="w-7 h-7" />
+                      <span className="text-[10px] text-gray-600 mt-1 block font-bold">Edit</span>
+                    </button>
+                    <button onClick={() => handleDeleteClick(ticketType)} className="flex flex-col items-center text-red-600 hover:text-red-800 focus:outline-none">
+                      <FaTrashAlt className="w-7 h-7" />
+                      <span className="text-[10px] text-gray-600 mt-1 block font-bold">Delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )) : (
+              <tr>
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                  No ticket types found. Click "Add Ticket Type" to create one.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Tooltip component */}
@@ -370,16 +463,21 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
             }, 200);
           }}
         >
-          <TicketTypeDetailsTooltip 
-            ticketType={hoveredTicketType} 
-            anchorRect={popoverAnchor} 
-            onClose={closeTooltip} 
+          <TicketTypeDetailsTooltip
+            ticketType={hoveredTicketType}
+            anchorRect={popoverAnchor}
+            onClose={closeTooltip}
           />
         </div>
       )}
 
       {deletingTicketType && (
-        <Modal open={!!deletingTicketType} onClose={() => setDeletingTicketType(null)} title="Confirm Deletion">
+        <Modal
+          open={!!deletingTicketType}
+          onClose={() => setDeletingTicketType(null)}
+          title="Confirm Deletion"
+          preventBackdropClose={true}
+        >
           <div className="text-center">
             <p className="text-lg">
               Are you sure you want to delete the ticket type: <strong>{deletingTicketType.name}</strong>?
@@ -405,32 +503,53 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
         </Modal>
       )}
 
-      <Modal open={isModalOpen} onClose={handleModalClose} title={editingTicketType ? "Edit Ticket Type" : "Add Ticket Type"}>
+      <Modal
+        open={isModalOpen}
+        onClose={handleModalClose}
+        title={editingTicketType ? "Edit Ticket Type" : "Add Ticket Type"}
+        preventBackdropClose={true}
+      >
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="text-red-500 bg-red-100 p-3 rounded-md">{error}</div>}
 
           <div>
             <label className="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name || ''}
-              onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
-              required
-            />
+            <div className="relative">
+              <input
+                type="text"
+                name="name"
+                value={formData.name || ''}
+                onChange={(e) => handleNameChange(e.target.value)}
+                onBlur={handleNameBlur}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base pr-10"
+                required
+              />
+              {isCheckingCode && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                </div>
+              )}
+            </div>
             {validationErrors.name && <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Code</label>
-            <input
-              type="text"
-              name="code"
-              value={formData.code || ''}
-              onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
-              required
-            />
+            <div className="relative">
+              <input
+                type="text"
+                name="code"
+                value={formData.code || ''}
+                onChange={(e) => handleCodeChange(e.target.value)}
+                onBlur={handleCodeBlur}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base pr-10"
+                required
+              />
+              {isCheckingCode && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                </div>
+              )}
+            </div>
             {validationErrors.code && <p className="text-red-500 text-xs mt-1">{validationErrors.code}</p>}
           </div>
           <div>
@@ -479,11 +598,12 @@ export default function TicketTypeListClient({ eventId, eventDetails, ticketType
               <input
                 type="number"
                 name="serviceFee"
-                value={formData.serviceFee || 0}
+                value={formData.serviceFee ? Number(formData.serviceFee).toFixed(2) : '0.00'}
                 onChange={handleInputChange}
                 className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
                 min="0"
                 step="0.01"
+                placeholder="0.00"
               />
             </div>
           </div>

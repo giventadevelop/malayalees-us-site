@@ -4,30 +4,11 @@ import { revalidatePath } from 'next/cache';
 import { getTenantId, getAppUrl } from '@/lib/env';
 import { withTenantId } from '@/lib/withTenantId';
 import type { EventTicketTypeDTO, EventTicketTypeFormDTO, EventDetailsDTO } from '@/types';
-import { getCachedApiJwt, generateApiJwt } from '@/lib/api/jwt';
+import { fetchWithJwtRetry } from '@/lib/proxyHandler';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const APP_URL = getAppUrl();
 
-async function fetchWithJwtRetry(apiUrl: string, options: RequestInit = {}) {
-  let token = await getCachedApiJwt();
-  const headers = new Headers(options.headers || {});
-  headers.set('Authorization', `Bearer ${token}`);
-  if (options.method === 'POST' || options.method === 'PUT') {
-    headers.set('Content-Type', 'application/json');
-  }
-
-  let response = await fetch(apiUrl, { ...options, headers });
-
-  if (response.status === 401) {
-    console.log('JWT expired or invalid, generating a new one.');
-    token = await generateApiJwt();
-    headers.set('Authorization', `Bearer ${token}`);
-    response = await fetch(apiUrl, { ...options, headers });
-  }
-
-  return response;
-}
 
 export async function fetchTicketTypesServer(eventId: number) {
   const tenantId = getTenantId();

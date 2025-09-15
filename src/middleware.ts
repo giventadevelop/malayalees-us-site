@@ -4,9 +4,13 @@ export default authMiddleware({
   // Public routes that don't require authentication
   publicRoutes: [
     "/",
+    "/charity-theme",
+    "/(charity-theme)",
     "/event",
     "/event/success",
     "/event/success/(.*)",
+    "/event/ticket-qr",
+    "/test-mobile",
     "/pricing",
     "/events",
     "/events/(.*)/tickets",
@@ -23,11 +27,15 @@ export default authMiddleware({
     "/api/proxy/(.*)",
     "/api/webhooks/(.*)",
     "/api/event/success/process",
+    "/api/debug/(.*)",
+    "/api/test-mobile",
     "/api/tasks",
     "/api/billing/(.*)",
     "/api/stripe/(.*)",
     "/api/payment/(.*)",
     "/api/checkout/(.*)",
+    "/api/profile/(.*)",
+    "/api/auth/(.*)",
     "/images/(.*)",
     "/_next/(.*)",
     "/favicon.ico",
@@ -47,6 +55,10 @@ export default authMiddleware({
     "/api/billing/(.*)"
   ],
 
+  // Clock skew tolerance to handle system clock differences
+  // Use very high tolerance for development to prevent authentication issues
+  clockSkewInSeconds: process.env.NODE_ENV === 'development' ? 300 : 30,
+
   // Debug mode for development
   debug: true,
 
@@ -63,7 +75,7 @@ export const config = {
   matcher: [
     // Skip Next.js internals and all static files
     '/((?!_next|[^?]*\\.[\\w]+$|_next).*)',
-    // Optional: Protect API routes
+    // Protect API routes
     '/(api|trpc)(.*)',
   ],
 };

@@ -1,0 +1,424 @@
+[
+  {
+    "id": "TC001",
+    "title": "User Authentication with Social Login Success",
+    "description": "Verify that users can authenticate successfully using social login and a user profile is created.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page"
+      },
+      {
+        "type": "action",
+        "description": "Click on a supported social login (e.g., Google, Facebook)"
+      },
+      {
+        "type": "action",
+        "description": "Complete social login authentication"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is redirected to the profile creation page if no profile exists"
+      },
+      {
+        "type": "action",
+        "description": "Fill and save user profile form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user profile is stored and user is logged in"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "User Authentication Failure with Invalid Social Login",
+    "description": "Verify that social login fails gracefully and shows an error message on failure.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page"
+      },
+      {
+        "type": "action",
+        "description": "Attempt social login with invalid credentials or denied permissions"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error message indicating login failure is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user remains unauthenticated and on the login page"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Event Creation Workflow",
+    "description": "Verify that event organizers can create a new event with all required settings and save successfully.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as event organizer"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the admin events creation page"
+      },
+      {
+        "type": "action",
+        "description": "Fill in event details including title, description, date/time, location, and ticketing"
+      },
+      {
+        "type": "action",
+        "description": "Configure event settings, registration limits, and media uploads"
+      },
+      {
+        "type": "action",
+        "description": "Save the new event"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify event is listed in the organizer's events dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify event details are correctly saved and retrievable"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Event Creation Validation Errors",
+    "description": "Verify validation errors are shown when mandatory event fields are missing or invalid during event creation.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as event organizer"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to event creation page"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to save event with missing required fields (e.g., title, date)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify appropriate validation error messages are displayed for each missing/invalid field"
+      },
+      {
+        "type": "action",
+        "description": "Enter invalid data formats (e.g., past date, invalid ticket price)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify validation prevents saving and shows relevant messages"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Event Registration Normal Flow",
+    "description": "Verify that users can register for an event, select ticket options, complete payment via Stripe, and receive QR-coded tickets.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as a registered user"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to an event public page"
+      },
+      {
+        "type": "action",
+        "description": "Fill event registration form including guest details if applicable"
+      },
+      {
+        "type": "action",
+        "description": "Select ticket options and proceed to payment"
+      },
+      {
+        "type": "action",
+        "description": "Complete payment using Stripe test card"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify registration status updates to confirmed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user receives confirmation with QR code ticket"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Event Registration with Payment Failure",
+    "description": "Verify system behavior when Stripe payment fails during event registration.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start event registration and fill the registration form"
+      },
+      {
+        "type": "action",
+        "description": "Attempt payment with a declined Stripe test card"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify payment failure message is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify registration is not confirmed and user is prompted to retry"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "QR Code Generation and Validation",
+    "description": "Verify QR code is generated correctly post-registration and can be scanned for check-in.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Complete a successful event registration"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify QR code is included in the registration success page or email"
+      },
+      {
+        "type": "action",
+        "description": "Use QR code scanning system at check-in"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify scanning the QR code authenticates the attendee and marks check-in as complete"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Admin Dashboard Real-time Analytics Update",
+    "description": "Verify that event analytics and reports in the admin dashboard update in real-time with accurate registration and check-in data.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as admin"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to event analytics dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Trigger event registrations and check-ins from different users"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify registration and attendance metrics update immediately and correctly"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify reports generate correct data for the specified date ranges and filters"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Search and Filtering Functionality for Events",
+    "description": "Verify that searching and filtering events and registrants return relevant results quickly and accurately.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as user or admin"
+      },
+      {
+        "type": "action",
+        "description": "Enter search queries with event titles, dates, or organizer names"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that filtered list only contains matching events"
+      },
+      {
+        "type": "action",
+        "description": "Apply filters such as event date range, ticket status, or location"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify results adhere to applied filters"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Multi-tenant Data Isolation Enforcement",
+    "description": "Verify that data for different tenants is isolated with no leakage across organizations.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as tenant A user and create events, registrations, and upload media"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all actions are scoped only to tenant A data and not visible to others"
+      },
+      {
+        "type": "action",
+        "description": "Login as tenant B user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify tenant B cannot access tenant A's events, registrations, or media"
+      },
+      {
+        "type": "action",
+        "description": "Attempt cross-tenant API calls with tenant A token on tenant B endpoints"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied with appropriate error messages"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Email Notification Sending and Template Accuracy",
+    "description": "Verify that system sends automated email notifications for event actions with correct templates and content.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Trigger registration confirmation email via successful event registration"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify receiving email contains correct event details, registration info, and QR code"
+      },
+      {
+        "type": "action",
+        "description": "Trigger reminder or update emails via admin dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify email contents use appropriate templates and dynamic content"
+      },
+      {
+        "type": "action",
+        "description": "Trigger failure scenarios such as invalid email addresses"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify system logs errors and does not crash"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Media Upload and Association with Events",
+    "description": "Verify that media files can be uploaded and correctly linked to events in the media management system.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as event organizer"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to media management page for a selected event"
+      },
+      {
+        "type": "action",
+        "description": "Upload various media files (images, documents) with valid types and sizes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify media files are uploaded successfully and appear in event media list"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to upload disallowed file types or files exceeding max size"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify proper validation errors prevent upload"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Admin Navigation and Usage Tracking",
+    "description": "Verify the admin dashboard navigation menus work correctly and usage metrics track interaction data.",
+    "category": "functional",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as admin user"
+      },
+      {
+        "type": "action",
+        "description": "Use navigation to access different admin pages such as events dashboard, reports, usage management"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify pages load correctly with expected content"
+      },
+      {
+        "type": "action",
+        "description": "Verify usage metrics for navigation clicks and page visits are recorded"
+      },
+      {
+        "type": "assertion",
+        "description": "Check usage reports show updated data matching admin interactions"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Handling No Search Results",
+    "description": "Verify the UI correctly handles searches yielding no results.",
+    "category": "error handling",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform event or registration search with criteria known not to match any records"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the UI displays a user-friendly message indicating no results found"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no errors or UI breakage occurs"
+      }
+    ]
+  }
+]

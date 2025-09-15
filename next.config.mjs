@@ -54,12 +54,28 @@ const nextConfig = {
 
   // Configure headers if needed
   async headers() {
-    return [];
+    return [
+      {
+        source: '/api/proxy/event-medias/upload-multiple',
+        headers: [
+          {
+            key: 'Access-Control-Max-Age',
+            value: '86400',
+          },
+        ],
+      },
+    ];
+  },
+
+  // Configure Server Actions body size limit for Next.js 15
+  serverActions: {
+    bodySizeLimit: '50mb', // Increase from default 1mb to 50mb for file uploads
   },
 
   // Enable experimental features if needed
   experimental: {
     // Add experimental features here
+    serverComponentsExternalPackages: [],
   },
 
   env: {

@@ -36,6 +36,9 @@ export interface UserProfileDTO {
   district?: string;
   educationalInstitution?: string;
   profileImageUrl?: string;
+  isEmailSubscribed?: boolean;
+  emailSubscriptionToken?: string;
+  isEmailSubscriptionTokenUsed?: boolean;
   userStatus?: string; // varchar(50)
   userRole?: string;   // varchar(50)
   reviewedByAdminAt?: string; // ISO date string (date)
@@ -73,6 +76,8 @@ export interface EventDetailsDTO {
   startDate: string;
   /** Event end date (YYYY-MM-DD) */
   endDate: string;
+  /** Event promotion start date (YYYY-MM-DD) */
+  promotionStartDate: string;
   /** Event start time (e.g., 18:00) */
   startTime: string;
   /** Event end time (e.g., 21:00) */
@@ -105,6 +110,12 @@ export interface EventDetailsDTO {
   isSportsEvent?: boolean;
   /** Is event live */
   isLive?: boolean;
+  /** Is featured event */
+  isFeaturedEvent: boolean;
+  /** Featured event priority ranking */
+  featuredEventPriorityRanking: number;
+  /** Live event priority ranking */
+  liveEventPriorityRanking: number;
   /** Created at (ISO date-time) */
   createdAt: string;
   /** Updated at (ISO date-time) */
@@ -141,7 +152,6 @@ export interface EventMediaDTO {
   eventMediaType: string;
   storageType: string;
   fileUrl?: string;
-  fileData?: Uint8Array;
   fileDataContentType?: string;
   contentType?: string;
   fileSize?: number;
@@ -155,13 +165,17 @@ export interface EventMediaDTO {
   downloadCount?: number;
   isFeaturedVideo?: boolean;
   featuredVideoUrl?: string;
-  isFeaturedImage?: boolean;
   isHeroImage?: boolean;
   isActiveHeroImage?: boolean;
+  isHomePageHeroImage: boolean;
+  isFeaturedEventImage: boolean;
+  isLiveEventImage: boolean;
   eventId?: number;
   uploadedById?: number;
   createdAt: string;
   updatedAt: string;
+  /** Start displaying from date (YYYY-MM-DD) */
+  startDisplayingFromDate?: string;
 }
 
 export interface EventCalendarEntryDTO {
@@ -196,7 +210,14 @@ export interface EventTicketTypeDTO {
   code: string;
   availableQuantity?: number;
   soldQuantity?: number;
+  remainingQuantity?: number;
   isActive?: boolean;
+  saleStartDate?: string;
+  saleEndDate?: string;
+  minQuantityPerOrder?: number;
+  maxQuantityPerOrder?: number;
+  requiresApproval?: boolean;
+  sortOrder?: number;
   createdAt: string;
   updatedAt: string;
   event?: EventDetailsDTO;
@@ -570,6 +591,8 @@ export interface EventTicketTransactionStatisticsDTO {
   totalTicketsSold: number;
   /** Total amount collected for the event */
   totalAmount: number;
+
+  netAmount: number;
   /** Map of ticket status to count (e.g., { COMPLETED: 26 }) */
   ticketsByStatus: Record<string, number>;
   /** Map of ticket status to total amount (e.g., { COMPLETED: 444 }) */
@@ -599,4 +622,140 @@ export interface PromotionEmailRequestDTO {
   footerPath?: string;
   /** Email host URL prefix for email context */
   emailHostUrlPrefix?: string;
+}
+
+/**
+ * DTO for executive committee team member data, matches backend OpenAPI schema.
+ */
+export interface ExecutiveCommitteeTeamMemberDTO {
+  id: number | null;
+  firstName: string;
+  lastName: string;
+  title: string;
+  designation?: string;
+  bio?: string;
+  email?: string;
+  profileImageUrl?: string;
+  expertise?: string;
+  imageBackground?: string;
+  imageStyle?: string;
+  department?: string;
+  joinDate?: string; // ISO date string
+  isActive?: boolean;
+  linkedinUrl?: string;
+  twitterUrl?: string;
+  priorityOrder?: number;
+  websiteUrl?: string;
+}
+
+/**
+ * DTO for event featured performers, matches backend OpenAPI schema.
+ */
+export interface EventFeaturedPerformersDTO {
+  id?: number;
+  tenantId?: string;
+  name: string;
+  stageName?: string;
+  role?: string;
+  bio?: string;
+  nationality?: string;
+  dateOfBirth?: string;
+  email?: string;
+  phone?: string;
+  websiteUrl?: string;
+  portraitImageUrl?: string;
+  performanceImageUrl?: string;
+  galleryImageUrls?: string;
+  performanceDurationMinutes?: number;
+  performanceOrder?: number;
+  isHeadliner: boolean;
+  facebookUrl?: string;
+  twitterUrl?: string;
+  instagramUrl?: string;
+  youtubeUrl?: string;
+  linkedinUrl?: string;
+  tiktokUrl?: string;
+  isActive: boolean;
+  priorityRanking?: number;
+  createdAt: string;
+  updatedAt: string;
+  event?: EventDetailsDTO;
+}
+
+/**
+ * DTO for event contacts, matches backend OpenAPI schema.
+ */
+export interface EventContactsDTO {
+  id?: number;
+  tenantId?: string;
+  name: string;
+  phone: string;
+  email?: string;
+  createdAt: string;
+  updatedAt: string;
+  event?: EventDetailsDTO;
+}
+
+/**
+ * DTO for event sponsors, matches backend OpenAPI schema.
+ */
+export interface EventSponsorsDTO {
+  id?: number;
+  tenantId?: string;
+  name: string;
+  type: string;
+  companyName?: string;
+  tagline?: string;
+  description?: string;
+  websiteUrl?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  logoUrl?: string;
+  heroImageUrl?: string;
+  bannerImageUrl?: string;
+  isActive: boolean;
+  priorityRanking?: number;
+  facebookUrl?: string;
+  twitterUrl?: string;
+  linkedinUrl?: string;
+  instagramUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * DTO for event sponsors join (many-to-many relationship), matches backend OpenAPI schema.
+ */
+export interface EventSponsorsJoinDTO {
+  id?: number;
+  tenantId?: string;
+  createdAt: string;
+  event?: EventDetailsDTO;
+  sponsor?: EventSponsorsDTO;
+}
+
+/**
+ * DTO for event emails, matches backend OpenAPI schema.
+ */
+export interface EventEmailsDTO {
+  id?: number;
+  tenantId?: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+  event?: EventDetailsDTO;
+}
+
+/**
+ * DTO for event program directors, matches backend OpenAPI schema.
+ */
+export interface EventProgramDirectorsDTO {
+  id?: number;
+  tenantId?: string;
+  name: string;
+  photoUrl?: string;
+  bio?: string;
+  createdAt: string;
+  updatedAt: string;
+  event?: EventDetailsDTO;
 }

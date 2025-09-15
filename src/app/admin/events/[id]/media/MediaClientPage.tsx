@@ -1,8 +1,8 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
 import { EventMediaDTO, EventDetailsDTO } from "@/types";
-import { FaEdit, FaTrashAlt, FaUpload, FaFolderOpen, FaSpinner, FaUsers, FaPhotoVideo, FaCalendarAlt, FaBan, FaTicketAlt } from 'react-icons/fa';
-import { uploadMediaServer, deleteMediaServer, editMediaServer } from './ApiServerActions';
+import { FaEdit, FaTrashAlt, FaUpload, FaFolderOpen, FaSpinner, FaUsers, FaPhotoVideo, FaCalendarAlt, FaBan, FaTicketAlt, FaTimes } from 'react-icons/fa';
+import { deleteMediaServer, editMediaServer } from './ApiServerActions';
 import { createPortal } from "react-dom";
 import Link from 'next/link';
 
@@ -110,10 +110,13 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
   const [popoverUploadedMediaMedia, setPopoverUploadedMediaMedia] = useState<EventMediaDTO | null>(null);
   const [isHeroImage, setIsHeroImage] = useState(false);
   const [isActiveHeroImage, setIsActiveHeroImage] = useState(false);
-  const [isFeaturedImage, setIsFeaturedImage] = useState(false);
+  const [isFeaturedEventImage, setIsFeaturedEventImage] = useState(false);
+  const [isLiveEventImage, setIsLiveEventImage] = useState(false);
+  const [isHomePageHeroImage, setIsHomePageHeroImage] = useState(false);
   const [isPublic, setIsPublic] = useState(true);
   const [altText, setAltText] = useState("");
   const [displayOrder, setDisplayOrder] = useState<number | undefined>(undefined);
+  const [startDisplayingFromDate, setStartDisplayingFromDate] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadFormDivRef = useRef<HTMLDivElement>(null);
   const tooltipTimer = useRef<NodeJS.Timeout | null>(null);
@@ -132,6 +135,7 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
   const [isTooltipHovered, setIsTooltipHovered] = useState(false);
   const [tooltipType, setTooltipType] = useState<'officialDocs' | 'uploadedMedia' | null>(null);
   const uploadedMediaSectionRef = useRef<HTMLDivElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
   // Helper to infer eventMediaType from file extension
@@ -150,37 +154,138 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
     setFiles(e.target.files);
   };
 
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const droppedFiles = e.dataTransfer.files;
+    if (droppedFiles && droppedFiles.length > 0) {
+      setFiles(droppedFiles);
+      // Also update the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.files = droppedFiles;
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!files || !eventId) {
-      setMessage("Please select files and ensure event ID is present.");
+
+    // Validate required fields before upload
+    if (!title.trim()) {
+      setMessage("Title is required. Please provide a title for your media files.");
       return;
     }
+
+    if (!startDisplayingFromDate.trim()) {
+      setMessage("Start Displaying From date is required. Please select a date when the media should start being displayed.");
+      return;
+    }
+
+    if (!files || files.length === 0) {
+      setMessage("Please select at least one file to upload.");
+      return;
+    }
+
+    if (!eventId) {
+      setMessage("Event ID is missing. Please ensure you're on the correct event page.");
+      return;
+    }
+
     setUploading(true);
     setProgress(0);
     setMessage(null);
     try {
-      await uploadMediaServer({
-        eventId,
-        files: Array.from(files),
-        title,
-        description,
-        eventFlyer,
-        isEventManagementOfficialDocument,
-        isHeroImage,
-        isActiveHeroImage,
-        isFeaturedImage,
-        isPublic,
-        altText,
-        displayOrder,
-        userProfileId,
+      // Create FormData directly in the component to avoid any Server Action issues
+      const formData = new FormData();
+
+      // Append each file with the 'files' parameter (plural as expected by backend)
+      Array.from(files).forEach(file => {
+        formData.append('files', file);
       });
+
+      // Get tenant ID from environment variable (available on client)
+      const tenantId = process.env.NEXT_PUBLIC_TENANT_ID;
+      if (!tenantId) {
+        throw new Error('NEXT_PUBLIC_TENANT_ID is not set in environment variables');
+      }
+
+      // Get app URL from environment variable (available on client)
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+      // Append other parameters as form data
+      formData.append('eventId', eventId);
+      formData.append('eventFlyer', String(eventFlyer));
+      formData.append('isEventManagementOfficialDocument', String(isEventManagementOfficialDocument));
+      formData.append('isHeroImage', String(isHeroImage));
+      formData.append('isActiveHeroImage', String(isActiveHeroImage));
+      formData.append('isFeaturedEventImage', String(isFeaturedEventImage));
+      formData.append('isLiveEventImage', String(isLiveEventImage));
+      formData.append('isHomePageHeroImage', String(isHomePageHeroImage));
+      formData.append('isPublic', String(isPublic));
+      formData.append('isTeamMemberProfileImage', 'false');
+      formData.append('tenantId', tenantId);
+
+      // Append title and description for each file (backend expects arrays)
+      Array.from(files).forEach(() => {
+        formData.append('titles', title);
+        formData.append('descriptions', description || '');
+      });
+
+      if (userProfileId) {
+        formData.append('upLoadedById', String(userProfileId));
+      }
+
+      if (altText) {
+        formData.append('altText', altText);
+      }
+
+      if (displayOrder !== undefined) {
+        formData.append('displayOrder', String(displayOrder));
+      }
+
+      if (startDisplayingFromDate) {
+        formData.append('startDisplayingFromDate', startDisplayingFromDate);
+      }
+
+      // Use the proxy endpoint directly from client
+      const url = `${appUrl}/api/proxy/event-medias/upload-multiple`;
+
+      const res = await fetch(url, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
+
+      const result = await res.json();
       setMessage("Upload successful!");
       setFiles(null);
       setTitle("");
       setDescription("");
       setEventFlyer(false);
       setIsEventManagementOfficialDocument(false);
+      setIsFeaturedEventImage(false);
+      setIsLiveEventImage(false);
+      setIsHomePageHeroImage(false);
+      setStartDisplayingFromDate("");
       if (fileInputRef.current) fileInputRef.current.value = "";
       // Refresh the page after upload
       setTimeout(() => window.location.reload(), 1200);
@@ -283,12 +388,15 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       eventFlyer: media.eventFlyer || false,
       isHeroImage: media.isHeroImage || false,
       isActiveHeroImage: media.isActiveHeroImage || false,
-      isFeaturedImage: media.isFeaturedImage || false,
+      isFeaturedEventImage: media.isFeaturedEventImage || false,
+      isLiveEventImage: media.isLiveEventImage || false,
+      isHomePageHeroImage: media.isHomePageHeroImage || false,
       isPublic: media.isPublic === false ? false : true,
       altText: media.altText || '',
       displayOrder: media.displayOrder || undefined,
       isFeaturedVideo: media.isFeaturedVideo || false,
       featuredVideoUrl: media.featuredVideoUrl || '',
+      startDisplayingFromDate: media.startDisplayingFromDate || '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -299,12 +407,20 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
         eventFlyer: media.eventFlyer || false,
         isHeroImage: media.isHeroImage || false,
         isActiveHeroImage: media.isActiveHeroImage || false,
-        isFeaturedImage: media.isFeaturedImage || false,
+        isFeaturedEventImage: media.isFeaturedEventImage || false,
+        isLiveEventImage: media.isLiveEventImage || false,
+        isHomePageHeroImage: media.isHomePageHeroImage || false,
         isPublic: media.isPublic === false ? false : true,
         altText: media.altText || '',
         displayOrder: media.displayOrder || undefined,
         isFeaturedVideo: media.isFeaturedVideo || false,
         featuredVideoUrl: media.featuredVideoUrl || '',
+        startDisplayingFromDate: media.startDisplayingFromDate || '',
+        // Include required fields for backend validation
+        eventMediaType: media.eventMediaType || 'gallery',
+        storageType: media.storageType || 's3',
+        createdAt: media.createdAt || new Date().toISOString(),
+        updatedAt: media.updatedAt || new Date().toISOString(),
       });
     }, [media]);
 
@@ -335,32 +451,69 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
 
     return createPortal(
       <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Media Details</h2>
+        <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative">
+          {/* Close button in top-right corner */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 w-10 h-10 text-2xl bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all z-10"
+            aria-label="Close dialog"
+          >
+            <FaTimes />
+          </button>
+
+          <h2 className="text-2xl font-bold mb-6 text-gray-800 pr-12">Edit Media Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
 
             {/* Title */}
             <div className="md:col-span-1">
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-              <input type="text" name="title" id="title" value={formData.title || ''} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+              <input
+                type="text"
+                name="title"
+                id="title"
+                value={formData.title || ''}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+              />
             </div>
 
             {/* Display Order */}
             <div className="md:col-span-1">
               <label htmlFor="displayOrder" className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
-              <input type="number" name="displayOrder" id="displayOrder" value={formData.displayOrder || ''} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+              <input
+                type="number"
+                name="displayOrder"
+                id="displayOrder"
+                value={formData.displayOrder || ''}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+              />
             </div>
 
             {/* Description */}
             <div className="md:col-span-2">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <textarea name="description" id="description" value={formData.description || ''} onChange={handleChange} rows={4} className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+              <textarea
+                name="description"
+                id="description"
+                value={formData.description || ''}
+                onChange={handleChange}
+                rows={4}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+              />
             </div>
 
             {/* Alt Text */}
             <div className="md:col-span-2">
               <label htmlFor="altText" className="block text-sm font-medium text-gray-700 mb-1">Alt Text</label>
-              <input type="text" name="altText" id="altText" value={formData.altText || ''} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+              <input
+                type="text"
+                name="altText"
+                id="altText"
+                value={formData.altText || ''}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+              />
             </div>
 
             {/* Featured Video URL */}
@@ -372,31 +525,53 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
                 id="featuredVideoUrl"
                 value={formData.featuredVideoUrl || ''}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
               />
             </div>
 
-            {/* Checkboxes */}
-            <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4">
-              {['eventFlyer', 'isHeroImage', 'isActiveHeroImage', 'isFeaturedImage', 'isPublic', 'isFeaturedVideo'].map(key => (
-                <div key={key} className="flex items-start">
-                  <label htmlFor={key} className="custom-checkbox-container flex items-center text-sm font-medium text-gray-700">
-                    <input
-                      type="checkbox"
-                      name={key}
-                      id={key}
-                      checked={!!formData[key as keyof typeof formData]}
-                      onChange={handleChange}
-                      onClick={handleCheckboxClick}
-                      className="hidden"
-                    />
-                    <span className="custom-checkbox-visual"></span>
-                    <span className="ml-2">
+            {/* Start Displaying From */}
+            <div className="md:col-span-2">
+              <label htmlFor="startDisplayingFromDate" className="block text-sm font-medium text-gray-700 mb-1">Start Displaying From</label>
+              <input
+                type="date"
+                name="startDisplayingFromDate"
+                id="startDisplayingFromDate"
+                value={formData.startDisplayingFromDate || ''}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+              />
+              <p className="text-sm text-gray-500 mt-1">When should this media start being displayed?</p>
+            </div>
+
+            {/* Checkboxes - Using proper UI style guide implementation */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-4">Media Options</label>
+              <div className="custom-grid-table mt-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+                {['eventFlyer', 'isHeroImage', 'isActiveHeroImage', 'isPublic', 'isFeaturedVideo', 'isFeaturedEventImage', 'isLiveEventImage', 'isHomePageHeroImage'].map(key => (
+                  <label key={key} className="flex flex-col items-center">
+                    <span className="relative flex items-center justify-center">
+                      <input
+                        type="checkbox"
+                        name={key}
+                        className="custom-checkbox"
+                        checked={!!formData[key as keyof typeof formData]}
+                        onChange={handleChange}
+                        onClick={handleCheckboxClick}
+                      />
+                      <span className="custom-checkbox-tick">
+                        {formData[key as keyof typeof formData] && (
+                          <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l5 5L19 7" />
+                          </svg>
+                        )}
+                      </span>
+                    </span>
+                    <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">
                       {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                     </span>
                   </label>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* Buttons */}
@@ -404,7 +579,8 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2 rounded-md text-teal-600 bg-teal-50 hover:bg-teal-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors flex items-center gap-2"
+                className="bg-teal-100 hover:bg-teal-200 text-teal-800 px-4 py-2 rounded-md flex items-center gap-2"
+                disabled={isSubmitting}
               >
                 <FaBan />
                 Cancel
@@ -413,10 +589,10 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
                 type="button"
                 onClick={handleSaveClick}
                 disabled={isSubmitting}
-                className="px-6 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 transition-colors flex items-center gap-2"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
                 {isSubmitting ? <FaSpinner className="animate-spin" /> : <FaFolderOpen />}
-                Save Changes
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>
@@ -520,13 +696,94 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
       {/* Upload form */}
       <div ref={uploadFormDivRef} className="mt-8 mb-8 p-6 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
         <div className="text-xl font-bold mb-4">Media File Upload Form</div>
+
+        {/* Hero Image Specifications Tip */}
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-blue-800 mb-2">📸 Hero Image Specifications</h3>
+              <div className="text-sm text-blue-700 space-y-2">
+                <p><strong>For Hero Images:</strong> Use 800×1200px (2:3 aspect ratio) for optimal display in the charity theme hero section.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                  <div>
+                    <p className="font-medium text-blue-800">Optimal Dimensions:</p>
+                    <ul className="text-xs space-y-1 mt-1">
+                      <li>• <strong>Desktop:</strong> 800×1200px (2:3 ratio)</li>
+                      <li>• <strong>Mobile:</strong> 600×900px (2:3 ratio)</li>
+                      <li>• <strong>Format:</strong> WebP preferred, JPG acceptable</li>
+                      <li>• <strong>Quality:</strong> 80-85%</li>
+                      <li>• <strong>File Size:</strong> Under 300KB</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-medium text-blue-800">Content Guidelines:</p>
+                    <ul className="text-xs space-y-1 mt-1">
+                      <li>• Main subject in upper 60% of frame</li>
+                      <li>• Text readable at 50% scale</li>
+                      <li>• High contrast for overlay visibility</li>
+                      <li>• Professional, culturally relevant style</li>
+                    </ul>
+                  </div>
+                </div>
+                <p className="text-xs text-blue-600 mt-2 italic">These specifications ensure your hero images look perfect across all devices and maintain the professional appearance of the charity theme page.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Featured Event Image Specifications Tip */}
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <svg className="w-5 h-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-green-800 mb-2">🎯 Featured Event Image Specifications</h3>
+              <div className="text-sm text-green-700 space-y-2">
+                <p><strong>For Featured Event Images:</strong> Use 1920×1080px (16:9 aspect ratio) for optimal display in the featured events section.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                  <div>
+                    <p className="font-medium text-green-800">Optimal Dimensions:</p>
+                    <ul className="text-xs space-y-1 mt-1">
+                      <li>• <strong>Desktop:</strong> 1920×1080px (16:9 ratio)</li>
+                      <li>• <strong>Mobile:</strong> 800×450px (16:9 ratio)</li>
+                      <li>• <strong>Format:</strong> WebP preferred, JPG acceptable</li>
+                      <li>• <strong>Quality:</strong> 85-90%</li>
+                      <li>• <strong>File Size:</strong> Under 500KB</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-medium text-green-800">Content Guidelines:</p>
+                    <ul className="text-xs space-y-1 mt-1">
+                      <li>• Event venue or activity in focus</li>
+                      <li>• Good lighting and vibrant colors</li>
+                      <li>• Horizontal composition preferred</li>
+                      <li>• Professional event photography style</li>
+                    </ul>
+                  </div>
+                </div>
+                <p className="text-xs text-green-600 mt-2 italic">16:9 aspect ratio ensures your featured event images fill the container perfectly without padding and look great on all screen sizes.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
-            placeholder="Title"
+            placeholder="Title *"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 w-full"
+            className={`border rounded px-3 py-2 w-full ${title.trim() ? 'border-gray-300' : 'border-red-300 bg-red-50'
+              }`}
+            required
           />
           <textarea
             placeholder="Description"
@@ -535,12 +792,47 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
             className="border border-gray-300 rounded px-3 py-2 w-full"
             rows={2}
           />
-          <div className="flex flex-col md:flex-row gap-4 items-start mt-2 mb-2">
-            <label className="relative cursor-pointer max-w-xs">
-              <span className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded shadow-sm border border-blue-700 transition-colors inline-block text-center w-auto min-w-[120px] flex items-center justify-center gap-2">
-                <FaFolderOpen className="w-5 h-5 mr-1" />
-                Choose Files
-              </span>
+          <div className="flex flex-col gap-4 mt-2 mb-2">
+            {/* Drag and Drop Area */}
+            <div
+              className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDragOver
+                ? 'border-blue-500 bg-blue-50'
+                : files && files.length > 0
+                  ? 'border-green-400 bg-green-50'
+                  : 'border-gray-300 bg-gray-50'
+                }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <div className="space-y-4">
+                {isDragOver ? (
+                  <div className="text-blue-600">
+                    <FaUpload className="w-12 h-12 mx-auto mb-2" />
+                    <p className="text-lg font-semibold">Drop files here to upload</p>
+                  </div>
+                ) : files && files.length > 0 ? (
+                  <div className="text-green-600">
+                    <FaPhotoVideo className="w-12 h-12 mx-auto mb-2" />
+                    <p className="text-lg font-semibold">{files.length} file(s) selected</p>
+                    <div className="flex flex-wrap justify-center gap-2 mt-4">
+                      {Array.from(files).map((file, idx) => (
+                        <span key={idx} className="bg-green-100 border border-green-300 rounded px-2 py-1 text-xs truncate max-w-xs" title={file.name}>
+                          {file.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-gray-500">
+                    <FaFolderOpen className="w-12 h-12 mx-auto mb-2" />
+                    <p className="text-lg font-semibold mb-2">Drag & drop files here</p>
+                    <p className="text-sm">or click the button below to browse</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Hidden file input */}
               <input
                 type="file"
                 multiple
@@ -549,15 +841,43 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
                 className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                 accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.svg"
               />
-            </label>
-            {files && files.length > 0 && (
-              <div className="flex-1 flex flex-wrap items-center gap-2 ml-4 min-w-0">
-                {Array.from(files).map((file, idx) => (
-                  <span key={idx} className="bg-gray-100 border border-gray-300 rounded px-2 py-1 text-xs truncate max-w-xs" title={file.name}>{file.name}</span>
-                ))}
-              </div>
-            )}
+            </div>
+
+            {/* Choose Files Button */}
+            <div className="flex justify-center">
+              <label className="relative cursor-pointer">
+                <span className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded shadow-sm border border-blue-700 transition-colors inline-block text-center min-w-[160px] flex items-center justify-center gap-2">
+                  <FaFolderOpen className="w-5 h-5" />
+                  Browse Files
+                </span>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.svg"
+                />
+              </label>
+            </div>
           </div>
+
+          {/* Start Displaying From Date Field */}
+          <div className="mt-4 mb-4">
+            <label htmlFor="startDisplayingFromDate" className="block text-sm font-medium text-gray-700 mb-2">
+              Start Displaying From Date *
+            </label>
+            <input
+              type="date"
+              id="startDisplayingFromDate"
+              name="startDisplayingFromDate"
+              value={startDisplayingFromDate}
+              onChange={e => setStartDisplayingFromDate(e.target.value)}
+              className={`border rounded px-3 py-2 w-48 ${startDisplayingFromDate.trim() ? 'border-gray-300' : 'border-red-300 bg-red-50'}`}
+              required
+            />
+            <p className="text-sm text-gray-500 mt-1">Select the date when this media should start being displayed</p>
+          </div>
+
           <div className="custom-grid-table mt-2 mb-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
             <div className="custom-grid-cell">
               <label className="flex flex-col items-center">
@@ -622,16 +942,31 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
             <div className="custom-grid-cell">
               <label className="flex flex-col items-center">
                 <span className="relative flex items-center justify-center">
-                  <input type="checkbox" className="custom-checkbox" checked={isFeaturedImage} onChange={e => setIsFeaturedImage(e.target.checked)} />
+                  <input type="checkbox" className="custom-checkbox" checked={isFeaturedEventImage} onChange={e => setIsFeaturedEventImage(e.target.checked)} />
                   <span className="custom-checkbox-tick">
-                    {isFeaturedImage && (
+                    {isFeaturedEventImage && (
                       <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l5 5L19 7" />
                       </svg>
                     )}
                   </span>
                 </span>
-                <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">Featured Image</span>
+                <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">Featured Event Image</span>
+              </label>
+            </div>
+            <div className="custom-grid-cell">
+              <label className="flex flex-col items-center">
+                <span className="relative flex items-center justify-center">
+                  <input type="checkbox" className="custom-checkbox" checked={isLiveEventImage} onChange={e => setIsLiveEventImage(e.target.checked)} />
+                  <span className="custom-checkbox-tick">
+                    {isLiveEventImage && (
+                      <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l5 5L19 7" />
+                      </svg>
+                    )}
+                  </span>
+                </span>
+                <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">Live Event Image</span>
               </label>
             </div>
             <div className="custom-grid-cell">
@@ -647,6 +982,21 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
                   </span>
                 </span>
                 <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">Public</span>
+              </label>
+            </div>
+            <div className="custom-grid-cell">
+              <label className="flex flex-col items-center">
+                <span className="relative flex items-center justify-center">
+                  <input type="checkbox" className="custom-checkbox" checked={isHomePageHeroImage} onChange={e => setIsHomePageHeroImage(e.target.checked)} />
+                  <span className="custom-checkbox-tick">
+                    {isHomePageHeroImage && (
+                      <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" strokeWidth="4" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l5 5L19 7" />
+                      </svg>
+                    )}
+                  </span>
+                </span>
+                <span className="mt-2 text-xs text-center select-none break-words max-w-[6rem]">Home Page Hero Image</span>
               </label>
             </div>
           </div>
@@ -669,11 +1019,11 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
           </div>
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded shadow-sm border border-blue-700 transition-colors flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded shadow-sm border border-blue-700 transition-colors flex items-center gap-2 disabled:bg-blue-300 disabled:cursor-not-allowed"
             disabled={uploading}
           >
             <FaUpload className="w-5 h-5" />
-            {uploading ? 'Uploading...' : 'Upload'}
+            {uploading ? 'Uploading...' : 'Upload Images'}
           </button>
           {message && (
             <div className={`mt-4 text-2xl font-extrabold italic drop-shadow-sm tracking-wide ${message.includes('successful') ? 'text-green-600' : 'text-blue-700'}`}
@@ -730,12 +1080,12 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
                       >
                         {media.fileUrl && media.contentType?.startsWith('image') && (
                           <a href={media.fileUrl} target="_blank" rel="noopener noreferrer">
-                            <img src={media.fileUrl} alt={media.title || ''} className="w-16 h-16 object-cover rounded mx-auto" />
+                            <img src={media.fileUrl.startsWith('http') ? media.fileUrl : `https://placehold.co/600x400?text=${media.title}`} alt={media.title || ''} className="w-16 h-16 object-cover rounded mx-auto" />
                           </a>
                         )}
                         {media.fileUrl && media.contentType?.startsWith('video') && (
                           <a href={media.fileUrl} target="_blank" rel="noopener noreferrer">
-                            <video src={media.fileUrl} controls className="w-24 h-16 rounded mx-auto" />
+                            <video src={media.fileUrl.startsWith('http') ? media.fileUrl : `https://placehold.co/600x400?text=${media.title}`} controls className="w-24 h-16 rounded mx-auto" />
                           </a>
                         )}
                         {media.fileUrl && !media.contentType?.startsWith('image') && !media.contentType?.startsWith('video') && (
@@ -798,107 +1148,107 @@ export function MediaClientPage({ eventId, mediaList: initialMediaList, eventDet
         <div className="mb-2 text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded px-4 py-2">
           Mouse over the first 2 columns (Title, Type) to see full details about the item. Use the × button to close the tooltip.
         </div>
-        <h2 className="text-lg font-semibold mb-2">Uploaded Media</h2>
-        <div className="flex items-center gap-4 mb-2">
-          <label className="flex items-center gap-2">
-            <input type="checkbox" checked={showOnlyEventFlyers} onChange={e => setShowOnlyEventFlyers(e.target.checked)} /> Show only event flyers
-          </label>
+        <div className="mb-4 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-gray-900">Uploaded Media Files</h2>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={showOnlyEventFlyers}
+                onChange={e => setShowOnlyEventFlyers(e.target.checked)}
+                className="rounded"
+              />
+              <span className="text-sm font-medium">Show only Event Flyers</span>
+            </label>
+          </div>
         </div>
+
         {mediaList.length === 0 ? (
-          <div className="text-gray-500">No media uploaded yet.</div>
+          <div className="text-center p-8 text-gray-500">No media files uploaded yet.</div>
         ) : (
           <div className="mb-8">
-            <table className="w-full border text-sm relative bg-white rounded shadow-md">
-              <thead>
-                <tr className="bg-green-100 font-bold border-b-2 border-green-300">
-                  <th className="p-2 border">Title</th>
-                  <th className="p-2 border">Type</th>
-                  <th className="p-2 border">Preview</th>
-                  <th className="p-2 border">Uploaded At</th>
-                  <th className="p-2 border">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pagedMedia.map((media) => {
-                  let uploadedMediaPosition0 = 'right', uploadedMediaPosition1 = 'right', uploadedMediaPosition2 = 'right';
-                  return (
-                    <tr key={media.id} className="border-b border-gray-300 relative">
-                      <td
-                        className="p-2 border align-middle relative hover:bg-green-50 cursor-pointer"
-                        onMouseEnter={e => handleCellMouseEnter(media, e, 'uploadedMedia')}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {pagedMedia.map((media, index) => {
+                const serialNumber = mediaPage * mediaPageSize + index + 1;
+                return (
+                  <div
+                    key={media.id}
+                    data-serial-number={serialNumber}
+                    className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col justify-between"
+                  >
+                    <div>
+                      <div
+                        className="relative h-48 bg-gray-200 cursor-pointer"
+                        onMouseEnter={e => handleCellMouseEnter(media, e as any, 'uploadedMedia')}
                         onMouseLeave={handleCellMouseLeave}
                       >
-                        {media.title}
-                      </td>
-                      <td
-                        className="p-2 border align-middle relative hover:bg-green-50 cursor-pointer"
-                        onMouseEnter={e => handleCellMouseEnter(media, e, 'uploadedMedia')}
-                        onMouseLeave={handleCellMouseLeave}
+                        {/* Serial number overlay */}
+                        <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 rounded-full text-sm font-bold z-10 shadow-lg">
+                          #{serialNumber}
+                        </div>
+                        {media.fileUrl && (
+                          <img
+                            src={media.fileUrl.startsWith('http') ? media.fileUrl : `https://placehold.co/600x400?text=${media.title}`}
+                            alt={media.altText || media.title || ''}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null;
+                              target.src = `https://placehold.co/600x400?text=No+Image`;
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-lg truncate" title={media.title || ''}>{media.title}</h3>
+                        <p className="text-gray-600 text-sm h-10 overflow-hidden" title={media.description || ''}>{media.description}</p>
+                        <div className="text-xs text-gray-500 mt-2">
+                          {media.createdAt ? new Date(media.createdAt).toLocaleDateString() : ''}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 pt-0 flex justify-end space-x-2">
+                      <button
+                        onClick={() => {
+                          console.log('Edit icon clicked', media);
+                          setEditMedia(media);
+                        }}
+                        className="text-blue-500 hover:text-blue-700 p-2 rounded-full"
+                        title="Edit Media"
                       >
-                        {media.eventMediaType}
-                      </td>
-                      <td
-                        className="p-2 border align-middle text-center relative"
+                        <FaEdit size={20} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(media.id!)}
+                        className="text-red-500 hover:text-red-700 p-2 rounded-full"
+                        title="Delete Media"
                       >
-                        {media.fileUrl && media.contentType?.startsWith('image') && (
-                          <a href={media.fileUrl} target="_blank" rel="noopener noreferrer">
-                            <img src={media.fileUrl} alt={media.title || ''} className="w-16 h-16 object-cover rounded mx-auto" />
-                          </a>
-                        )}
-                        {media.fileUrl && media.contentType?.startsWith('video') && (
-                          <a href={media.fileUrl} target="_blank" rel="noopener noreferrer">
-                            <video src={media.fileUrl} controls className="w-24 h-16 rounded mx-auto" />
-                          </a>
-                        )}
-                        {media.fileUrl && !media.contentType?.startsWith('image') && !media.contentType?.startsWith('video') && (
-                          <a href={media.fileUrl} target="_blank" rel="noopener noreferrer" className="text-green-600 underline">
-                            {media.title || media.fileUrl}
-                          </a>
-                        )}
-                      </td>
-                      <td className="p-2 border align-middle">{media.createdAt ? new Date(media.createdAt).toLocaleString() : ''}</td>
-                      <td className="p-2 border align-middle flex gap-2 items-center justify-center">
-                        <button
-                          className="icon-btn icon-btn-edit flex flex-col items-center"
-                          title="Edit"
-                          onClick={() => {
-                            console.log('Edit icon clicked', media);
-                            setEditMedia(media);
-                          }}
-                        >
-                          <FaEdit />
-                          <span className="text-[10px] text-gray-600 mt-1">Edit</span>
-                        </button>
-                        <button
-                          className="icon-btn icon-btn-delete flex flex-col items-center"
-                          onClick={() => handleDelete(media.id!)}
-                          title="Delete"
-                        >
-                          <FaTrashAlt />
-                          <span className="text-[10px] text-gray-600 mt-1">Delete</span>
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            {/* Pagination for uploaded media */}
-            <div className="flex justify-between items-center mt-2">
+                        <FaTrashAlt size={20} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination */}
+            <div className="flex justify-between items-center mt-8">
               <button
-                className="px-3 py-1 rounded bg-green-100 border border-green-300 text-green-700 disabled:opacity-50"
                 onClick={() => setMediaPage(p => Math.max(0, p - 1))}
                 disabled={mediaPage === 0}
+                className="px-4 py-2 bg-blue-600 text-white font-semibold rounded shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Previous
+                ← Previous
               </button>
-              <span>Page {mediaPage + 1}</span>
+              <span className="text-sm font-semibold text-gray-700">
+                Page {mediaPage + 1} of {Math.ceil(filteredMediaList.length / mediaPageSize)}
+              </span>
               <button
-                className="px-3 py-1 rounded bg-green-100 border border-green-300 text-green-700 disabled:opacity-50"
                 onClick={() => setMediaPage(p => p + 1)}
                 disabled={!hasNextMediaPage}
+                className="px-4 py-2 bg-blue-600 text-white font-semibold rounded shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Next
+                Next →
               </button>
             </div>
           </div>

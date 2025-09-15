@@ -6,6 +6,8 @@ import { useAuth } from "@clerk/nextjs";
 import { FaUsers, FaCalendarAlt, FaPlus, FaEnvelope, FaCreditCard } from 'react-icons/fa';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import AdminNavigation from '@/components/AdminNavigation';
+import Image from 'next/image';
 import {
   fetchEventsFilteredServer,
   fetchEventTypesServer,
@@ -35,19 +37,35 @@ export default function AdminPage() {
   const [sort, setSort] = useState('startDate,asc');
   const [searchField, setSearchField] = useState<'title' | 'id' | 'caption'>('title');
   const [searchId, setSearchId] = useState('');
+  const [showPastEvents, setShowPastEvents] = useState(false);
 
   async function loadAll(pageNum = 0) {
     setLoading(true);
     setError(null);
     try {
+      // Build date filtering based on toggle
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
       const filterParams: any = {
-        startDate: searchStartDate,
-        endDate: searchEndDate,
         admissionType: searchAdmissionType,
-        sort,
+        sort: showPastEvents ? 'startDate,desc' : 'startDate,asc', // Override sort based on toggle
         pageNum,
         pageSize,
       };
+
+      // Apply date filtering based on toggle
+      if (showPastEvents) {
+        // Show events that ended before today
+        filterParams.endDate = today;
+      } else {
+        // Show events that start today or later (future events including today)
+        filterParams.startDate = today;
+      }
+
+      // Override with manual date filters if provided
+      if (searchStartDate) filterParams.startDate = searchStartDate;
+      if (searchEndDate) filterParams.endDate = searchEndDate;
+
       if (searchField === 'title') filterParams.title = searchTitle;
       else if (searchField === 'id') filterParams.id = searchId;
       else if (searchField === 'caption') filterParams.caption = searchCaption;
@@ -68,7 +86,7 @@ export default function AdminPage() {
   useEffect(() => {
     loadAll(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, searchTitle, searchId, searchCaption, searchField, searchStartDate, searchEndDate, searchAdmissionType, sort]);
+  }, [page, searchTitle, searchId, searchCaption, searchField, searchStartDate, searchEndDate, searchAdmissionType, sort, showPastEvents]);
 
   async function handleCancel(event: EventDetailsDTO) {
     setLoading(true);
@@ -105,30 +123,11 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-8 py-8" style={{ paddingTop: '118px' }}>
+    <div className="max-w-5xl mx-auto px-8 py-8" style={{ paddingTop: '180px' }}>
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Event Management</h1>
-      <div className="flex justify-center mb-8">
-        <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-4xl">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center mx-auto">
-            <Link href="/admin/manage-usage" className="w-48 max-w-xs mx-auto flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md shadow p-1 sm:p-2 text-xs sm:text-xs transition-all cursor-pointer">
-              <FaUsers className="text-base sm:text-lg mb-1 mx-auto" />
-              <span className="font-semibold text-center leading-tight">Manage Users [Usage]</span>
-            </Link>
-            <Link href="/admin" className="w-48 max-w-xs mx-auto flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 text-green-700 rounded-md shadow p-1 sm:p-2 text-xs sm:text-xs transition-all cursor-pointer">
-              <FaCalendarAlt className="text-base sm:text-lg mb-1 mx-auto" />
-              <span className="font-semibold text-center leading-tight">Manage Events</span>
-            </Link>
-            <Link href="/admin/promotion-emails" className="w-48 max-w-xs mx-auto flex flex-col items-center justify-center bg-yellow-50 hover:bg-yellow-100 text-yellow-700 rounded-md shadow p-1 sm:p-2 text-xs sm:text-xs transition-all cursor-pointer">
-              <FaEnvelope className="text-base sm:text-lg mb-1 mx-auto" />
-              <span className="font-semibold text-center leading-tight">Manage Promotion Emails</span>
-            </Link>
-            <Link href="/admin/test-stripe" className="w-48 max-w-xs mx-auto flex flex-col items-center justify-center bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-md shadow p-1 sm:p-2 text-xs sm:text-xs transition-all cursor-pointer">
-              <FaCreditCard className="text-base sm:text-lg mb-1 mx-auto" />
-              <span className="font-semibold text-center leading-tight">Test Stripe Payments</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      <AdminNavigation />
+
+
       <div className="mb-6">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
           <div className="text-lg font-semibold text-blue-800 mb-4">Search Events</div>
@@ -190,6 +189,7 @@ export default function AdminPage() {
               setSearchEndDate('');
               setSearchAdmissionType('');
               setSort('startDate,asc');
+              setShowPastEvents(false); // Reset to future events
             }}>Clear</button>
           </div>
         </div>
@@ -204,8 +204,46 @@ export default function AdminPage() {
         </Link>
       </div>
       {error && <div className="bg-red-50 text-red-500 p-3 rounded mb-4">{error}</div>}
+
+      {/* Event Filter Toggle - Above Event List */}
+      <div className="mb-4">
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4">
+          <div className="flex justify-center items-center gap-4 mb-2">
+            <span className={`text-lg font-medium ${!showPastEvents ? 'text-blue-600' : 'text-gray-500'}`}>
+              Future Events
+            </span>
+            <button
+              onClick={() => {
+                setShowPastEvents(!showPastEvents);
+                setPage(0); // Reset to first page when switching
+              }}
+              className="relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              style={{ backgroundColor: showPastEvents ? '#3b82f6' : '#d1d5db' }}
+            >
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${showPastEvents ? 'translate-x-7' : 'translate-x-1'
+                  }`}
+              />
+            </button>
+            <span className={`text-lg font-medium ${showPastEvents ? 'text-blue-600' : 'text-gray-500'}`}>
+              Past Events
+            </span>
+          </div>
+
+          {/* Filter Description */}
+          <p className="text-gray-600 text-sm text-center">
+            {showPastEvents
+              ? 'Showing past events (events that have already ended)'
+              : 'Showing future events (including events happening today)'
+            }
+          </p>
+        </div>
+      </div>
+
       <div>
-        <h2 className="text-xl font-semibold mb-4">All Events</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          {showPastEvents ? 'Past Events' : 'Future Events'}
+        </h2>
         <div className="bg-white rounded-lg shadow-md p-6">
           <EventList
             events={events}

@@ -1,0 +1,15 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "executionArgs": {
+    "projectName": "malayalees-us-site",
+    "projectPath": "C:\\Users\\gain\\git\\mal_us_site_event_register\\malayalees-us-site",
+    "testIds": [],
+    "additionalInstruction": "Run the sanity tests from TestSprite/sanity-tests/ directory focusing on basic page loads and admin functionality. User is already logged in via social authentication. Test duration should be around 3 minutes with 8 test cases covering homepage, events, admin dashboard, and core functionality.",
+    "envs": {
+      "API_KEY": "sk-user-EuEh0B665V5Psq-GOd0ree-_csjRw8GyMrT17zYUWncphZ10tJMqSPnHF5ZkJDr6PunuOYCbjjW_W2FrriS1sWfqg6TXGoIipot6AiM1linrgeYNzjXg9BDkW_WxAdELwV4"
+    }
+  }
+}

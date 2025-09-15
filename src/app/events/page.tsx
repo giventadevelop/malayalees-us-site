@@ -35,9 +35,9 @@ function DescriptionDisplay({ description }: { description: string }) {
           e.stopPropagation();
           setIsExpanded(!isExpanded);
         }}
-        className="mt-2 text-blue-600 hover:text-blue-800 font-medium text-sm underline"
+        className="mt-3 inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 font-medium text-sm"
       >
-        {isExpanded ? 'Show less' : 'Read more'}
+        {isExpanded ? 'Show less' : 'See Event Details →'}
       </button>
     </div>
   );
@@ -51,23 +51,88 @@ export default function EventsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [heroImageUrl, setHeroImageUrl] = useState<string>("/images/default_placeholder_hero_image.jpeg");
   const [fetchError, setFetchError] = useState(false);
+  const [showPastEvents, setShowPastEvents] = useState(false);
+  const [searchTitle, setSearchTitle] = useState("");
+  const [searchDateFrom, setSearchDateFrom] = useState("");
+  const [searchDateTo, setSearchDateTo] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Array of modern background colors inspired by the Dribbble design
+  const cardBackgrounds = [
+    'bg-gradient-to-br from-blue-50 to-blue-100',
+    'bg-gradient-to-br from-green-50 to-green-100',
+    'bg-gradient-to-br from-purple-50 to-purple-100',
+    'bg-gradient-to-br from-pink-50 to-pink-100',
+    'bg-gradient-to-br from-yellow-50 to-yellow-100',
+    'bg-gradient-to-br from-indigo-50 to-indigo-100',
+    'bg-gradient-to-br from-teal-50 to-teal-100',
+    'bg-gradient-to-br from-orange-50 to-orange-100',
+    'bg-gradient-to-br from-cyan-50 to-cyan-100',
+    'bg-gradient-to-br from-rose-50 to-rose-100'
+  ];
+
+  // Function to get random background color for each event
+  const getRandomBackground = (index: number) => {
+    return cardBackgrounds[index % cardBackgrounds.length];
+  };
 
   useEffect(() => {
     async function fetchEvents() {
       setLoading(true);
       setFetchError(false);
       try {
-        // Fetch paginated events
-        const eventsRes = await fetch(`/api/proxy/event-details?sort=startDate,asc&page=${page}&size=${EVENTS_PAGE_SIZE}`);
+        // Build query parameters based on date filter
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        const queryParams = new URLSearchParams({
+          sort: showPastEvents ? 'startDate,desc' : 'startDate,asc',
+          page: page.toString(),
+          size: EVENTS_PAGE_SIZE.toString()
+        });
+
+        // Add search filters
+        if (searchTitle.trim()) {
+          queryParams.append('title.contains', searchTitle.trim());
+        }
+
+        // Handle date filtering - prioritize search date range over toggle
+        if (searchDateFrom || searchDateTo) {
+          // If user has specified date range, use that instead of toggle logic
+          if (searchDateFrom) {
+            queryParams.append('startDate.greaterThanOrEqual', searchDateFrom);
+          }
+          if (searchDateTo) {
+            queryParams.append('startDate.lessThanOrEqual', searchDateTo);
+          }
+        } else {
+          // No search date range specified, use toggle logic
+          if (showPastEvents) {
+            // Show events that ended before today
+            queryParams.append('endDate.lessThan', today);
+          } else {
+            // Show events that start today or later (future events including today)
+            queryParams.append('startDate.greaterThanOrEqual', today);
+          }
+        }
+
+        // Fetch paginated events with date filtering
+        const eventsRes = await fetch(`/api/proxy/event-details?${queryParams.toString()}`);
         if (!eventsRes.ok) throw new Error('Failed to fetch events');
         const events: EventDetailsDTO[] = await eventsRes.json();
         let eventList = Array.isArray(events) ? events : [events];
-        // For each event, fetch its flyer
+        // For each event, fetch its hero image (homepage hero or regular hero)
         const eventsWithMedia = await Promise.all(
           eventList.map(async (event: EventDetailsDTO) => {
             try {
-              const mediaRes = await fetch(`/api/proxy/event-medias?eventId.equals=${event.id}&eventFlyer.equals=true`);
-              const mediaData = await mediaRes.json();
+              // First try to find homepage hero image
+              let mediaRes = await fetch(`/api/proxy/event-medias?eventId.equals=${event.id}&isHomePageHeroImage.equals=true`);
+              let mediaData = await mediaRes.json();
+
+              // If no homepage hero image found, try regular hero image
+              if (!mediaData || mediaData.length === 0) {
+                mediaRes = await fetch(`/api/proxy/event-medias?eventId.equals=${event.id}&isHeroImage.equals=true`);
+                mediaData = await mediaRes.json();
+              }
+
               if (mediaData && mediaData.length > 0) {
                 return { ...event, thumbnailUrl: mediaData[0].fileUrl };
               }
@@ -82,11 +147,11 @@ export default function EventsPage() {
         setTotalPages(1);
 
         // Hero image logic: earliest upcoming event within 3 months
-        const today = new Date();
+        const currentDate = new Date();
         const threeMonthsFromNow = new Date();
-        threeMonthsFromNow.setMonth(today.getMonth() + 3);
+        threeMonthsFromNow.setMonth(currentDate.getMonth() + 3);
         const upcoming = eventsWithMedia
-          .filter(e => e.startDate && new Date(e.startDate) >= today && e.thumbnailUrl)
+          .filter(e => e.startDate && new Date(e.startDate) >= currentDate && e.thumbnailUrl)
           .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
         if (upcoming.length > 0) {
           const nextEvent = upcoming[0];
@@ -106,7 +171,7 @@ export default function EventsPage() {
       }
     }
     fetchEvents();
-  }, [page]);
+  }, [page, showPastEvents, searchTitle, searchDateFrom, searchDateTo]);
 
   // Helper to generate Google Calendar URL
   function toGoogleCalendarDate(date: string, time: string) {
@@ -143,10 +208,41 @@ export default function EventsPage() {
     return formatInTimeZone(dateString, timezone, 'EEEE, MMMM d, yyyy');
   }
 
+  // Search functionality
+  const handleSearch = async () => {
+    setIsSearching(true);
+    setPage(0); // Reset to first page when searching
+    // The useEffect will trigger automatically due to dependency changes
+  };
+
+  const clearSearch = () => {
+    setSearchTitle("");
+    setSearchDateFrom("");
+    setSearchDateTo("");
+    setPage(0);
+    setIsSearching(false);
+    // Reset to future events when clearing search
+    setShowPastEvents(false);
+  };
+
   return (
     <div className="w-full overflow-x-hidden">
       <style dangerouslySetInnerHTML={{
         __html: `
+          /* Line clamp utilities */
+          .line-clamp-1 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 1;
+          }
+          .line-clamp-2 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+          }
+
           /* Mobile-specific hero adjustments */
           @media (max-width: 767px) {
             .hero-section {
@@ -157,21 +253,21 @@ export default function EventsPage() {
               margin: 0 !important;
               padding: 80px 0 0 0 !important;
             }
-                      /* Prevent horizontal overflow */
-          body {
-            overflow-x: hidden !important;
-          }
-          /* Prevent image cutoff */
-          .event-image-container {
-            overflow: hidden !important;
-            max-width: 100% !important;
-            padding: 0 10px !important;
-          }
-          .event-image-container img {
-            max-width: 100% !important;
-            height: auto !important;
-            object-fit: contain !important;
-          }
+            /* Prevent horizontal overflow */
+            body {
+              overflow-x: hidden !important;
+            }
+            /* Prevent image cutoff */
+            .event-image-container {
+              overflow: hidden !important;
+              max-width: 100% !important;
+              padding: 0 10px !important;
+            }
+            .event-image-container img {
+              max-width: 100% !important;
+              height: auto !important;
+              object-fit: contain !important;
+            }
             /* Ensure content fits mobile viewport */
             .container {
               max-width: 100vw !important;
@@ -463,11 +559,159 @@ export default function EventsPage() {
       <div className="block md:hidden" style={{ height: '150px', width: '100%', backgroundColor: 'transparent' }}></div>
 
       {/* Event List */}
-      <div className="max-w-5xl mx-auto p-6" style={{ paddingTop: '60px' }}>
-        <h1 className="text-3xl font-bold mb-6 text-center">All Events</h1>
+      <div className="max-w-6xl mx-auto px-8 py-12 md:px-16 lg:px-24" style={{ paddingTop: '60px' }}>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-6">All Events</h1>
+
+          {/* Event Filter Toggle */}
+          <div className="flex justify-center items-center gap-4 mb-6">
+            <span className={`text-lg font-medium ${!showPastEvents ? 'text-blue-600' : 'text-gray-500'}`}>
+              Future Events
+            </span>
+            <button
+              onClick={() => {
+                setShowPastEvents(!showPastEvents);
+                setPage(0); // Reset to first page when switching
+              }}
+              className="relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              style={{ backgroundColor: showPastEvents ? '#3b82f6' : '#d1d5db' }}
+            >
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${showPastEvents ? 'translate-x-7' : 'translate-x-1'
+                  }`}
+              />
+            </button>
+            <span className={`text-lg font-medium ${showPastEvents ? 'text-blue-600' : 'text-gray-500'}`}>
+              Past Events
+            </span>
+          </div>
+
+          {/* Filter Description */}
+          <p className="text-gray-600 text-sm">
+            {showPastEvents
+              ? 'Showing past events (events that have already ended)'
+              : 'Showing future events (including events happening today)'
+            }
+          </p>
+        </div>
+
+        {/* Search Form */}
+        <div className="max-w-5xl mx-auto mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 text-center">Search Events</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Title Search */}
+              <div className="space-y-2">
+                <label htmlFor="searchTitle" className="block text-sm font-medium text-gray-700">
+                  Search by Title
+                </label>
+                <input
+                  type="text"
+                  id="searchTitle"
+                  value={searchTitle}
+                  onChange={(e) => setSearchTitle(e.target.value)}
+                  placeholder="Enter event title..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                />
+              </div>
+
+              {/* Date Range - Grouped Together */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Date Range
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label htmlFor="searchDateFrom" className="block text-xs text-gray-600 mb-1">
+                      From
+                    </label>
+                    <input
+                      type="date"
+                      id="searchDateFrom"
+                      value={searchDateFrom}
+                      onChange={(e) => setSearchDateFrom(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="searchDateTo" className="block text-xs text-gray-600 mb-1">
+                      To
+                    </label>
+                    <input
+                      type="date"
+                      id="searchDateTo"
+                      value={searchDateTo}
+                      onChange={(e) => setSearchDateTo(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Search Buttons */}
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleSearch}
+                  disabled={loading || isSearching}
+                  className="px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 w-fit"
+                >
+                  {loading || isSearching ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <span>🔍</span>
+                      Search Events
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={clearSearch}
+                  className="px-2 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-1.5 w-fit"
+                >
+                  <span>🗑️</span>
+                  Clear Search
+                </button>
+              </div>
+            </div>
+
+            {/* Search Results Info */}
+            {(searchTitle || searchDateFrom || searchDateTo) && (
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <span className="font-semibold">Search Active:</span>
+                  {searchTitle && ` Title contains "${searchTitle}"`}
+                  {searchTitle && (searchDateFrom || searchDateTo) && ' and'}
+                  {searchDateFrom && searchDateTo && ` Date between "${searchDateFrom}" and "${searchDateTo}"`}
+                  {searchDateFrom && !searchDateTo && ` Date from "${searchDateFrom}" onwards`}
+                  {!searchDateFrom && searchDateTo && ` Date until "${searchDateTo}"`}
+                  {(searchDateFrom || searchDateTo) && (
+                    <span className="block mt-1 text-xs text-blue-600">
+                      (Date range search overrides Future/Past Events toggle)
+                    </span>
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
         {loading ? (
-          <div className="flex justify-center items-center min-h-[200px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="relative">
+              <Image
+                src="/images/loading_events.jpg"
+                alt="Loading events..."
+                width={300}
+                height={300}
+                className="rounded-lg shadow-2xl animate-pulse"
+                priority
+              />
+              <div className="absolute inset-0 rounded-lg overflow-hidden">
+                <div className="wavy-animation"></div>
+              </div>
+            </div>
           </div>
         ) : fetchError ? (
           <div className="text-center text-red-600 font-bold py-8">
@@ -479,185 +723,202 @@ export default function EventsPage() {
           </div>
         ) : (
           <>
-            <div className="w-full space-y-6">
-              {events.map((event) => (
+            <div className="space-y-8">
+              {events.map((event, index) => (
                 <div
                   key={event.id}
-                  className="bg-white rounded-lg shadow-lg border-4 border-blue-200 transition-all duration-300 overflow-hidden"
+                  className={`${getRandomBackground(index)} rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden group`}
+                  style={{
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+                  }}
                 >
-                  <div className="p-6">
-                    {/* Image Section - Full Width on Top */}
-                    <div className="w-full mb-6">
-                      <div className="event-image-container w-full flex justify-center">
-                        {event.thumbnailUrl ? (
-                          <Image
-                            src={event.thumbnailUrl}
-                            alt={event.title}
-                            width={600}
-                            height={400}
-                            className="rounded-lg shadow-md object-contain w-full max-w-2xl h-80 bg-white"
-                            style={{
-                              objectFit: 'contain',
-                              maxWidth: '100%',
-                              height: 'auto',
-                              padding: '10px'
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full max-w-2xl h-80 bg-gray-200 flex items-center justify-center rounded-lg">
-                            <span className="text-gray-400">No image</span>
-                          </div>
-                        )}
-                      </div>
+                  <div className="flex flex-col h-full">
+                    {/* Image Section - Top on all screen sizes */}
+                    <div className="relative w-full h-auto rounded-t-2xl overflow-hidden">
+                      {event.thumbnailUrl ? (
+                        <Image
+                          src={event.thumbnailUrl}
+                          alt={event.title}
+                          width={800}
+                          height={600}
+                          className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
+                          style={{
+                            backgroundColor: 'transparent',
+                            borderRadius: '1rem 1rem 0 0'
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className="w-full h-80 flex items-center justify-center"
+                          style={{
+                            backgroundColor: 'transparent',
+                            borderRadius: '1rem 1rem 0 0'
+                          }}
+                        >
+                          <span className="text-gray-400 text-4xl">📅</span>
+                        </div>
+                      )}
+                      {/* Past Event Badge */}
+                      {showPastEvents && (
+                        <div className="absolute top-3 right-3">
+                          <span className="px-3 py-1 bg-gray-500 text-white text-xs font-medium rounded-full">
+                            Past Event
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Details Section - Two Column Layout */}
-                    <div className="w-full">
-                      {/* Mobile Layout - Stacked */}
-                      <div className="block sm:hidden">
-                        <h2 className="text-2xl font-bold text-blue-700 mb-3">
-                          {event.title}
-                        </h2>
-                        {/* Buy Tickets Link for Mobile */}
-                        {(() => {
-                          const today = new Date();
-                          const eventDate = event.startDate ? new Date(event.startDate) : null;
-                          const isUpcoming = eventDate && eventDate >= today;
+                    {/* Content Section - Bottom on all screen sizes */}
+                    <div className="p-6 border-t border-white/20">
+                      {/* Title */}
+                      <h2 className="text-2xl font-bold text-gray-800 mb-3">
+                        {event.title}
+                      </h2>
 
-                          if (!isUpcoming) return null;
-
-                          return (
-                            <div className="mb-4 flex justify-center">
-                              <Link
-                                href={`/events/${event.id}/tickets`}
-                                className="transition-transform hover:scale-105"
-                              >
-                                <img
-                                  src="/images/buy_tickets_click_here_red.webp"
-                                  alt="Buy Tickets"
-                                  className="object-contain"
-                                  style={{
-                                    width: '200px',
-                                    height: '70px'
-                                  }}
-                                />
-                              </Link>
-                            </div>
-                          );
-                        })()}
-                      </div>
-
-                      {/* Desktop Layout - Two Columns */}
-                      <div className="hidden sm:grid sm:grid-cols-2 sm:gap-8 sm:items-start">
-                        {/* Left Column - Event Details */}
-                        <div>
-                          <h2 className="text-2xl font-bold text-blue-700 mb-3">
-                            {event.title}
-                          </h2>
-                        </div>
-
-                        {/* Right Column - Buy Tickets Button */}
-                        <div className="flex justify-center">
-                          {(() => {
-                            const today = new Date();
-                            const eventDate = event.startDate ? new Date(event.startDate) : null;
-                            const isUpcoming = eventDate && eventDate >= today;
-
-                            if (!isUpcoming) return null;
-
-                            return (
-                              <Link
-                                href={`/events/${event.id}/tickets`}
-                                className="transition-transform hover:scale-105"
-                              >
-                                <img
-                                  src="/images/buy_tickets_click_here_red.webp"
-                                  alt="Buy Tickets"
-                                  className="object-contain"
-                                  style={{
-                                    width: '200px',
-                                    height: '70px'
-                                  }}
-                                />
-                              </Link>
-                            );
-                          })()}
-                        </div>
-                      </div>
+                      {/* Caption */}
                       {event.caption && (
-                        <div className="text-lg text-gray-600 mb-4">{event.caption}</div>
+                        <p className="text-gray-600 text-lg mb-4">
+                          {event.caption}
+                        </p>
                       )}
 
-                      {/* Date and Time with Emoji Icons */}
-                      <div className="space-y-3 mb-4">
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <span className="text-xl">📅</span>
-                          <span className="font-semibold">
+                      {/* Event Details */}
+                      <div className="space-y-3 mb-6">
+                        <div className="flex items-center gap-3 text-gray-700">
+                          <span className="text-2xl">📅</span>
+                          <span className="text-lg font-semibold">
                             {formatDate(event.startDate, event.timezone)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <span className="text-xl">🕐</span>
-                          <span className="font-semibold">
+                        <div className="flex items-center gap-3 text-gray-700">
+                          <span className="text-2xl">🕐</span>
+                          <span className="text-lg font-semibold">
                             {formatTime(event.startTime)} - {formatTime(event.endTime)} (EDT)
                           </span>
                         </div>
                         {event.location && (
-                          <div className="flex items-center gap-2 text-gray-700">
-                            <LocationDisplay location={event.location} />
+                          <div className="flex items-center gap-3 text-gray-700">
+                            <span className="text-2xl">📍</span>
+                            <span className="text-lg font-semibold">
+                              {event.location}
+                            </span>
+                            {/* Copy and Navigate Icons - moved closer to location text */}
+                            <div className="flex gap-1 ml-2">
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(event.location || '');
+                                  alert('Address copied to clipboard!');
+                                }}
+                                className="p-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors"
+                                title="Copy Address"
+                              >
+                                <span className="text-sm">📋</span>
+                              </button>
+                              <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location || '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors"
+                                title="Open in Google Maps"
+                              >
+                                <span className="text-sm">🗺️</span>
+                              </a>
+                            </div>
                           </div>
                         )}
                       </div>
 
-                      {/* Description with expand/collapse for long text */}
+                      {/* Description with modern button */}
                       {event.description && (
-                        <div className="mb-4">
+                        <div className="mb-6">
                           <DescriptionDisplay description={event.description} />
                         </div>
                       )}
 
-                      {/* Calendar Link with Better Icon */}
-                      {(() => {
-                        const today = new Date();
-                        const eventDate = event.startDate ? new Date(event.startDate) : null;
-                        const isUpcoming = eventDate && eventDate >= today;
-                        if (!isUpcoming) return null;
-                        const start = toGoogleCalendarDate(event.startDate, event.startTime);
-                        const end = toGoogleCalendarDate(event.endDate, event.endTime);
-                        const text = encodeURIComponent(event.title);
-                        const details = encodeURIComponent(event.description || '');
-                        const location = encodeURIComponent(event.location || '');
-                        const calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}&location=${location}`;
-                        return (
-                          <div className="flex justify-start mt-4">
-                            <a href={calendarLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-blue-50 hover:bg-blue-100 text-blue-700 px-6 py-3 rounded-lg transition-colors">
+                      {/* Action Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        {/* Buy Tickets Image - Only for future events */}
+                        {(() => {
+                          if (showPastEvents) return null;
+
+                          const currentDate = new Date();
+                          const eventDate = event.startDate ? new Date(event.startDate) : null;
+                          const isUpcoming = eventDate && eventDate >= currentDate;
+
+                          if (!isUpcoming) return null;
+
+                          return (
+                            <Link
+                              href={`/events/${event.id}/tickets`}
+                              className="transition-transform hover:scale-105"
+                            >
+                              <img
+                                src="/images/buy_tickets_click_here_red.webp"
+                                alt="Buy Tickets"
+                                className="object-contain"
+                                style={{
+                                  width: '200px',
+                                  height: '70px'
+                                }}
+                              />
+                            </Link>
+                          );
+                        })()}
+
+                        {/* Calendar Link - Only for future events */}
+                        {(() => {
+                          if (showPastEvents) return null;
+
+                          const currentDate = new Date();
+                          const eventDate = event.startDate ? new Date(event.startDate) : null;
+                          const isUpcoming = eventDate && eventDate >= currentDate;
+                          if (!isUpcoming) return null;
+
+                          const start = toGoogleCalendarDate(event.startDate, event.startTime);
+                          const end = toGoogleCalendarDate(event.endDate, event.endTime);
+                          const text = encodeURIComponent(event.title);
+                          const details = encodeURIComponent(event.description || '');
+                          const location = encodeURIComponent(event.location || '');
+                          const calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}&location=${location}`;
+
+                          return (
+                            <a
+                              href={calendarLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 px-6 rounded-xl border border-gray-200 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-3"
+                            >
                               <span className="text-2xl">📅</span>
-                              <span className="text-base font-semibold">Add to Calendar</span>
+                              <span className="text-lg">Add to Calendar</span>
                             </a>
-                          </div>
-                        );
-                      })()}
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
             {/* Pagination controls */}
-            <div className="flex justify-between items-center mt-6">
+            <div className="flex justify-center items-center mt-12 gap-4">
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-700 font-semibold disabled:opacity-50"
+                className="px-6 py-3 rounded-xl bg-white hover:bg-gray-50 text-gray-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2"
               >
-                Previous
+                <span>←</span>
+                <span>Previous</span>
               </button>
-              <span className="font-bold">Page {page + 1} of {totalPages}</span>
+              <span className="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg">
+                Page {page + 1} of {totalPages}
+              </span>
               <button
                 onClick={() => setPage((p) => (p + 1 < totalPages ? p + 1 : p))}
                 disabled={page + 1 >= totalPages}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-700 font-semibold disabled:opacity-50"
+                className="px-6 py-3 rounded-xl bg-white hover:bg-gray-50 text-gray-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2"
               >
-                Next
+                <span>Next</span>
+                <span>→</span>
               </button>
             </div>
           </>
