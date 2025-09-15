@@ -151,7 +151,7 @@ export default function EventPerformersPage() {
       setLoading(true);
       console.log('🔄 Calling deleteEventFeaturedPerformerServer with ID:', selectedPerformer.id);
       await deleteEventFeaturedPerformerServer(selectedPerformer.id!);
-      
+
       console.log('✅ Performer deleted successfully, updating UI');
       setPerformers(prev => prev.filter(p => p.id !== selectedPerformer.id));
       setIsDeleteModalOpen(false);

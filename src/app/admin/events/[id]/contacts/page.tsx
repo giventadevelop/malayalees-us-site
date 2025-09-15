@@ -88,31 +88,31 @@ export default function EventContactsPage() {
     console.log('🚀 handleCreate called!');
     try {
       setLoading(true);
-      
+
       // Validate required fields
       if (!formData.name?.trim()) {
         setToastMessage({ type: 'error', message: 'Name is required' });
         return;
       }
-      
+
       if (!formData.phone?.trim()) {
         setToastMessage({ type: 'error', message: 'Phone is required' });
         return;
       }
-      
+
       const contactData = {
         name: formData.name.trim(),
         phone: formData.phone.trim(),
         email: formData.email?.trim() || undefined,
         event: { id: parseInt(eventId) } as EventDetailsDTO,
       };
-      
+
       // Debug logging
       console.log('🔍 Frontend Event Contact Debug:');
       console.log('📝 Form data:', formData);
       console.log('📤 Contact data being sent:', contactData);
       console.log('🎯 Event ID:', eventId);
-      
+
       const newContact = await createEventContactServer(contactData);
       setContacts(prev => [...prev, newContact]);
       setIsCreateModalOpen(false);
@@ -155,7 +155,7 @@ export default function EventContactsPage() {
       setLoading(true);
       console.log('🔄 Calling deleteEventContactServer with ID:', selectedContact.id);
       await deleteEventContactServer(selectedContact.id!);
-      
+
       console.log('✅ Contact deleted successfully, updating UI');
       setContacts(prev => prev.filter(c => c.id !== selectedContact.id));
       setIsDeleteModalOpen(false);
@@ -267,8 +267,8 @@ export default function EventContactsPage() {
       {/* Toast Message */}
       {toastMessage && (
         <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
-            ? 'bg-green-50 border border-green-200 text-green-700'
-            : 'bg-red-50 border border-red-200 text-red-700'
+          ? 'bg-green-50 border border-green-200 text-green-700'
+          : 'bg-red-50 border border-red-200 text-red-700'
           }`}>
           {toastMessage.message}
         </div>

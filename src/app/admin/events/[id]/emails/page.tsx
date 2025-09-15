@@ -128,7 +128,7 @@ export default function EventEmailsPage() {
       setLoading(true);
       console.log('🔄 Calling deleteEventEmailServer with ID:', selectedEmail.id);
       await deleteEventEmailServer(selectedEmail.id!);
-      
+
       console.log('✅ Email deleted successfully, updating UI');
       setEmails(prev => prev.filter(e => e.id !== selectedEmail.id));
       setIsDeleteModalOpen(false);
