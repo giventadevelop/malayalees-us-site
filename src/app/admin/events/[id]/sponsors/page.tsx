@@ -500,19 +500,6 @@ export default function EventSponsorsPage() {
       {/* Event Sponsors Table */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Event Sponsors ({filteredEventSponsors.length})</h2>
-
-        {/* Debug Info */}
-        <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-          <p><strong>Debug:</strong> filteredEventSponsors.length = {filteredEventSponsors.length}</p>
-          <p><strong>Debug:</strong> eventSponsors.length = {eventSponsors.length}</p>
-          {filteredEventSponsors.length > 0 && (
-            <div>
-              <p><strong>First sponsor name:</strong> {filteredEventSponsors[0]?.sponsor?.name || 'undefined'}</p>
-              <p><strong>First sponsor type:</strong> {filteredEventSponsors[0]?.sponsor?.type || 'undefined'}</p>
-            </div>
-          )}
-        </div>
-
         <DataTable
           data={filteredEventSponsors || []}
           columns={columns}
