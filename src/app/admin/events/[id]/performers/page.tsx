@@ -6,8 +6,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import DataTable, { Column } from '@/components/ui/DataTable';
-import Modal from '@/components/ui/Modal';
-import ConfirmModal from '@/components/ui/Modal';
+import Modal, { ConfirmModal } from '@/components/ui/Modal';
 import ImageUpload from '@/components/ui/ImageUpload';
 import type { EventFeaturedPerformersDTO, EventDetailsDTO } from '@/types';
 import {
@@ -397,7 +396,7 @@ export default function EventPerformersPage() {
         }}
         onConfirm={handleDelete}
         title="Delete Performer"
-        message={`Are you sure you want to delete "${selectedPerformer?.name}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete "${selectedPerformer?.name || 'this performer'}"? This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
       />

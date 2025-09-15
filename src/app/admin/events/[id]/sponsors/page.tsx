@@ -582,7 +582,7 @@ export default function EventSponsorsPage() {
         }}
         onConfirm={handleDelete}
         title="Remove Sponsor"
-        message={`Are you sure you want to remove "${selectedSponsor?.sponsor?.name}" from this event? This action cannot be undone.`}
+        message={`Are you sure you want to remove "${selectedSponsor?.sponsor?.name || 'this sponsor'}" from this event? This action cannot be undone.`}
         confirmText="Remove"
         variant="danger"
       />
