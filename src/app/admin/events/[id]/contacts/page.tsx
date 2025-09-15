@@ -66,17 +66,23 @@ export default function EventContactsPage() {
       setLoading(true);
       setError(null);
 
+      console.log('🔄 Loading event and contacts for eventId:', eventId);
+
       // Load event details
       const eventResponse = await fetch(`/api/proxy/event-details/${eventId}`);
       if (eventResponse.ok) {
         const eventData = await eventResponse.json();
+        console.log('✅ Event loaded:', eventData);
         setEvent(eventData);
       }
 
       // Load contacts for this event
+      console.log('🔄 Fetching contacts...');
       const contactsData = await fetchEventContactsServer(parseInt(eventId));
+      console.log('✅ Contacts loaded:', contactsData);
       setContacts(contactsData);
     } catch (err: any) {
+      console.error('❌ Error loading event and contacts:', err);
       setError(err.message || 'Failed to load event contacts');
       setToastMessage({ type: 'error', message: err.message || 'Failed to load event contacts' });
     } finally {
@@ -245,19 +251,19 @@ export default function EventContactsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-8 py-8" style={{ paddingTop: '180px' }}>
+    <div className="max-w-5xl mx-auto px-8 py-8" style={{ paddingTop: '180px' }}>
       {/* Header with back button */}
       <div className="flex items-center mb-6">
         <Link
           href={`/admin/events/${eventId}/edit`}
-          className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
+          className="flex items-center text-blue-600 hover:text-blue-800 mr-4 transition-colors"
         >
           <FaArrowLeft className="mr-2" />
           Back to Event
         </Link>
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Event Contacts
+            📞 Event Contacts
             {event && <span className="text-lg font-normal text-gray-600 ml-2">- {event.title}</span>}
           </h1>
           <p className="text-gray-600">Manage contacts for this event</p>
@@ -275,23 +281,23 @@ export default function EventContactsPage() {
       )}
 
       {/* Search and Filter Bar */}
-      <div className="mb-6 bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+      <div className="mb-6 bg-white rounded-lg shadow-md p-6">
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex-1 min-w-64">
             <div className="relative">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search contacts..."
+                placeholder="🔍 Search contacts..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="pl-10 pr-4 py-3 w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 text-base"
               />
             </div>
           </div>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow font-bold flex items-center gap-2 hover:bg-blue-700 transition"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors font-semibold"
           >
             <FaPlus />
             Add Contact
@@ -305,17 +311,20 @@ export default function EventContactsPage() {
         </div>
       )}
 
-      <DataTable
-        data={filteredContacts}
-        columns={columns}
-        loading={loading}
-        onSort={handleSort}
-        onEdit={openEditModal}
-        onDelete={openDeleteModal}
-        sortKey={sortKey}
-        sortDirection={sortDirection}
-        emptyMessage="No contacts found for this event"
-      />
+      {/* Contacts Table */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <DataTable
+          data={filteredContacts}
+          columns={columns}
+          loading={loading}
+          onSort={handleSort}
+          onEdit={openEditModal}
+          onDelete={openDeleteModal}
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          emptyMessage="No contacts found for this event"
+        />
+      </div>
 
       {/* Create Modal */}
       <Modal
@@ -404,8 +413,8 @@ function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: C
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Name *
+          <label className="block text-sm font-medium text-gray-700">
+            👤 Name *
           </label>
           <input
             type="text"
@@ -413,27 +422,26 @@ function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: C
             value={formData.name || ''}
             onChange={handleChange}
             required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
           />
         </div>
 
-
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
+          <label className="block text-sm font-medium text-gray-700">
+            📧 Email
           </label>
           <input
             type="email"
             name="email"
             value={formData.email || ''}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Phone *
+          <label className="block text-sm font-medium text-gray-700">
+            📞 Phone *
           </label>
           <input
             type="tel"
@@ -441,24 +449,24 @@ function ContactForm({ formData, setFormData, onSubmit, loading, submitText }: C
             value={formData.phone || ''}
             onChange={handleChange}
             required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
           />
         </div>
       </div>
 
 
-      <div className="flex justify-end space-x-3 pt-4">
+      <div className="flex justify-end space-x-3 pt-4 border-t">
         <button
           type="button"
           onClick={() => window.history.back()}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="bg-teal-100 hover:bg-teal-200 text-teal-800 px-4 py-2 rounded-md flex items-center gap-2 transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors disabled:opacity-50"
         >
           {loading ? 'Saving...' : submitText}
         </button>
