@@ -8,6 +8,7 @@ import Link from 'next/link';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/Modal';
+import ImageUpload from '@/components/ui/ImageUpload';
 import type { EventFeaturedPerformersDTO, EventDetailsDTO } from '@/types';
 import {
   fetchEventFeaturedPerformersServer,
@@ -696,6 +697,62 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
           />
         </div>
       </div>
+
+      {/* Image Upload Section */}
+      {formData.id && (
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Images</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Portrait Image
+              </label>
+              <ImageUpload
+                entityId={formData.id}
+                entityType="featured-performer"
+                imageType="portrait"
+                eventId={parseInt(eventId)}
+                currentImageUrl={formData.portraitImageUrl}
+                onImageUploaded={(url) => setFormData(prev => ({ ...prev, portraitImageUrl: url }))}
+                onError={(error) => console.error('Portrait upload error:', error)}
+                disabled={loading}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Performance Image
+              </label>
+              <ImageUpload
+                entityId={formData.id}
+                entityType="featured-performer"
+                imageType="performance"
+                eventId={parseInt(eventId)}
+                currentImageUrl={formData.performanceImageUrl}
+                onImageUploaded={(url) => setFormData(prev => ({ ...prev, performanceImageUrl: url }))}
+                onError={(error) => console.error('Performance image upload error:', error)}
+                disabled={loading}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Gallery Images
+              </label>
+              <ImageUpload
+                entityId={formData.id}
+                entityType="featured-performer"
+                imageType="gallery"
+                eventId={parseInt(eventId)}
+                currentImageUrl={formData.galleryImageUrls}
+                onImageUploaded={(url) => setFormData(prev => ({ ...prev, galleryImageUrls: url }))}
+                onError={(error) => console.error('Gallery upload error:', error)}
+                disabled={loading}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-end space-x-3 pt-4">
         <button

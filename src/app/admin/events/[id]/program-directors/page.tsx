@@ -8,6 +8,7 @@ import Link from 'next/link';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/Modal';
+import ImageUpload from '@/components/ui/ImageUpload';
 import type { EventProgramDirectorsDTO, EventDetailsDTO } from '@/types';
 import {
   fetchEventProgramDirectorsServer,
@@ -403,6 +404,46 @@ function ProgramDirectorForm({ formData, setFormData, onSubmit, loading, submitT
           />
         </div>
       </div>
+
+      {/* Image Upload Section */}
+      {formData.id && (
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Images</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Profile Photo
+              </label>
+              <ImageUpload
+                entityId={formData.id}
+                entityType="program-director"
+                imageType="photo"
+                eventId={parseInt(eventId)}
+                currentImageUrl={formData.profileImageUrl}
+                onImageUploaded={(url) => setFormData(prev => ({ ...prev, profileImageUrl: url }))}
+                onError={(error) => console.error('Profile photo upload error:', error)}
+                disabled={loading}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Banner Image
+              </label>
+              <ImageUpload
+                entityId={formData.id}
+                entityType="program-director"
+                imageType="banner"
+                eventId={parseInt(eventId)}
+                currentImageUrl={formData.bannerImageUrl}
+                onImageUploaded={(url) => setFormData(prev => ({ ...prev, bannerImageUrl: url }))}
+                onError={(error) => console.error('Banner upload error:', error)}
+                disabled={loading}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-end space-x-3 pt-4">
         <button

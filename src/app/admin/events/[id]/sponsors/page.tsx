@@ -7,6 +7,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import Modal, { ConfirmModal } from '@/components/ui/Modal';
+import ImageUpload from '@/components/ui/ImageUpload';
 import type { EventSponsorsDTO, EventSponsorsJoinDTO, EventDetailsDTO } from '@/types';
 import {
   fetchEventSponsorsServer,
@@ -135,11 +136,28 @@ export default function EventSponsorsPage() {
 
       console.log('🔍 Creating new sponsor:', sponsorData);
 
+      // Step 1: Create the sponsor
       const newSponsor = await createEventSponsorServer(sponsorData);
       setAvailableSponsors(prev => [...prev, newSponsor]);
+
+      // Step 2: Automatically assign the sponsor to this event
+      const sponsorJoinData = {
+        event: { id: parseInt(eventId) } as EventDetailsDTO,
+        sponsor: newSponsor
+      };
+
+      console.log('🔍 Auto-assigning new sponsor to event:', {
+        eventId: parseInt(eventId),
+        sponsorId: newSponsor.id,
+        sponsorName: newSponsor.name
+      });
+
+      const newSponsorJoin = await createEventSponsorJoinServer(sponsorJoinData);
+      setEventSponsors(prev => [...prev, newSponsorJoin]);
+
       setIsCreateSponsorModalOpen(false);
       resetSponsorForm();
-      setToastMessage({ type: 'success', message: 'Sponsor created successfully' });
+      setToastMessage({ type: 'success', message: 'Sponsor created and assigned to event successfully' });
     } catch (err: any) {
       console.error('❌ Failed to create sponsor:', err);
       setToastMessage({ type: 'error', message: err.message || 'Failed to create sponsor' });
@@ -585,6 +603,7 @@ export default function EventSponsorsPage() {
           onSubmit={handleCreateSponsor}
           loading={loading}
           submitText="Create Sponsor"
+          eventId={eventId}
         />
       </Modal>
     </div>
@@ -683,9 +702,10 @@ interface SponsorFormProps {
   onSubmit: () => void;
   loading: boolean;
   submitText: string;
+  eventId: string;
 }
 
-function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: SponsorFormProps) {
+function SponsorForm({ formData, setFormData, onSubmit, loading, submitText, eventId }: SponsorFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 
@@ -805,6 +825,46 @@ function SponsorForm({ formData, setFormData, onSubmit, loading, submitText }: S
           </label>
         </div>
       </div>
+
+      {/* Image Upload Section */}
+      {formData.id && (
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Images</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Logo Image
+              </label>
+              <ImageUpload
+                entityId={formData.id}
+                entityType="sponsor"
+                imageType="logo"
+                eventId={parseInt(eventId)}
+                currentImageUrl={formData.logoUrl}
+                onImageUploaded={(url) => setFormData(prev => ({ ...prev, logoUrl: url }))}
+                onError={(error) => console.error('Logo upload error:', error)}
+                disabled={loading}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Banner Image
+              </label>
+              <ImageUpload
+                entityId={formData.id}
+                entityType="sponsor"
+                imageType="banner"
+                eventId={parseInt(eventId)}
+                currentImageUrl={formData.bannerImageUrl}
+                onImageUploaded={(url) => setFormData(prev => ({ ...prev, bannerImageUrl: url }))}
+                onError={(error) => console.error('Banner upload error:', error)}
+                disabled={loading}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-end space-x-3 pt-4">
         <button
