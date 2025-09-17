@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getCachedApiJwt, generateApiJwt } from '@/lib/api/jwt';
 import { withTenantId } from '@/lib/withTenantId';
 import { getTenantId } from '@/lib/env';
+import { getRawBody } from '@/lib/getRawBody';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -14,23 +15,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { method, query } = req;
     const tenantId = getTenantId();
 
-    // Build the backend path
-    let path = '/api/event-sponsors';
-    const slug = query.slug;
-    if (slug) {
-      if (Array.isArray(slug)) {
-        path += '/' + slug.map(encodeURIComponent).join('/');
-      } else if (typeof slug === 'string') {
-        path += '/' + encodeURIComponent(slug);
-      }
-    }
-
     // Build query string with proper pagination parameters
-    const { slug: _omit, ...restQuery } = query;
     const qs = new URLSearchParams();
 
     // Add all query parameters from the request
-    Object.entries(restQuery).forEach(([key, value]) => {
+    Object.entries(query).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         if (Array.isArray(value)) {
           value.forEach(v => qs.append(key, String(v)));
@@ -40,19 +29,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
-    // Add tenantId.equals for list endpoints (GET without specific ID)
-    const isListEndpoint = method === 'GET' && !slug;
-    if (isListEndpoint && !qs.has('tenantId.equals')) {
+    // Add tenantId.equals for list endpoints (GET)
+    if (method === 'GET' && !qs.has('tenantId.equals')) {
       qs.append('tenantId.equals', tenantId);
     }
 
     const queryString = qs.toString();
-    const apiUrl = `${API_BASE_URL}${path}${queryString ? `?${queryString}` : ''}`;
+    const apiUrl = `${API_BASE_URL}/api/event-sponsors${queryString ? `?${queryString}` : ''}`;
 
     console.log('[EventSponsorsProxy] Forwarding to backend URL:', apiUrl);
 
-    if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method!)) {
-      res.setHeader('Allow', ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']);
+    if (!['GET', 'POST'].includes(method!)) {
+      res.setHeader('Allow', ['GET', 'POST']);
       res.status(405).end(`Method ${method} Not Allowed`);
       return;
     }
@@ -62,28 +50,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (method === 'GET') {
       response = await fetchWithJwtRetry(apiUrl, { method: 'GET' });
     } else if (method === 'POST') {
-      const payload = withTenantId(req.body);
+      // Read the raw body since bodyParser is disabled
+      const rawBody = await getRawBody(req);
+      let requestData;
+
+      try {
+        requestData = JSON.parse(rawBody.toString('utf-8'));
+        console.log('[EventSponsorsProxy] Parsed request data:', JSON.stringify(requestData, null, 2));
+      } catch (parseError) {
+        console.error('[EventSponsorsProxy] Failed to parse request body:', parseError);
+        res.status(400).json({ error: 'Invalid JSON in request body' });
+        return;
+      }
+
+      // Apply tenantId injection
+      const payload = withTenantId(requestData);
+      console.log('[EventSponsorsProxy] Final payload with tenantId:', JSON.stringify(payload, null, 2));
+
       response = await fetchWithJwtRetry(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-    } else if (method === 'PUT') {
-      const payload = withTenantId(req.body);
-      response = await fetchWithJwtRetry(apiUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-    } else if (method === 'PATCH') {
-      const payload = withTenantId(req.body);
-      response = await fetchWithJwtRetry(apiUrl, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/merge-patch+json' },
-        body: JSON.stringify(payload),
-      });
-    } else if (method === 'DELETE') {
-      response = await fetchWithJwtRetry(apiUrl, { method: 'DELETE' });
     }
 
     // Forward x-total-count header for GET requests
@@ -99,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(response.status).send(data);
     }
   } catch (err) {
-    console.error('EventSponsorsProxy error:', err);
+    console.error('EventSponsorsProxy index error:', err);
     res.status(500).json({ error: 'Internal server error', details: String(err) });
   }
 }

@@ -12,6 +12,7 @@ import type { EventSponsorsDTO, EventSponsorsJoinDTO, EventDetailsDTO } from '@/
 import {
   fetchEventSponsorsServer,
   fetchEventSponsorsJoinServer,
+  fetchAvailableSponsorsServer,
   createEventSponsorServer,
   createEventSponsorJoinServer,
   updateEventSponsorJoinServer,
@@ -29,6 +30,12 @@ export default function EventSponsorsPage() {
   const [eventSponsors, setEventSponsors] = useState<EventSponsorsJoinDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Pagination state for available sponsors
+  const [availableSponsorsPage, setAvailableSponsorsPage] = useState(0);
+  const [availableSponsorsTotalPages, setAvailableSponsorsTotalPages] = useState(0);
+  const [availableSponsorsTotalElements, setAvailableSponsorsTotalElements] = useState(0);
+  const [availableSponsorsSearchTerm, setAvailableSponsorsSearchTerm] = useState('');
 
   // Modal states
   const [isCreateSponsorModalOpen, setIsCreateSponsorModalOpen] = useState(false);
@@ -52,6 +59,7 @@ export default function EventSponsorsPage() {
     companyName: '',
     contactEmail: '',
     contactPhone: '',
+    priorityRanking: 1,
     isActive: true,
   });
 
@@ -91,16 +99,26 @@ export default function EventSponsorsPage() {
       console.log('🔍 Loading event sponsors for event ID:', eventId);
       const eventSponsorsData = await fetchEventSponsorsJoinServer(parseInt(eventId));
       console.log('✅ Loaded', eventSponsorsData.length, 'sponsors for event');
+      console.log('🔍 Raw event sponsors data:', JSON.stringify(eventSponsorsData, null, 2));
       setEventSponsors(eventSponsorsData);
 
-      // Load available sponsors (global sponsors) for assignment
+      // Load available sponsors (not assigned to this event) for assignment
       try {
-        const availableSponsorsData = await fetchEventSponsorsServer();
-        setAvailableSponsors(availableSponsorsData);
+        const availableSponsorsData = await fetchAvailableSponsorsServer(
+          parseInt(eventId),
+          availableSponsorsPage,
+          10,
+          availableSponsorsSearchTerm
+        );
+        setAvailableSponsors(availableSponsorsData.content);
+        setAvailableSponsorsTotalPages(availableSponsorsData.totalPages);
+        setAvailableSponsorsTotalElements(availableSponsorsData.totalElements);
       } catch (sponsorErr) {
         console.warn('Failed to load available sponsors:', sponsorErr);
         // Don't fail the whole page if available sponsors can't be loaded
         setAvailableSponsors([]);
+        setAvailableSponsorsTotalPages(0);
+        setAvailableSponsorsTotalElements(0);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load event sponsors');
@@ -125,13 +143,25 @@ export default function EventSponsorsPage() {
         return;
       }
 
-      const sponsorData = {
-        name: sponsorFormData.name.trim(),
-        type: sponsorFormData.type.trim(),
+      const sponsorData: Omit<EventSponsorsDTO, 'id' | 'createdAt' | 'updatedAt'> = {
+        name: sponsorFormData.name!.trim(),
+        type: sponsorFormData.type!.trim(),
         companyName: sponsorFormData.companyName?.trim() || undefined,
         contactEmail: sponsorFormData.contactEmail?.trim() || undefined,
         contactPhone: sponsorFormData.contactPhone?.trim() || undefined,
-        isActive: sponsorFormData.isActive || true,
+        isActive: sponsorFormData.isActive !== undefined ? sponsorFormData.isActive : true,
+        priorityRanking: sponsorFormData.priorityRanking || 1, // Default to 1 if not provided
+        // Add other optional fields that might be expected
+        tagline: undefined,
+        description: undefined,
+        websiteUrl: undefined,
+        logoUrl: undefined,
+        heroImageUrl: undefined,
+        bannerImageUrl: undefined,
+        facebookUrl: undefined,
+        twitterUrl: undefined,
+        linkedinUrl: undefined,
+        instagramUrl: undefined,
       };
 
       console.log('🔍 Creating new sponsor:', sponsorData);
@@ -184,8 +214,16 @@ export default function EventSponsorsPage() {
         sponsorName: selectedAvailableSponsor.name
       });
 
-      const newSponsorJoin = await createEventSponsorJoinServer(sponsorJoinData);
-      setEventSponsors(prev => [...prev, newSponsorJoin]);
+      await createEventSponsorJoinServer(sponsorJoinData);
+
+      // Reload the event sponsors data to ensure we have the latest data with proper sponsor details
+      console.log('🔄 Reloading event sponsors after assignment...');
+      const eventSponsorsData = await fetchEventSponsorsJoinServer(parseInt(eventId));
+      setEventSponsors(eventSponsorsData);
+
+      // Also reload available sponsors to reflect the new assignment
+      await loadAvailableSponsors(availableSponsorsPage, availableSponsorsSearchTerm);
+
       setIsAssignModalOpen(false);
       setSelectedAvailableSponsor(null);
       resetForm();
@@ -203,8 +241,16 @@ export default function EventSponsorsPage() {
 
     try {
       setLoading(true);
-      const updatedSponsorJoin = await updateEventSponsorJoinServer(selectedSponsor.id!, formData);
-      setEventSponsors(prev => prev.map(s => s.id === selectedSponsor.id ? updatedSponsorJoin : s));
+      await updateEventSponsorJoinServer(selectedSponsor.id!, formData);
+
+      // Reload the event sponsors data to ensure we have the latest data with proper sponsor details
+      console.log('🔄 Reloading event sponsors after edit...');
+      const eventSponsorsData = await fetchEventSponsorsJoinServer(parseInt(eventId));
+      setEventSponsors(eventSponsorsData);
+
+      // Also reload available sponsors to reflect any changes
+      await loadAvailableSponsors(availableSponsorsPage, availableSponsorsSearchTerm);
+
       setIsEditModalOpen(false);
       setSelectedSponsor(null);
       resetForm();
@@ -223,7 +269,15 @@ export default function EventSponsorsPage() {
     try {
       setLoading(true);
       await deleteEventSponsorJoinServer(selectedSponsor.id!);
-      setEventSponsors(prev => prev.filter(s => s.id !== selectedSponsor.id));
+
+      // Reload the event sponsors data to ensure we have the latest data
+      console.log('🔄 Reloading event sponsors after deletion...');
+      const eventSponsorsData = await fetchEventSponsorsJoinServer(parseInt(eventId));
+      setEventSponsors(eventSponsorsData);
+
+      // Also reload available sponsors to reflect the removed assignment
+      await loadAvailableSponsors(availableSponsorsPage, availableSponsorsSearchTerm);
+
       setIsDeleteModalOpen(false);
       setSelectedSponsor(null);
       setToastMessage({ type: 'success', message: 'Sponsor removed from event successfully' });
@@ -249,8 +303,47 @@ export default function EventSponsorsPage() {
       companyName: '',
       contactEmail: '',
       contactPhone: '',
+      priorityRanking: 1,
       isActive: true,
     });
+  };
+
+  // Load available sponsors with pagination and search
+  const loadAvailableSponsors = async (page = 0, searchTerm = '') => {
+    try {
+      setLoading(true);
+      console.log('🔄 Loading available sponsors for event:', eventId, 'page:', page, 'search:', searchTerm);
+      const availableSponsorsData = await fetchAvailableSponsorsServer(
+        parseInt(eventId),
+        page,
+        20, // Page size 20 as per UI style guide
+        searchTerm
+      );
+      console.log('📊 Available sponsors data received:', availableSponsorsData);
+      setAvailableSponsors(availableSponsorsData.content);
+      setAvailableSponsorsTotalPages(availableSponsorsData.totalPages);
+      setAvailableSponsorsTotalElements(availableSponsorsData.totalElements);
+    } catch (err: any) {
+      console.error('Failed to load available sponsors:', err);
+      setAvailableSponsors([]);
+      setAvailableSponsorsTotalPages(0);
+      setAvailableSponsorsTotalElements(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle search for available sponsors
+  const handleAvailableSponsorsSearch = (searchTerm: string) => {
+    setAvailableSponsorsSearchTerm(searchTerm);
+    setAvailableSponsorsPage(0);
+    loadAvailableSponsors(0, searchTerm);
+  };
+
+  // Handle pagination for available sponsors
+  const handleAvailableSponsorsPageChange = (page: number) => {
+    setAvailableSponsorsPage(page);
+    loadAvailableSponsors(page, availableSponsorsSearchTerm);
   };
 
   const testApiCall = async () => {
@@ -258,10 +351,52 @@ export default function EventSponsorsPage() {
     try {
       const data = await fetchEventSponsorsJoinServer(parseInt(eventId));
       console.log('🧪 Test API result:', data);
-      setToastMessage({ type: 'success', message: `API test successful. Found ${Array.isArray(data) ? data.length : 'unknown'} sponsors.` });
+      console.log('🧪 Test API result structure:', JSON.stringify(data, null, 2));
+      setToastMessage({ type: 'success', message: `API test successful. Found ${Array.isArray(data) ? data.length : 'unknown'} sponsors. Check console for full data structure.` });
     } catch (error: any) {
       console.error('🧪 Test API error:', error);
       setToastMessage({ type: 'error', message: `API test failed: ${error.message}` });
+    }
+  };
+
+  const testDirectBackendCall = async () => {
+    console.log('🔍 Testing direct backend call for event ID:', eventId);
+    try {
+      // Test the specific endpoint
+      const specificUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/event-sponsors-join/event/${eventId}`;
+      console.log('🔍 Testing specific URL:', specificUrl);
+
+      const specificResponse = await fetch(specificUrl, {
+        headers: {
+          'Authorization': `Bearer ${await import('@/lib/api/jwt').then(m => m.getCachedApiJwt())}`,
+        },
+      });
+
+      console.log('🔍 Specific endpoint response status:', specificResponse.status);
+      const specificData = await specificResponse.json();
+      console.log('🔍 Specific endpoint data:', JSON.stringify(specificData, null, 2));
+
+      // Test the generic endpoint with query parameters
+      const genericUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/event-sponsors-join?eventId.equals=${eventId}`;
+      console.log('🔍 Testing generic URL:', genericUrl);
+
+      const genericResponse = await fetch(genericUrl, {
+        headers: {
+          'Authorization': `Bearer ${await import('@/lib/api/jwt').then(m => m.getCachedApiJwt())}`,
+        },
+      });
+
+      console.log('🔍 Generic endpoint response status:', genericResponse.status);
+      const genericData = await genericResponse.json();
+      console.log('🔍 Generic endpoint data:', JSON.stringify(genericData, null, 2));
+
+      setToastMessage({
+        type: 'success',
+        message: `Backend test complete. Specific: ${specificResponse.status}, Generic: ${genericResponse.status}. Check console for details.`
+      });
+    } catch (error: any) {
+      console.error('🔍 Direct backend test error:', error);
+      setToastMessage({ type: 'error', message: `Backend test failed: ${error.message}` });
     }
   };
 
@@ -416,12 +551,20 @@ export default function EventSponsorsPage() {
             <p className="text-gray-600">Manage sponsor assignments for this specific event only</p>
           </div>
         </div>
-        <button
-          onClick={testApiCall}
-          className="bg-purple-600 text-white px-4 py-2 rounded-lg shadow font-medium flex items-center gap-2 hover:bg-purple-700 transition"
-        >
-          🧪 Test API
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={testApiCall}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg shadow font-medium flex items-center gap-2 hover:bg-purple-700 transition"
+          >
+            🧪 Test API
+          </button>
+          <button
+            onClick={testDirectBackendCall}
+            className="bg-orange-600 text-white px-4 py-2 rounded-lg shadow font-medium flex items-center gap-2 hover:bg-orange-700 transition"
+          >
+            🔍 Test Backend
+          </button>
+        </div>
       </div>
 
       {/* Toast Message */}
@@ -459,6 +602,24 @@ export default function EventSponsorsPage() {
         </div>
       )}
 
+      {/* Event Sponsors Section - Moved to top */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4">
+          Event Sponsors for this Event Event ID {eventId} ({filteredEventSponsors.length})
+        </h2>
+        <DataTable
+          data={filteredEventSponsors || []}
+          columns={columns}
+          loading={loading}
+          onSort={handleSort}
+          onEdit={openEditModal}
+          onDelete={openDeleteModal}
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          emptyMessage="No sponsors assigned to this event yet. Assign sponsors from the available sponsors below."
+        />
+      </div>
+
       {/* Available Sponsors Section */}
       <div className="mb-8">
         <div className="flex justify-between items-start mb-4">
@@ -466,6 +627,7 @@ export default function EventSponsorsPage() {
             <h2 className="text-xl font-semibold">Available Sponsors to Assign</h2>
             <p className="text-gray-600 text-sm mt-1">
               Select from existing sponsors to assign them to this event, or create a new sponsor.
+              Showing {availableSponsors.length > 0 ? (availableSponsorsPage * 20) + 1 : 0} to {availableSponsors.length > 0 ? (availableSponsorsPage * 20) + availableSponsors.length : 0} of {availableSponsorsTotalElements} available sponsors
             </p>
           </div>
           <button
@@ -476,60 +638,119 @@ export default function EventSponsorsPage() {
             Create New Sponsor
           </button>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {availableSponsors.map((sponsor) => (
-              <div key={sponsor.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-medium text-gray-900">{sponsor.name}</h3>
-                  <button
-                    onClick={() => openAssignModal(sponsor)}
-                    className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition"
-                  >
-                    Assign
-                  </button>
-                </div>
-                <p className="text-sm text-gray-600">{sponsor.type || 'No type set'}</p>
-                <p className="text-sm text-gray-500">{sponsor.companyName || 'No company name'}</p>
-                <p className="text-sm text-gray-500">{sponsor.contactEmail || 'No contact email'}</p>
-              </div>
-            ))}
-          </div>
-          {availableSponsors.length === 0 && (
-            <div className="text-center py-8">
-              <div className="bg-gray-50 rounded-lg p-6">
-                <FaUserPlus className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Available Sponsors</h3>
-                <p className="text-gray-500 mb-4">
-                  Create your first sponsor to get started with event sponsorships.
-                </p>
-                <button
-                  onClick={() => setIsCreateSponsorModalOpen(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                  Create Your First Sponsor
-                </button>
+
+        {/* Search Bar for Available Sponsors */}
+        <div className="mb-6 bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex-1 min-w-64">
+              <div className="relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search available sponsors..."
+                  value={availableSponsorsSearchTerm}
+                  onChange={(e) => handleAvailableSponsorsSearch(e.target.value)}
+                  className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
             </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6">
+          {loading ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {availableSponsors.map((sponsor) => (
+                  <div key={sponsor.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-medium text-gray-900">{sponsor.name}</h3>
+                      <button
+                        onClick={() => openAssignModal(sponsor)}
+                        className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition"
+                      >
+                        Assign
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-600">{sponsor.type || 'No type set'}</p>
+                    <p className="text-sm text-gray-500">{sponsor.companyName || 'No company name'}</p>
+                    <p className="text-sm text-gray-500">{sponsor.contactEmail || 'No contact email'}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination for Available Sponsors */}
+              {availableSponsorsTotalPages > 1 && (
+                <div className="mt-6 flex justify-center">
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleAvailableSponsorsPageChange(availableSponsorsPage - 1)}
+                      disabled={availableSponsorsPage === 0}
+                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: Math.min(5, availableSponsorsTotalPages) }, (_, i) => {
+                        const pageNum = availableSponsorsPage < 3 ? i : availableSponsorsPage - 2 + i;
+                        if (pageNum >= availableSponsorsTotalPages) return null;
+
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => handleAvailableSponsorsPageChange(pageNum)}
+                            className={`px-3 py-2 text-sm font-medium rounded-md ${pageNum === availableSponsorsPage
+                              ? 'bg-blue-600 text-white'
+                              : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                              }`}
+                          >
+                            {pageNum + 1}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => handleAvailableSponsorsPageChange(availableSponsorsPage + 1)}
+                      disabled={availableSponsorsPage >= availableSponsorsTotalPages - 1}
+                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {availableSponsors.length === 0 && !loading && (
+                <div className="text-center py-8">
+                  <div className="bg-gray-50 rounded-lg p-6">
+                    <FaUserPlus className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Available Sponsors</h3>
+                    <p className="text-gray-500 mb-4">
+                      {availableSponsorsSearchTerm
+                        ? `No sponsors found matching "${availableSponsorsSearchTerm}".`
+                        : 'All sponsors are already assigned to this event or no sponsors exist.'
+                      }
+                    </p>
+                    <button
+                      onClick={() => setIsCreateSponsorModalOpen(true)}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Create New Sponsor
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
 
-      {/* Event Sponsors Table */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">Event Sponsors ({filteredEventSponsors.length})</h2>
-        <DataTable
-          data={filteredEventSponsors || []}
-          columns={columns}
-          loading={loading}
-          onSort={handleSort}
-          onEdit={openEditModal}
-          onDelete={openDeleteModal}
-          sortKey={sortKey}
-          sortDirection={sortDirection}
-          emptyMessage="No sponsors assigned to this event yet. Assign sponsors from the available sponsors above."
-        />
-      </div>
 
       {/* Assign Sponsor Modal */}
       <Modal
@@ -810,6 +1031,25 @@ function SponsorForm({ formData, setFormData, onSubmit, loading, submitText, eve
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Enter contact phone"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Priority Ranking *
+          </label>
+          <input
+            type="number"
+            name="priorityRanking"
+            value={formData.priorityRanking || 1}
+            onChange={handleChange}
+            min="1"
+            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter priority ranking (1 = highest priority)"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Lower numbers indicate higher priority (1 = highest priority)
+          </p>
         </div>
 
         <div className="flex items-center">

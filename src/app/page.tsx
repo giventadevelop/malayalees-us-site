@@ -6,6 +6,7 @@ import LiveEventsSection from '../components/LiveEventsSection';
 import FeaturedEventsSection from '../components/FeaturedEventsSection';
 import ServicesSection from '../components/ServicesSection';
 import AboutSection from '../components/AboutSection';
+import UpcomingEventsSection from '../components/UpcomingEventsSection';
 import CausesSection from '../components/CausesSection';
 import TeamSection from '../components/TeamSection';
 import ProjectsSection from '../components/ProjectsSection';
@@ -108,6 +109,9 @@ export default function HomePage() {
       </div>
       <ServicesSection />
       <AboutSection />
+      <ErrorBoundary fallback={<EventsFallback />}>
+        <UpcomingEventsSection />
+      </ErrorBoundary>
       <CausesSection />
       <ErrorBoundary fallback={<TeamFallback />}>
         <TeamSection />

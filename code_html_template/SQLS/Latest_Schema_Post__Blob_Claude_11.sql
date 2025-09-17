@@ -3028,6 +3028,7 @@ type character varying(50), -- TRANSACTIONAL, BULK
 -- Stores comprehensive information about featured performers/artists for an event
 CREATE TABLE public.event_featured_performers (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255),
     event_id bigint NOT NULL,
     -- Basic performer information
     name varchar(255) NOT NULL,
@@ -3084,6 +3085,7 @@ CREATE TABLE public.event_featured_performers (
 -- Stores booking or organizing contact info for events
 CREATE TABLE public.event_contacts (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255),
     event_id bigint NOT NULL,
     name varchar(255) NOT NULL,
     phone varchar(50) NOT NULL,
@@ -3097,6 +3099,7 @@ CREATE TABLE public.event_contacts (
 -- Stores comprehensive sponsor/company information
 CREATE TABLE public.event_sponsors (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255),
     name varchar(255) NOT NULL,
     type varchar(100) NOT NULL,
     -- Company information
@@ -3140,6 +3143,7 @@ CREATE TABLE public.event_sponsors (
 -- Join table for many-to-many relationship between events and sponsors
 CREATE TABLE public.event_sponsors_join (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255),
     event_id bigint NOT NULL,
     sponsor_id bigint NOT NULL,
     created_at timestamp DEFAULT now() NOT NULL,
@@ -3151,6 +3155,7 @@ CREATE TABLE public.event_sponsors_join (
 -- For general event-level emails (for public or organizers)
 CREATE TABLE public.event_emails (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255),
     event_id bigint NOT NULL,
     email varchar(255) NOT NULL,
     created_at timestamp DEFAULT now() NOT NULL,
@@ -3162,6 +3167,7 @@ CREATE TABLE public.event_emails (
 -- Stores info about the event's program director
 CREATE TABLE public.event_program_directors (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    tenant_id character varying(255),
     event_id bigint NOT NULL,
     name varchar(255) NOT NULL,
     photo_url varchar(1024) NULL,

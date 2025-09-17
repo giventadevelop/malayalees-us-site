@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { FaUpload, FaImage, FaTimes, FaSpinner } from 'react-icons/fa';
+import React, { useState, useRef, useEffect } from 'react';
+import { FaUpload, FaImage, FaTimes, FaSpinner, FaCheck } from 'react-icons/fa';
 
 interface ImageUploadProps {
   entityId: number;
@@ -28,7 +28,18 @@ export default function ImageUpload({
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-hide success message after 3 seconds
+  useEffect(() => {
+    if (showSuccess) {
+      const timer = setTimeout(() => {
+        setShowSuccess(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccess]);
 
   const handleFileSelect = async (file: File) => {
     if (!file) return;
@@ -51,14 +62,22 @@ export default function ImageUpload({
       const formData = new FormData();
       formData.append('file', file);
 
-      // Build the correct API URL based on entity type
+      // Build the correct API URL based on entity type using proxy pattern
       let apiUrl: string;
+      const defaultTenantId = 'tenant_demo_001'; // Default fallback
+
       if (entityType === 'program-director') {
-        // Program director has a different endpoint structure
-        apiUrl = `/api/event-medias/upload/${entityType}/${entityId}/photo?eventId=${eventId}&title=${imageType}&description=Uploaded image&tenantId=${process.env.NEXT_PUBLIC_TENANT_ID}&isPublic=true`;
+        // Program director uses specific endpoint with entityId in path
+        apiUrl = `/api/proxy/event-medias/upload/${entityType}/${entityId}/photo?entityId=${entityId}&eventId=${eventId}&title=${imageType}&description=Uploaded image&tenantId=${defaultTenantId}&isPublic=true`;
+      } else if (entityType === 'featured-performer') {
+        // Featured performer uses dedicated proxy endpoint
+        apiUrl = `/api/proxy/event-medias/upload/${entityType}?eventId=${eventId}&entityId=${entityId}&imageType=${imageType}&title=${imageType}&description=Uploaded image&tenantId=${defaultTenantId}&isPublic=true`;
+      } else if (entityType === 'sponsor') {
+        // Sponsor uses dedicated proxy endpoint
+        apiUrl = `/api/proxy/event-medias/upload/${entityType}?eventId=${eventId}&entityId=${entityId}&imageType=${imageType}&title=${imageType}&description=Uploaded image&tenantId=${defaultTenantId}&isPublic=true`;
       } else {
-        // Other entity types use the generic pattern
-        apiUrl = `/api/event-medias/upload/${entityType}/${entityId}/${imageType}?eventId=${eventId}&title=${imageType}&description=Uploaded image&tenantId=${process.env.NEXT_PUBLIC_TENANT_ID}&isPublic=true`;
+        // Fallback for other entity types (if any)
+        apiUrl = `/api/proxy/event-medias/upload/${entityType}/${entityId}/${imageType}?eventId=${eventId}&title=${imageType}&description=Uploaded image&tenantId=${defaultTenantId}&isPublic=true`;
       }
 
       // Call the backend API directly for image upload
@@ -80,6 +99,9 @@ export default function ImageUpload({
 
       const result = await response.json();
       onImageUploaded(result.url || result.imageUrl);
+
+      // Show success message
+      setShowSuccess(true);
     } catch (error: any) {
       console.error('Upload error:', error);
       onError(error.message || 'Failed to upload image');
@@ -139,7 +161,8 @@ export default function ImageUpload({
         onDragLeave={handleDragLeave}
         className={`
           relative border-2 border-dashed rounded-lg p-4 cursor-pointer transition-all
-          ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
+          ${showSuccess ? 'border-green-500 bg-green-50' :
+            dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
           ${disabled || isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}
         `}
       >
@@ -147,6 +170,12 @@ export default function ImageUpload({
           <div className="flex flex-col items-center justify-center text-gray-500">
             <FaSpinner className="animate-spin text-2xl mb-2" />
             <p className="text-sm">Uploading...</p>
+          </div>
+        ) : showSuccess ? (
+          <div className="flex flex-col items-center justify-center text-green-600">
+            <FaCheck className="text-2xl mb-2" />
+            <p className="text-sm font-medium">Upload successful!</p>
+            <p className="text-xs text-gray-500">Image updated</p>
           </div>
         ) : currentImageUrl ? (
           <div className="flex flex-col items-center">

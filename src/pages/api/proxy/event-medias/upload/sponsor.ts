@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // Disable body parsing to handle multipart form data
   },
 };
 
@@ -46,17 +46,63 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return;
     }
 
+    const { eventId, entityId, imageType, title, description, isPublic, tenantId } = req.query;
+
+    if (!eventId || !entityId || !imageType || !title) {
+      return res.status(400).json({ error: 'Missing required parameters: eventId, entityId, imageType, title' });
+    }
+
+    // Validate entityId
+    const entityIdStr = Array.isArray(entityId) ? entityId[0] : entityId;
+    const entityIdInt = parseInt(entityIdStr);
+    if (isNaN(entityIdInt)) {
+      return res.status(400).json({ error: 'Invalid entityId: must be a valid integer' });
+    }
+
+    // Get values from query parameters
+    const eventIdValue = Array.isArray(eventId) ? eventId[0] : eventId;
+    const imageTypeValue = Array.isArray(imageType) ? imageType[0] : imageType;
+    const titleValue = Array.isArray(title) ? title[0] : title;
+    const descriptionValue = Array.isArray(description) ? description[0] || 'Uploaded image' : description || 'Uploaded image';
+    const tenantIdValue = Array.isArray(tenantId) ? tenantId[0] : tenantId || process.env.NEXT_PUBLIC_TENANT_ID || 'tenant_demo_001';
+    const isPublicValue = Array.isArray(isPublic) ? isPublic[0] : isPublic;
+    const isPublicBoolean = String(isPublicValue) === 'true';
+
+    // Use the Swagger API specification endpoint
+    const apiUrl = `${API_BASE_URL}/api/event-medias/upload/sponsor`;
+
+    // Build query string according to Swagger specification
+    const queryParams = new URLSearchParams({
+      eventId: eventIdValue,
+      entityId: String(entityIdInt),
+      imageType: imageTypeValue,
+      title: titleValue,
+      description: descriptionValue,
+      tenantId: tenantIdValue,
+      isPublic: isPublicBoolean.toString()
+    });
+
+    const apiUrlWithParams = `${apiUrl}?${queryParams.toString()}`;
+
+    console.log('🔍 Sponsor Image Upload Proxy Debug:');
+    console.log('📋 Values:', {
+      entityId: entityIdInt,
+      eventId: eventIdValue,
+      imageType: imageTypeValue,
+      title: titleValue,
+      description: descriptionValue,
+      isPublic: isPublicBoolean
+    });
+    console.log('🔗 Backend URL with params:', apiUrlWithParams);
+
+    // Use node-fetch for proper multipart form handling
+    const fetch = (await import("node-fetch")).default;
+
     // Get JWT token
     let token = await getCachedApiJwt();
     if (!token) {
       token = await generateApiJwt();
     }
-
-    // Construct the backend API URL
-    const apiUrl = `${API_BASE_URL}/api/event-medias/upload-multiple`;
-
-    // Use node-fetch for proper multipart form handling
-    const fetch = (await import("node-fetch")).default;
 
     // Copy headers from request, but sanitize them
     const headers: Record<string, string> = {
@@ -66,23 +112,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Only copy content-type and content-length if they exist
     if (req.headers['content-type']) {
       headers['content-type'] = req.headers['content-type'];
+      console.log('🔧 Content-Type from request:', req.headers['content-type']);
     }
     if (req.headers['content-length']) {
       headers['content-length'] = req.headers['content-length'];
+      console.log('🔧 Content-Length from request:', req.headers['content-length']);
     }
 
+    console.log('🔧 Final headers being sent to backend:', headers);
+    console.log('🔧 Final URL being called:', apiUrlWithParams);
+
     // Forward the request to the backend
-    const apiRes = await fetch(apiUrl, {
+    const apiRes = await fetch(apiUrlWithParams, {
       method: 'POST',
       headers: headers,
       body: req, // Forward the raw request stream
       duplex: 'half', // Required for streaming body in Node.js fetch
     });
 
+    console.log('🔧 Backend response status:', apiRes.status);
+    console.log('🔧 Backend response headers:', Object.fromEntries(apiRes.headers.entries()));
+
     // Check response status and handle accordingly
     if (apiRes.status >= 200 && apiRes.status < 300) {
       // Success - pipe the response
-      console.log('✅ Proxy: Backend upload successful - HTTP status:', apiRes.status);
+      console.log('✅ Sponsor Image Upload Proxy: Backend upload successful - HTTP status:', apiRes.status);
       res.status(apiRes.status);
 
       // Copy response headers
@@ -95,7 +149,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       apiRes.body.pipe(res);
     } else {
       // Error - return structured error response
-      console.error('❌ Proxy: Backend upload failed - HTTP status:', apiRes.status);
+      console.error('❌ Sponsor Image Upload Proxy: Backend upload failed - HTTP status:', apiRes.status);
 
       // Drain the error response to prevent processing
       try {
@@ -112,14 +166,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(apiRes.status >= 400 ? apiRes.status : 500);
       res.setHeader('Content-Type', 'application/json');
       res.json({
-        error: 'Upload failed',
+        error: 'Sponsor image upload failed',
         status: apiRes.status,
         message: `Upload operation failed with HTTP status ${apiRes.status}`,
         success: false
       });
     }
   } catch (err) {
-    console.error('Proxy error:', err);
+    console.error('Sponsor image upload proxy error:', err);
     res.status(500).json({ error: 'Internal server error', details: String(err) });
   }
 }
+

@@ -714,7 +714,7 @@ export interface EventSponsorsDTO {
   heroImageUrl?: string;
   bannerImageUrl?: string;
   isActive: boolean;
-  priorityRanking?: number;
+  priorityRanking: number; // Required field based on database constraint
   facebookUrl?: string;
   twitterUrl?: string;
   linkedinUrl?: string;
