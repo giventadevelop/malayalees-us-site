@@ -10,6 +10,11 @@ const UpcomingEventsSection: React.FC = () => {
   const [events, setEvents] = useState<EventWithMedia[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
+  const [isUpcomingEvents, setIsUpcomingEvents] = useState(true);
+
+  // Cache key for sessionStorage
+  const CACHE_KEY = 'homepage_events_cache';
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   // Array of modern background colors (same as events page)
   const cardBackgrounds = [
@@ -32,6 +37,23 @@ const UpcomingEventsSection: React.FC = () => {
 
   useEffect(() => {
     async function fetchEvents() {
+      // Check cache first
+      try {
+        const cachedData = sessionStorage.getItem(CACHE_KEY);
+        if (cachedData) {
+          const { data, timestamp, isUpcoming } = JSON.parse(cachedData);
+          if (Date.now() - timestamp < CACHE_DURATION) {
+            console.log('✅ Using cached events data');
+            setEvents(data);
+            setIsUpcomingEvents(isUpcoming);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to read events cache:', error);
+      }
+
       setLoading(true);
       setFetchError(false);
       try {
@@ -73,7 +95,20 @@ const UpcomingEventsSection: React.FC = () => {
               }
             })
           );
+
+          // Cache the upcoming events data
+          try {
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+              data: eventsWithMedia,
+              timestamp: Date.now(),
+              isUpcoming: true
+            }));
+          } catch (error) {
+            console.warn('Failed to cache events data:', error);
+          }
+
           setEvents(eventsWithMedia);
+          setIsUpcomingEvents(true);
         } else {
           // No upcoming events, try to get past events (max 6)
           const pastParams = new URLSearchParams({
@@ -110,7 +145,20 @@ const UpcomingEventsSection: React.FC = () => {
               }
             })
           );
+
+          // Cache the past events data
+          try {
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+              data: eventsWithMedia,
+              timestamp: Date.now(),
+              isUpcoming: false
+            }));
+          } catch (error) {
+            console.warn('Failed to cache events data:', error);
+          }
+
           setEvents(eventsWithMedia);
+          setIsUpcomingEvents(false);
         }
       } catch (err) {
         setFetchError(true);
@@ -140,8 +188,12 @@ const UpcomingEventsSection: React.FC = () => {
     return formatInTimeZone(dateString, timezone, 'EEEE, MMMM d, yyyy');
   }
 
-  // Check if events are upcoming or past
-  const isUpcomingEvents = events.length > 0 && events[0].startDate && new Date(events[0].startDate) >= new Date();
+  // isUpcomingEvents state is managed in useEffect based on which type of events were fetched
+
+  // Don't render anything while loading - section will appear only when fully loaded
+  if (loading) {
+    return null;
+  }
 
   return (
     <section className="py-16 bg-gray-50">
@@ -163,23 +215,7 @@ const UpcomingEventsSection: React.FC = () => {
           </p>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center min-h-[300px]">
-            <div className="relative">
-              <Image
-                src="/images/loading_events.jpg"
-                alt="Loading events..."
-                width={200}
-                height={200}
-                className="rounded-lg shadow-lg animate-pulse"
-                priority
-              />
-              <div className="absolute inset-0 rounded-lg overflow-hidden">
-                <div className="wavy-animation"></div>
-              </div>
-            </div>
-          </div>
-        ) : fetchError ? (
+        {fetchError ? (
           <div className="text-center text-red-600 font-bold py-8">
             Sorry, we couldn't load events at this time. Please try again later.
           </div>

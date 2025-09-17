@@ -9,6 +9,7 @@ import AboutSection from '../components/AboutSection';
 import UpcomingEventsSection from '../components/UpcomingEventsSection';
 import CausesSection from '../components/CausesSection';
 import TeamSection from '../components/TeamSection';
+import OurSponsorsSection from '../components/OurSponsorsSection';
 import ProjectsSection from '../components/ProjectsSection';
 import TestimonialsSection from '../components/TestimonialsSection';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -115,6 +116,9 @@ export default function HomePage() {
       <CausesSection />
       <ErrorBoundary fallback={<TeamFallback />}>
         <TeamSection />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={<div>Sponsors temporarily unavailable</div>}>
+        <OurSponsorsSection />
       </ErrorBoundary>
       <ProjectsSection />
       <TestimonialsSection />
