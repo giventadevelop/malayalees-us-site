@@ -65,12 +65,28 @@ export const useEventsData = () => {
               { cache: 'no-store' }
             );
             if (!eventsResponse.ok) {
-              console.log('Fallback events fetch also failed with status:', eventsResponse.status);
-              throw new Error(`Failed to fetch events: ${eventsResponse.status}`);
+              console.log('Backend unavailable - events not loaded, status:', eventsResponse.status);
+              // Set empty data instead of throwing
+              setData({
+                events: [],
+                eventsWithMedia: [],
+                upcomingEvents: [],
+                isLoading: false,
+                error: null,
+              });
+              return;
             }
           } catch (fallbackErr) {
-            console.error('Fallback events fetch error:', fallbackErr);
-            throw fallbackErr;
+            console.log('Backend unavailable - events not loaded:', fallbackErr);
+            // Set empty data instead of throwing
+            setData({
+              events: [],
+              eventsWithMedia: [],
+              upcomingEvents: [],
+              isLoading: false,
+              error: null,
+            });
+            return;
           }
         }
 
@@ -119,7 +135,7 @@ export const useEventsData = () => {
               });
             }
           } catch (mediaError) {
-            console.error(`Error fetching media for event ${event.id}:`, mediaError);
+            console.log(`Backend unavailable - media not loaded for event ${event.id}:`, mediaError);
             eventsWithMedia.push({
               event,
               media: []
@@ -138,12 +154,14 @@ export const useEventsData = () => {
         });
 
       } catch (error) {
-        console.error('Error fetching events data:', error);
-        setData(prev => ({
-          ...prev,
+        console.log('Backend connection error - events data not loaded:', error);
+        setData({
+          events: [],
+          eventsWithMedia: [],
+          upcomingEvents: [],
           isLoading: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        }));
+          error: null, // Don't set error state, just log it
+        });
       }
     };
 

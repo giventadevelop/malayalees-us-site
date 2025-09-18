@@ -2,7 +2,6 @@ import { auth } from '@clerk/nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getAuth } from "@clerk/nextjs/server";
-import { headers } from "next/headers";
 
 // Force Node.js runtime
 export const runtime = 'nodejs';

@@ -98,7 +98,7 @@ export default function PromotionEmailPage() {
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
               <p className="text-sm sm:text-base text-yellow-800">
                 <strong>Test Email: [Test email template] button below.</strong> A sample email will be sent to your email ID which you entered in the recipient email field
-                so that you can verify the template of the email and the content before you send it as a bulk email.
+                so that you can verify the template of the email and the content before you send it as a bulk email. Also make sure that you are subscribed to the email. You can verify that in your profile page if the email subscription check box is enabled.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">

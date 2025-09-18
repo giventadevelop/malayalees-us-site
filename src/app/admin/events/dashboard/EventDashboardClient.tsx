@@ -266,10 +266,10 @@ export default function EventDashboardClient({ data }: EventDashboardClientProps
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${attendee.registrationStatus === 'REGISTERED'
-                        ? 'bg-green-100 text-green-800'
-                        : attendee.registrationStatus === 'PENDING'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
+                      ? 'bg-green-100 text-green-800'
+                      : attendee.registrationStatus === 'PENDING'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-gray-100 text-gray-800'
                       }`}>
                       {attendee.registrationStatus}
                     </span>

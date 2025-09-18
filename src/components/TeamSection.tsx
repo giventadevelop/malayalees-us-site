@@ -11,9 +11,30 @@ const TeamSection: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showImages, setShowImages] = useState(false);
 
+  // Cache key for sessionStorage
+  const CACHE_KEY = 'homepage_team_cache';
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
   useEffect(() => {
     // Fetch team members when component mounts
     const loadTeamMembers = async () => {
+      // Check cache first
+      try {
+        const cachedData = sessionStorage.getItem(CACHE_KEY);
+        if (cachedData) {
+          const { data, timestamp } = JSON.parse(cachedData);
+          if (Date.now() - timestamp < CACHE_DURATION) {
+            console.log('✅ Using cached team data');
+            setTeamMembers(data);
+            setLoading(false);
+            setShowImages(true); // Show images immediately for cached data
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to read team cache:', error);
+      }
+
       try {
         const baseUrl = getAppUrl();
         const response = await fetch(
@@ -28,22 +49,30 @@ const TeamSection: React.FC = () => {
         );
 
         if (!response.ok) {
-          console.error('Failed to fetch executive team members:', response.statusText);
+          console.log('Backend unavailable - team members not loaded:', response.statusText);
           setTeamMembers([]);
           setLoading(false);
           return;
         }
 
         const data = await response.json();
-        setTeamMembers(Array.isArray(data) ? data : []);
-        setLoading(false);
+        const teamMembersList = Array.isArray(data) ? data : [];
 
-        // Delay showing images by 3-5 seconds after page load
-        setTimeout(() => {
-          setShowImages(true);
-        }, 3000 + Math.random() * 2000); // Random delay between 3-5 seconds
+        // Cache the data
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+            data: teamMembersList,
+            timestamp: Date.now()
+          }));
+        } catch (error) {
+          console.warn('Failed to cache team data:', error);
+        }
+
+        setTeamMembers(teamMembersList);
+        setLoading(false);
+        setShowImages(true); // Show images immediately when loaded
       } catch (error) {
-        console.error('Error loading team members:', error);
+        console.log('Backend connection error - team members not loaded:', error);
         setTeamMembers([]);
         setLoading(false);
       }
@@ -88,47 +117,9 @@ const TeamSection: React.FC = () => {
     return '';
   };
 
+  // Don't render anything while loading - section will appear only when fully loaded
   if (loading) {
-    return (
-      <div id="team-section" className="py-24 bg-gradient-to-br from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-20">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-6 h-3 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full"></div>
-              <p className="text-gray-600 font-medium">Our team</p>
-            </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight tracking-tight text-gray-900">
-              Meet our amazing{' '}
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-medium">
-                team
-              </span>
-            </h2>
-            <p className="text-lg text-gray-600 mt-4 leading-relaxed">
-              Dedicated professionals working together to make a positive impact in our communities.
-            </p>
-          </div>
-
-          {/* Loading skeleton */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-[2rem] overflow-hidden shadow-lg animate-pulse">
-                <div className="h-[400px] lg:h-[450px] bg-gray-200"></div>
-                <div className="p-8">
-                  <div className="h-6 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-6 w-1/2"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-6 w-3/4"></div>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-gray-200 rounded w-1/3"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

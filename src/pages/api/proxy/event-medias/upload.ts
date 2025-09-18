@@ -69,6 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       method: "POST",
       headers: sanitizedHeaders,
       body: req,
+      duplex: 'half', // Required for streaming body in Node.js fetch
     });
 
           // 🎯 CRITICAL: Check HTTP status code before processing response
@@ -79,14 +80,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // ✅ Success: Pipe the response body back to client
       console.log('✅ Proxy: Backend upload successful - HTTP status:', apiRes.status);
       res.status(apiRes.status);
-      
+
       // Copy headers from backend response
       for (const [key, value] of Object.entries(apiRes.headers.raw())) {
         if (key.toLowerCase() !== 'content-encoding' && key.toLowerCase() !== 'transfer-encoding') {
           res.setHeader(key, value);
         }
       }
-      
+
       apiRes.body.pipe(res);
     } else {
       // ❌ Failure: DO NOT pipe error response body to avoid null pointer exceptions
@@ -95,8 +96,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // CRITICAL: Consume and discard the error response body to prevent any processing
       // This ensures no getId() calls are made on potentially null objects
       try {
-        // Drain the response stream without processing the content
-        apiRes.body.resume();
+        // For node-fetch, we need to consume the body differently
+        if (apiRes.body && typeof apiRes.body.destroy === 'function') {
+          apiRes.body.destroy();
+        } else if (apiRes.body && typeof apiRes.body.cancel === 'function') {
+          apiRes.body.cancel();
+        }
       } catch (drainError) {
         console.warn('Warning: Could not drain error response body:', drainError);
       }

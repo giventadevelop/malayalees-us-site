@@ -6,10 +6,66 @@ import LiveEventsSection from '../components/LiveEventsSection';
 import FeaturedEventsSection from '../components/FeaturedEventsSection';
 import ServicesSection from '../components/ServicesSection';
 import AboutSection from '../components/AboutSection';
+import UpcomingEventsSection from '../components/UpcomingEventsSection';
 import CausesSection from '../components/CausesSection';
 import TeamSection from '../components/TeamSection';
+import OurSponsorsSection from '../components/OurSponsorsSection';
 import ProjectsSection from '../components/ProjectsSection';
 import TestimonialsSection from '../components/TestimonialsSection';
+import ErrorBoundary from '@/components/ErrorBoundary';
+
+// Fallback components for when data is not available
+const EventsFallback = () => (
+  <section className="py-16 bg-gray-50">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center">
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Events Information Temporarily Unavailable</h3>
+          <p className="text-gray-500">We're currently updating our events information. Please check back later or contact us for the latest updates.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+const TeamFallback = () => (
+  <section id="team-section" className="py-24 bg-gradient-to-br from-gray-50 to-white">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mb-20">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-6 h-3 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full"></div>
+          <p className="text-gray-600 font-medium">Our team</p>
+        </div>
+        <h2 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight tracking-tight text-gray-900">
+          Meet our amazing{' '}
+          <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-medium">
+            team
+          </span>
+        </h2>
+        <p className="text-lg text-gray-600 mt-4 leading-relaxed">
+          Dedicated professionals working together to make a positive impact in our communities.
+        </p>
+      </div>
+
+      <div className="text-center py-12">
+        <div className="bg-white rounded-lg shadow-sm p-8 max-w-md mx-auto">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Team Information Temporarily Unavailable</h3>
+          <p className="text-gray-500">We're currently updating our team information. Please check back later or contact us to learn more about our team.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+);
 
 export default function HomePage() {
   // Handle hash navigation on page load and hash changes
@@ -45,13 +101,25 @@ export default function HomePage() {
     <main>
       <HeroSection />
       <div className="mt-[100px]">
-        <LiveEventsSection />
-        <FeaturedEventsSection />
+        <ErrorBoundary fallback={<EventsFallback />}>
+          <LiveEventsSection />
+        </ErrorBoundary>
+        <ErrorBoundary fallback={<EventsFallback />}>
+          <FeaturedEventsSection />
+        </ErrorBoundary>
       </div>
       <ServicesSection />
       <AboutSection />
+      <ErrorBoundary fallback={<EventsFallback />}>
+        <UpcomingEventsSection />
+      </ErrorBoundary>
       <CausesSection />
-      <TeamSection />
+      <ErrorBoundary fallback={<TeamFallback />}>
+        <TeamSection />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={<div>Sponsors temporarily unavailable</div>}>
+        <OurSponsorsSection />
+      </ErrorBoundary>
       <ProjectsSection />
       <TestimonialsSection />
       {/* Contact Section - Updated to match "What We Do" styling */}
