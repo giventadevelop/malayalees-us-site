@@ -181,125 +181,134 @@ const OurSponsorsSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Sponsors List - Single column layout exactly like events page */}
+        {/* Sponsors List - Single column layout with equal height cards */}
         <div className="space-y-8 mb-8">
           {sponsors.map((sponsor, index) => (
             <div
               key={sponsor.id}
-              className={`${getRandomBackground(index)} rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden group`}
+              className={`${getRandomBackground(index)} rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden group cursor-pointer`}
               style={{
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)',
-                height: '200px', // 50% of event card height (400px -> 200px)
+                height: '680px' // Adjusted for larger image section and compact 3-column info
               }}
+              onClick={() => sponsor.websiteUrl && window.open(sponsor.websiteUrl, '_blank')}
             >
               <div className="flex flex-col h-full">
-                {/* Logo Section - Top half, exactly like event image */}
-                <div className="relative w-full h-1/2 rounded-t-2xl overflow-hidden">
-                  {sponsor.logoUrl ? (
+                {/* Image Section - Increased by another 10% (h-112 = 448px) for maximum image display */}
+                <div className="relative w-full h-112 rounded-t-2xl overflow-hidden">
+                  {sponsor.heroImageUrl ? (
                     <Image
-                      src={sponsor.logoUrl}
+                      src={sponsor.heroImageUrl}
                       alt={sponsor.name}
                       width={800}
-                      height={100}
-                      className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                      height={600}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       style={{
-                        backgroundColor: 'transparent',
                         borderRadius: '1rem 1rem 0 0'
                       }}
                     />
                   ) : (
                     <div
-                      className="w-full h-full flex items-center justify-center"
+                      className="w-full h-full flex items-center justify-center bg-gray-100"
                       style={{
-                        backgroundColor: 'transparent',
                         borderRadius: '1rem 1rem 0 0'
                       }}
                     >
-                      <span className="text-gray-400 text-4xl">🏢</span>
+                      <span className="text-gray-400 text-5xl">🏢</span>
                     </div>
                   )}
                   {/* Sponsor Type Badge */}
                   <div className="absolute top-3 right-3">
-                    <span className="px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded-full">
+                    <span className="px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded-full">
                       {sponsor.type}
                     </span>
                   </div>
                 </div>
 
-                {/* Content Section - Bottom half, exactly like event content */}
-                <div className="p-6 border-t border-white/20 flex-1">
+                {/* Content Section - Compact with 3-column layout */}
+                <div className="p-4 border-t border-white/20">
                   {/* Sponsor Name */}
-                  <h2 className="text-2xl font-bold text-gray-800 mb-3">
+                  <h2 className="text-xl font-bold text-gray-800 mb-2">
                     {sponsor.name}
                   </h2>
 
-                  {/* Company Name */}
-                  {sponsor.companyName && (
-                    <p className="text-gray-600 text-lg mb-4">
-                      {sponsor.companyName}
-                    </p>
-                  )}
+                  {/* Sponsor Details - 3-column layout with smart centering for last item */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-2">
+                    {/* Company Name */}
+                    {sponsor.companyName && (
+                      <div className="flex items-center gap-3 text-gray-700">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                        </div>
+                        <span className="text-lg font-semibold">
+                          {sponsor.companyName}
+                        </span>
+                      </div>
+                    )}
 
-                  {/* Sponsor Details */}
-                  <div className="space-y-3 mb-4">
-                    {/* Priority Ranking */}
+                    {/* Sponsor Type */}
                     <div className="flex items-center gap-3 text-gray-700">
-                      <span className="text-xl">🏆</span>
-                      <span className="text-sm font-semibold">
-                        Priority #{sponsor.priorityRanking}
+                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                      </div>
+                      <span className="text-lg font-semibold">
+                        {sponsor.type}
                       </span>
                     </div>
 
                     {/* Contact Email */}
                     {sponsor.contactEmail && (
                       <div className="flex items-center gap-3 text-gray-700">
-                        <span className="text-xl">📧</span>
-                        <a
-                          href={`mailto:${sponsor.contactEmail}`}
-                          className="text-sm font-semibold text-blue-600 hover:text-blue-800"
-                        >
+                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <span className="text-lg font-semibold">
                           {sponsor.contactEmail}
-                        </a>
+                        </span>
                       </div>
                     )}
 
                     {/* Contact Phone */}
                     {sponsor.contactPhone && (
                       <div className="flex items-center gap-3 text-gray-700">
-                        <span className="text-xl">📞</span>
-                        <a
-                          href={`tel:${sponsor.contactPhone}`}
-                          className="text-sm font-semibold text-blue-600 hover:text-blue-800"
-                        >
+                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                        </div>
+                        <span className="text-lg font-semibold">
                           {sponsor.contactPhone}
-                        </a>
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Website - Centers if it's the only item in the last row */}
+                    {sponsor.websiteUrl && (
+                      <div className="flex items-center gap-3 text-gray-700 lg:justify-self-center lg:col-start-2">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <svg className="w-8 h-8 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9-9a9 9 0 00-9-9m0 18a9 9 0 009-9M12 3a9 9 0 00-9 9" />
+                          </svg>
+                        </div>
+                        <span className="text-lg font-semibold">
+                          {sponsor.websiteUrl.replace(/^https?:\/\//, '')}
+                        </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Description/Tagline */}
-                  {(sponsor.tagline || sponsor.websiteUrl) && (
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      {/* Tagline */}
-                      {sponsor.tagline && (
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-700 leading-relaxed line-clamp-2">
-                            {sponsor.tagline}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Action Button */}
-                      {sponsor.websiteUrl && (
-                        <a
-                          href={sponsor.websiteUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 font-medium text-sm"
-                        >
-                          Visit Website →
-                        </a>
-                      )}
+                  {/* Tagline/Description - Minimal bottom spacing */}
+                  {sponsor.tagline && (
+                    <div className="mb-1">
+                      <p className="text-gray-600 text-sm line-clamp-2">
+                        {sponsor.tagline}
+                      </p>
                     </div>
                   )}
                 </div>

@@ -36,6 +36,9 @@ export async function createTicketTypeServer(eventId: string, formData: EventTic
 
     const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-ticket-types`, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(payload),
     });
 
@@ -72,6 +75,9 @@ export async function updateTicketTypeServer(ticketTypeId: number, eventId: stri
 
     const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-ticket-types/${ticketTypeId}`, {
       method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(payload),
     });
 
@@ -90,6 +96,9 @@ export async function deleteTicketTypeServer(ticketTypeId: number, eventId: stri
   try {
     const response = await fetchWithJwtRetry(`${API_BASE_URL}/api/event-ticket-types/${ticketTypeId}`, {
       method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
     if (!response.ok) {
       const errorData = await response.text();

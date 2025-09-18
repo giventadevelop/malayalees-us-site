@@ -233,96 +233,125 @@ const UpcomingEventsSection: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Events Grid - Centered layout like TeamSection */}
-            <div className="flex flex-wrap justify-center gap-6 mb-8 mx-auto events-grid" style={{
-              // Responsive max-width calculations like TeamSection
-              maxWidth: '100%'
-            }}>
+            {/* Events List - Single column layout exactly like sponsors section */}
+            <div className="space-y-8 mb-8">
               {events.map((event, index) => (
                 <div
                   key={event.id}
-                  className={`${getRandomBackground(index)} rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group`}
+                  className={`${getRandomBackground(index)} rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden group cursor-pointer`}
                   style={{
-                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)',
-                    width: '300px',
-                    maxWidth: '300px',
-                    height: '400px', // Fixed height for consistent card sizes
-                    flexShrink: 0
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)'
                   }}
+                  onClick={() => window.location.href = `/events/${event.id}`}
                 >
                   <div className="flex flex-col h-full">
-                    {/* Image Section - Reduced height */}
-                    <div className="relative w-full h-32 rounded-t-xl overflow-hidden">
+                    {/* Image Section - Top on all screen sizes, exactly like events page */}
+                    <div className="relative w-full h-auto rounded-t-2xl overflow-hidden">
                       {event.thumbnailUrl ? (
                         <Image
                           src={event.thumbnailUrl}
                           alt={event.title}
-                          width={400}
-                          height={200}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          width={800}
+                          height={600}
+                          className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
+                          style={{
+                            backgroundColor: 'transparent',
+                            borderRadius: '1rem 1rem 0 0'
+                          }}
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                          <span className="text-gray-400 text-2xl">📅</span>
+                        <div
+                          className="w-full h-80 flex items-center justify-center"
+                          style={{
+                            backgroundColor: 'transparent',
+                            borderRadius: '1rem 1rem 0 0'
+                          }}
+                        >
+                          <span className="text-gray-400 text-4xl">📅</span>
                         </div>
                       )}
-                      {/* Event Type Badge */}
+                      {/* Past Event Badge */}
                       {!isUpcomingEvents && (
-                        <div className="absolute top-2 right-2">
-                          <span className="px-2 py-1 bg-gray-500 text-white text-xs font-medium rounded-full">
+                        <div className="absolute top-3 right-3">
+                          <span className="px-3 py-1 bg-gray-500 text-white text-xs font-medium rounded-full">
                             Past Event
                           </span>
                         </div>
                       )}
                     </div>
 
-                    {/* Content Section - Compact */}
-                    <div className="p-4 flex-1 flex flex-col">
-                      {/* Title - Truncated */}
-                      <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">
+                    {/* Content Section - Bottom on all screen sizes, exactly like events page */}
+                    <div className="p-6 border-t border-white/20">
+                      {/* Title */}
+                      <h2 className="text-2xl font-bold text-gray-800 mb-3">
                         {event.title}
-                      </h3>
+                      </h2>
 
-                      {/* Caption - Truncated */}
+                      {/* Caption */}
                       {event.caption && (
-                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                        <p className="text-gray-600 text-lg mb-4">
                           {event.caption}
                         </p>
                       )}
 
-                      {/* Event Details - Compact */}
-                      <div className="space-y-2 mb-4 flex-1">
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <span className="text-sm">📅</span>
-                          <span className="text-sm font-medium">
+                      {/* Event Details - 3-column layout with smart centering for last item */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-2">
+                        <div className="flex items-center gap-3 text-gray-700">
+                          <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <span className="text-lg font-semibold">
                             {formatDate(event.startDate, event.timezone)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <span className="text-sm">🕐</span>
-                          <span className="text-sm font-medium">
+                        <div className="flex items-center gap-3 text-gray-700">
+                          <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <span className="text-lg font-semibold">
                             {formatTime(event.startTime)} - {formatTime(event.endTime)}
                           </span>
                         </div>
                         {event.location && (
-                          <div className="flex items-center gap-2 text-gray-700">
-                            <span className="text-sm">📍</span>
-                            <span className="text-sm font-medium line-clamp-1">
+                          <div className="flex items-center gap-3 text-gray-700 lg:justify-self-center lg:col-start-2">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                            </div>
+                            <span className="text-lg font-semibold">
                               {event.location}
                             </span>
                           </div>
                         )}
                       </div>
 
-                      {/* Action Button - Only for upcoming events */}
+                      {/* Action Buttons - Only for upcoming events with minimal spacing */}
                       {isUpcomingEvents && (
-                        <div className="mt-auto">
-                          <Link
-                            href={`/events/${event.id}/tickets`}
-                            className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg font-medium transition-colors duration-200"
+                        <div className="flex flex-col sm:flex-row gap-2 mt-1">
+                          {/* Buy Tickets Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.location.href = `/events/${event.id}/tickets`;
+                            }}
+                            className="transition-transform hover:scale-105"
                           >
-                            View Details
-                          </Link>
+                            <img
+                              src="/images/buy_tickets_click_here_red.webp"
+                              alt="Buy Tickets"
+                              className="object-contain"
+                              style={{
+                                width: '200px',
+                                height: '70px'
+                              }}
+                            />
+                          </button>
                         </div>
                       )}
                     </div>

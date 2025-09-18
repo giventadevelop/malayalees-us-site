@@ -361,11 +361,12 @@ const HeroSection: React.FC = () => {
               </div>
 
               {/* Cell 3: Unite India Image - No text overlay */}
-              <div className="relative overflow-hidden group min-h-[187px] rounded-[2rem]">
+              <div className="relative overflow-hidden group min-h-[187px] rounded-[2rem] bg-white">
                 <div
-                  className="absolute inset-0 rounded-[2rem]"
+                  className="absolute inset-0 rounded-[2rem] p-2"
                   style={{
-                    background: `url('https://cdn.builder.io/api/v1/image/assets%2Fa70a28525f6f491aaa751610252a199c%2F7e04d4cf965b47f9b58322797a9f4ba2?format=webp&width=800') center/cover`,
+                    background: `url('https://cdn.builder.io/api/v1/image/assets%2Fa70a28525f6f491aaa751610252a199c%2F7e04d4cf965b47f9b58322797a9f4ba2?format=webp&width=800') center/contain`,
+                    backgroundRepeat: 'no-repeat',
                     filter: 'brightness(0.9) contrast(1.1)'
                   }}
                 ></div>
@@ -405,9 +406,9 @@ const HeroSection: React.FC = () => {
               </div>
 
               {/* Cell 3: Unite India Image - No text overlay */}
-              <div className="relative overflow-hidden group h-[262px] rounded-[2rem]">
+              <div className="relative overflow-hidden group h-[262px] rounded-[2rem] bg-white">
                 <div
-                  className="absolute inset-0 rounded-[2rem]"
+                  className="absolute inset-0 rounded-[2rem] p-4"
                   style={{
                     background: `url('https://cdn.builder.io/api/v1/image/assets%2Fa70a28525f6f491aaa751610252a199c%2F7e04d4cf965b47f9b58322797a9f4ba2?format=webp&width=800') center/contain`,
                     backgroundRepeat: 'no-repeat',

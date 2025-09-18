@@ -221,22 +221,22 @@ export default function SponsorsPage() {
               {filteredSponsors.map((sponsor, index) => (
                 <div
                   key={sponsor.id}
-                  className={`${getRandomBackground(index)} rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden group`}
+                  className={`${getRandomBackground(index)} rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden group cursor-pointer`}
+                  onClick={() => sponsor.websiteUrl && window.open(sponsor.websiteUrl, '_blank')}
                   style={{
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)',
-                    height: '200px', // 50% of event card height (400px -> 200px)
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)'
                   }}
                 >
                   <div className="flex flex-col h-full">
-                    {/* Logo Section - Top half, exactly like event image */}
-                    <div className="relative w-full h-1/2 rounded-t-2xl overflow-hidden">
-                      {sponsor.logoUrl ? (
+                    {/* Image Section - Top on all screen sizes, exactly like events page */}
+                    <div className="relative w-full h-auto rounded-t-2xl overflow-hidden">
+                      {sponsor.heroImageUrl ? (
                         <Image
-                          src={sponsor.logoUrl}
+                          src={sponsor.heroImageUrl}
                           alt={sponsor.name}
                           width={800}
-                          height={100}
-                          className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                          height={600}
+                          className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-300"
                           style={{
                             backgroundColor: 'transparent',
                             borderRadius: '1rem 1rem 0 0'
@@ -244,7 +244,7 @@ export default function SponsorsPage() {
                         />
                       ) : (
                         <div
-                          className="w-full h-full flex items-center justify-center"
+                          className="w-full h-80 flex items-center justify-center"
                           style={{
                             backgroundColor: 'transparent',
                             borderRadius: '1rem 1rem 0 0'
@@ -261,8 +261,8 @@ export default function SponsorsPage() {
                       </div>
                     </div>
 
-                    {/* Content Section - Bottom half, exactly like event content */}
-                    <div className="p-6 border-t border-white/20 flex-1">
+                    {/* Content Section - Bottom on all screen sizes, exactly like events page */}
+                    <div className="p-6 border-t border-white/20">
                       {/* Sponsor Name */}
                       <h2 className="text-2xl font-bold text-gray-800 mb-3">
                         {sponsor.name}
@@ -276,65 +276,67 @@ export default function SponsorsPage() {
                       )}
 
                       {/* Sponsor Details */}
-                      <div className="space-y-3 mb-4">
-                        {/* Priority Ranking */}
-                        <div className="flex items-center gap-3 text-gray-700">
-                          <span className="text-xl">🏆</span>
-                          <span className="text-sm font-semibold">
-                            Priority #{sponsor.priorityRanking}
-                          </span>
-                        </div>
-
+                      <div className="space-y-3 mb-6">
                         {/* Contact Email */}
                         {sponsor.contactEmail && (
                           <div className="flex items-center gap-3 text-gray-700">
-                            <span className="text-xl">📧</span>
-                            <a
-                              href={`mailto:${sponsor.contactEmail}`}
-                              className="text-sm font-semibold text-blue-600 hover:text-blue-800"
-                            >
+                            <span className="text-2xl">📧</span>
+                            <span className="text-lg font-semibold">
                               {sponsor.contactEmail}
-                            </a>
+                            </span>
                           </div>
                         )}
 
                         {/* Contact Phone */}
                         {sponsor.contactPhone && (
                           <div className="flex items-center gap-3 text-gray-700">
-                            <span className="text-xl">📞</span>
-                            <a
-                              href={`tel:${sponsor.contactPhone}`}
-                              className="text-sm font-semibold text-blue-600 hover:text-blue-800"
-                            >
+                            <span className="text-2xl">📞</span>
+                            <span className="text-lg font-semibold">
                               {sponsor.contactPhone}
-                            </a>
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Website */}
+                        {sponsor.websiteUrl && (
+                          <div className="flex items-center gap-3 text-gray-700">
+                            <span className="text-2xl">🌐</span>
+                            <span className="text-lg font-semibold">
+                              {sponsor.websiteUrl.replace(/^https?:\/\//, '')}
+                            </span>
                           </div>
                         )}
                       </div>
 
-                      {/* Description/Tagline and Action Button */}
-                      {(sponsor.tagline || sponsor.websiteUrl) && (
-                        <div className="flex flex-col sm:flex-row gap-4">
-                          {/* Tagline */}
-                          {sponsor.tagline && (
-                            <div className="flex-1">
-                              <p className="text-sm text-gray-700 leading-relaxed line-clamp-2">
-                                {sponsor.tagline}
-                              </p>
-                            </div>
-                          )}
+                      {/* Tagline/Description */}
+                      {sponsor.tagline && (
+                        <div className="mb-6">
+                          <p className="text-gray-600 text-lg">
+                            {sponsor.tagline}
+                          </p>
+                        </div>
+                      )}
 
-                          {/* Action Button */}
-                          {sponsor.websiteUrl && (
-                            <a
-                              href={sponsor.websiteUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-full border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 font-medium text-sm"
-                            >
-                              Visit Website →
-                            </a>
-                          )}
+                      {/* Action Button - Only for sponsors with website */}
+                      {sponsor.websiteUrl && (
+                        <div className="flex flex-col sm:flex-row gap-4">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(sponsor.websiteUrl, '_blank');
+                            }}
+                            className="transition-transform hover:scale-105"
+                          >
+                            <img
+                              src="/images/buy_tickets_click_here_red.webp"
+                              alt="Visit Website"
+                              className="object-contain"
+                              style={{
+                                width: '200px',
+                                height: '70px'
+                              }}
+                            />
+                          </button>
                         </div>
                       )}
                     </div>
