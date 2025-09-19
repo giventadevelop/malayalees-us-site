@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs';
 import { notFound } from 'next/navigation';
 import { PollDetailsPage } from './PollDetailsPage';
 import { fetchEventPollServer, fetchEventPollOptionsServer } from '@/app/admin/polls/ApiServerActions';
-import { getUserProfileServer } from '@/app/profile/ApiServerActions';
+import { fetchUserProfileServer } from '@/app/profile/ApiServerActions';
 import type { EventPollDTO, EventPollOptionDTO } from '@/types';
 
 interface PollPageProps {
@@ -18,7 +18,7 @@ export default async function PollPage({ params }: PollPageProps) {
   let userProfile = null;
   if (userId) {
     try {
-      userProfile = await getUserProfileServer(userId);
+      userProfile = await fetchUserProfileServer(userId);
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }

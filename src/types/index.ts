@@ -506,6 +506,9 @@ export interface TenantSettingsDTO {
   platformFeePercentage?: number;
   customCss?: string;
   customJs?: string;
+  showEventsSectionInHomePage?: boolean;
+  showTeamMembersSectionInHomePage?: boolean;
+  showSponsorsSectionInHomePage?: boolean;
   createdAt: string; // date-time
   updatedAt: string; // date-time
   tenantOrganization?: TenantOrganizationDTO;

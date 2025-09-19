@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs';
 import { PollList } from '@/components/polls/PollList';
-import { getUserProfileServer } from '@/app/profile/ApiServerActions';
+import { fetchUserProfileServer } from '@/app/profile/ApiServerActions';
 
 export default async function PollsPage() {
   const { userId } = await auth();
@@ -9,14 +9,14 @@ export default async function PollsPage() {
   let userProfile = null;
   if (userId) {
     try {
-      userProfile = await getUserProfileServer(userId);
+      userProfile = await fetchUserProfileServer(userId);
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
   }
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto pt-24 pb-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Event Polls</h1>
         <p className="text-gray-600 mt-2">

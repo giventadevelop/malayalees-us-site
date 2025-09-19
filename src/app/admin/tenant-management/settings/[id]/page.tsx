@@ -82,7 +82,7 @@ export default async function TenantSettingsViewPage({ params }: PageProps) {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
       {/* Breadcrumb Navigation */}
       <nav className="flex mb-8" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-3">
@@ -349,6 +349,65 @@ export default async function TenantSettingsViewPage({ params }: PageProps) {
                   <dt className="text-sm font-medium text-gray-500">Max API Calls</dt>
                   <dd className="mt-1 text-sm text-gray-900">
                     {settings?.maxApiCallsPerMonth || 'Unlimited'}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+          {/* Homepage Display Settings */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Homepage Display Settings</h3>
+            </div>
+            <div className="px-6 py-4">
+              <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Show Events Section</dt>
+                  <dd className="mt-1">
+                    {settings?.showEventsSectionInHomePage ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <FaToggleOn className="w-3 h-3 mr-1" />
+                        Visible
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        <FaToggleOff className="w-3 h-3 mr-1" />
+                        Hidden
+                      </span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Show Team Members Section</dt>
+                  <dd className="mt-1">
+                    {settings?.showTeamMembersSectionInHomePage ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <FaToggleOn className="w-3 h-3 mr-1" />
+                        Visible
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        <FaToggleOff className="w-3 h-3 mr-1" />
+                        Hidden
+                      </span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Show Sponsors Section</dt>
+                  <dd className="mt-1">
+                    {settings?.showSponsorsSectionInHomePage ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <FaToggleOn className="w-3 h-3 mr-1" />
+                        Visible
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        <FaToggleOff className="w-3 h-3 mr-1" />
+                        Hidden
+                      </span>
+                    )}
                   </dd>
                 </div>
               </dl>

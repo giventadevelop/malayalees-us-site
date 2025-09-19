@@ -14906,6 +14906,144 @@
             }
           },
           {
+            "name": "showEventsSectionInHomePage.equals",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showEventsSectionInHomePage.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showEventsSectionInHomePage.specified",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showEventsSectionInHomePage.in",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "name": "showEventsSectionInHomePage.notIn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "name": "showTeamMembersSectionInHomePage.equals",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showTeamMembersSectionInHomePage.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showTeamMembersSectionInHomePage.specified",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showTeamMembersSectionInHomePage.in",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "name": "showTeamMembersSectionInHomePage.notIn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "name": "showSponsorsSectionInHomePage.equals",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showSponsorsSectionInHomePage.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showSponsorsSectionInHomePage.specified",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showSponsorsSectionInHomePage.in",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "name": "showSponsorsSectionInHomePage.notIn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
             "name": "createdAt.greaterThan",
             "in": "query",
             "required": false,
@@ -61481,6 +61619,144 @@
             }
           },
           {
+            "name": "showEventsSectionInHomePage.equals",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showEventsSectionInHomePage.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showEventsSectionInHomePage.specified",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showEventsSectionInHomePage.in",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "name": "showEventsSectionInHomePage.notIn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "name": "showTeamMembersSectionInHomePage.equals",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showTeamMembersSectionInHomePage.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showTeamMembersSectionInHomePage.specified",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showTeamMembersSectionInHomePage.in",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "name": "showTeamMembersSectionInHomePage.notIn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "name": "showSponsorsSectionInHomePage.equals",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showSponsorsSectionInHomePage.notEquals",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showSponsorsSectionInHomePage.specified",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "showSponsorsSectionInHomePage.in",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "name": "showSponsorsSectionInHomePage.notIn",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
             "name": "createdAt.greaterThan",
             "in": "query",
             "required": false,
@@ -96830,7 +97106,7 @@
             "type": "boolean"
           },
           "emailSubscriptionToken": {
-            "maxLength": 255,
+            "maxLength": 2048,
             "minLength": 0,
             "type": "string"
           },
@@ -97909,6 +98185,15 @@
             "maxLength": 16384,
             "minLength": 0,
             "type": "string"
+          },
+          "showEventsSectionInHomePage": {
+            "type": "boolean"
+          },
+          "showTeamMembersSectionInHomePage": {
+            "type": "boolean"
+          },
+          "showSponsorsSectionInHomePage": {
+            "type": "boolean"
           },
           "createdAt": {
             "type": "string",
@@ -99334,11 +99619,6 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
-          },
-          "photoUrl": {
-            "maxLength": 1024,
-            "minLength": 0,
-            "type": "string"
           },
           "event": {
             "$ref": "#/components/schemas/EventDetailsDTO"

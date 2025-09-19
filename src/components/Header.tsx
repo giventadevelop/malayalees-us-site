@@ -25,6 +25,16 @@ const navItems = [
     active: false
   },
   {
+    name: 'Gallery',
+    href: '/gallery',
+    active: false
+  },
+  {
+    name: 'Polls',
+    href: '/polls',
+    active: false
+  },
+  {
     name: 'Team',
     href: '/#team-section',
     active: false
@@ -43,6 +53,7 @@ const adminSubmenuItems = [
   { name: 'Manage Events', href: '/admin/events' },
   { name: 'Event Analytics', href: '/admin/events/dashboard' },
   { name: 'Registrations', href: '/admin/events/registrations' },
+  { name: 'Poll Management', href: '/admin/polls' },
   { name: 'Promotion Emails', href: '/admin/promotion-emails' },
   { name: 'Test Stripe', href: '/admin/test-stripe' },
   { name: 'Media Management', href: '/admin/media' },
