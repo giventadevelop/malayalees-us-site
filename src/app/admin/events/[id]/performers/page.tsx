@@ -6,8 +6,8 @@ import { useAuth } from '@clerk/nextjs';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import DataTable, { Column } from '@/components/ui/DataTable';
-import Modal from '@/components/ui/Modal';
-import ConfirmModal from '@/components/ui/Modal';
+import Modal, { ConfirmModal } from '@/components/ui/Modal';
+import ImageUpload from '@/components/ui/ImageUpload';
 import type { EventFeaturedPerformersDTO, EventDetailsDTO } from '@/types';
 import {
   fetchEventFeaturedPerformersServer,
@@ -139,16 +139,25 @@ export default function EventPerformersPage() {
   };
 
   const handleDelete = async () => {
-    if (!selectedPerformer) return;
+    if (!selectedPerformer) {
+      console.log('❌ No selected performer for deletion');
+      return;
+    }
+
+    console.log('🗑️ Deleting performer:', selectedPerformer);
 
     try {
       setLoading(true);
+      console.log('🔄 Calling deleteEventFeaturedPerformerServer with ID:', selectedPerformer.id);
       await deleteEventFeaturedPerformerServer(selectedPerformer.id!);
+
+      console.log('✅ Performer deleted successfully, updating UI');
       setPerformers(prev => prev.filter(p => p.id !== selectedPerformer.id));
       setIsDeleteModalOpen(false);
       setSelectedPerformer(null);
       setToastMessage({ type: 'success', message: 'Performer deleted successfully' });
     } catch (err: any) {
+      console.error('❌ Delete error:', err);
       setToastMessage({ type: 'error', message: err.message || 'Failed to delete performer' });
     } finally {
       setLoading(false);
@@ -181,6 +190,7 @@ export default function EventPerformersPage() {
   };
 
   const openDeleteModal = (performer: EventFeaturedPerformersDTO) => {
+    console.log('🗑️ Opening delete modal for performer:', performer);
     setSelectedPerformer(performer);
     setIsDeleteModalOpen(true);
   };
@@ -288,8 +298,8 @@ export default function EventPerformersPage() {
       {/* Toast Message */}
       {toastMessage && (
         <div className={`mb-4 p-4 rounded-lg ${toastMessage.type === 'success'
-            ? 'bg-green-50 border border-green-200 text-green-700'
-            : 'bg-red-50 border border-red-200 text-red-700'
+          ? 'bg-green-50 border border-green-200 text-green-700'
+          : 'bg-red-50 border border-red-200 text-red-700'
           }`}>
           {toastMessage.message}
         </div>
@@ -354,6 +364,7 @@ export default function EventPerformersPage() {
           onSubmit={handleCreate}
           loading={loading}
           submitText="Create Performer"
+          eventId={eventId}
         />
       </Modal>
 
@@ -374,6 +385,7 @@ export default function EventPerformersPage() {
           onSubmit={handleEdit}
           loading={loading}
           submitText="Update Performer"
+          eventId={eventId}
         />
       </Modal>
 
@@ -386,7 +398,7 @@ export default function EventPerformersPage() {
         }}
         onConfirm={handleDelete}
         title="Delete Performer"
-        message={`Are you sure you want to delete "${selectedPerformer?.name}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete "${selectedPerformer?.name || 'this performer'}"? This action cannot be undone.`}
         confirmText="Delete"
         variant="danger"
       />
@@ -401,9 +413,10 @@ interface PerformerFormProps {
   onSubmit: () => void;
   loading: boolean;
   submitText: string;
+  eventId: string;
 }
 
-function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }: PerformerFormProps) {
+function PerformerForm({ formData, setFormData, onSubmit, loading, submitText, eventId }: PerformerFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 
@@ -697,6 +710,62 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
         </div>
       </div>
 
+      {/* Image Upload Section */}
+      {formData.id && (
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Images</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Portrait Image
+              </label>
+              <ImageUpload
+                entityId={formData.id}
+                entityType="featured-performer"
+                imageType="portrait"
+                eventId={parseInt(eventId)}
+                currentImageUrl={formData.portraitImageUrl}
+                onImageUploaded={(url) => setFormData(prev => ({ ...prev, portraitImageUrl: url }))}
+                onError={(error) => console.error('Portrait upload error:', error)}
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Performance Image
+              </label>
+              <ImageUpload
+                entityId={formData.id}
+                entityType="featured-performer"
+                imageType="performance"
+                eventId={parseInt(eventId)}
+                currentImageUrl={formData.performanceImageUrl}
+                onImageUploaded={(url) => setFormData(prev => ({ ...prev, performanceImageUrl: url }))}
+                onError={(error) => console.error('Performance image upload error:', error)}
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Gallery Images
+              </label>
+              <ImageUpload
+                entityId={formData.id}
+                entityType="featured-performer"
+                imageType="gallery"
+                eventId={parseInt(eventId)}
+                currentImageUrl={formData.galleryImageUrls}
+                onImageUploaded={(url) => setFormData(prev => ({ ...prev, galleryImageUrls: url }))}
+                onError={(error) => console.error('Gallery upload error:', error)}
+                disabled={loading}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-end space-x-3 pt-4">
         <button
           type="button"
@@ -716,3 +785,4 @@ function PerformerForm({ formData, setFormData, onSubmit, loading, submitText }:
     </form>
   );
 }
+

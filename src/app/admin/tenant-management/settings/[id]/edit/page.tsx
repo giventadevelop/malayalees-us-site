@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { notFound, redirect } from 'next/navigation';
 import { fetchTenantSetting, updateTenantSetting } from '@/app/admin/tenant-management/settings/ApiServerActions';
 import { fetchTenantOrganizations } from '@/app/admin/tenant-management/organizations/ApiServerActions';
-import TenantSettingsForm from '@/app/admin/tenant-management/components/TenantSettingsForm';
+import TenantSettingsFormWrapper from '@/app/admin/tenant-management/components/TenantSettingsFormWrapper';
 import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa';
 import { TenantSettingsFormDTO } from '@/app/admin/tenant-management/types';
@@ -55,6 +55,7 @@ export default async function EditTenantSettingsPage({ params }: PageProps) {
       throw error;
     }
   }
+
 
   if (error) {
     return (
@@ -192,24 +193,30 @@ export default async function EditTenantSettingsPage({ params }: PageProps) {
           <h2 className="text-lg font-medium text-gray-900">Settings Configuration</h2>
         </div>
         <div className="px-6 py-6">
-          <TenantSettingsForm
+          <TenantSettingsFormWrapper
             mode="edit"
             onSubmit={handleSubmit}
+            settingsId={settingsId}
             organizations={organizations}
             initialData={{
               tenantId: settings?.tenantId || '',
               allowUserRegistration: settings?.allowUserRegistration ?? true,
+              requireAdminApproval: settings?.requireAdminApproval ?? false,
               enableWhatsappIntegration: settings?.enableWhatsappIntegration ?? false,
               enableEmailMarketing: settings?.enableEmailMarketing ?? false,
-              enableEventManagement: settings?.enableEventManagement ?? true,
-              enablePaymentProcessing: settings?.enablePaymentProcessing ?? false,
-              maxUsers: settings?.maxUsers || null,
-              maxEvents: settings?.maxEvents || null,
-              maxStorageGB: settings?.maxStorageGB || null,
-              maxApiCallsPerMonth: settings?.maxApiCallsPerMonth || null,
+              whatsappApiKey: settings?.whatsappApiKey || '',
+              emailProviderConfig: settings?.emailProviderConfig || '{}',
+              maxEventsPerMonth: settings?.maxEventsPerMonth || undefined,
+              maxAttendeesPerEvent: settings?.maxAttendeesPerEvent || undefined,
+              enableGuestRegistration: settings?.enableGuestRegistration ?? true,
+              maxGuestsPerAttendee: settings?.maxGuestsPerAttendee || 5,
+              defaultEventCapacity: settings?.defaultEventCapacity || 100,
+              platformFeePercentage: settings?.platformFeePercentage || undefined,
               customCss: settings?.customCss || '',
               customJs: settings?.customJs || '',
-              emailProviderConfig: settings?.emailProviderConfig || '{}'
+              showEventsSectionInHomePage: settings?.showEventsSectionInHomePage ?? true,
+              showTeamMembersSectionInHomePage: settings?.showTeamMembersSectionInHomePage ?? true,
+              showSponsorsSectionInHomePage: settings?.showSponsorsSectionInHomePage ?? true
             }}
           />
         </div>

@@ -76,6 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       method: 'POST',
       headers: headers,
       body: req, // Forward the raw request stream
+      duplex: 'half', // Required for streaming body in Node.js fetch
     });
 
     // Check response status and handle accordingly
@@ -98,7 +99,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Drain the error response to prevent processing
       try {
-        apiRes.body.resume();
+        // For node-fetch, we need to consume the body differently
+        if (apiRes.body && typeof apiRes.body.destroy === 'function') {
+          apiRes.body.destroy();
+        } else if (apiRes.body && typeof apiRes.body.cancel === 'function') {
+          apiRes.body.cancel();
+        }
       } catch (drainError) {
         console.warn('Warning: Could not drain error response body:', drainError);
       }

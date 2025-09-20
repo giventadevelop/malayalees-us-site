@@ -6,11 +6,14 @@ import LiveEventsSection from '../components/LiveEventsSection';
 import FeaturedEventsSection from '../components/FeaturedEventsSection';
 import ServicesSection from '../components/ServicesSection';
 import AboutSection from '../components/AboutSection';
+import UpcomingEventsSection from '../components/UpcomingEventsSection';
 import CausesSection from '../components/CausesSection';
 import TeamSection from '../components/TeamSection';
+import OurSponsorsSection from '../components/OurSponsorsSection';
 import ProjectsSection from '../components/ProjectsSection';
 import TestimonialsSection from '../components/TestimonialsSection';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { TenantSettingsProvider, useTenantSettings } from '@/components/TenantSettingsProvider';
 
 // Fallback components for when data is not available
 const EventsFallback = () => (
@@ -65,7 +68,10 @@ const TeamFallback = () => (
   </section>
 );
 
-export default function HomePage() {
+// Main content component that uses tenant settings
+function HomePageContent() {
+  const { showEventsSection, showTeamSection, showSponsorsSection, loading } = useTenantSettings();
+
   // Handle hash navigation on page load and hash changes
   useEffect(() => {
     const handleHashNavigation = () => {
@@ -95,6 +101,20 @@ export default function HomePage() {
     };
   }, []);
 
+  // Show loading state while tenant settings are being fetched
+  if (loading) {
+    return (
+      <main>
+        <HeroSection />
+        <div className="py-16 bg-gray-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="animate-pulse">Loading...</div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main>
       <HeroSection />
@@ -108,10 +128,22 @@ export default function HomePage() {
       </div>
       <ServicesSection />
       <AboutSection />
+      {showEventsSection && (
+        <ErrorBoundary fallback={<EventsFallback />}>
+          <UpcomingEventsSection />
+        </ErrorBoundary>
+      )}
       <CausesSection />
-      <ErrorBoundary fallback={<TeamFallback />}>
-        <TeamSection />
-      </ErrorBoundary>
+      {showTeamSection && (
+        <ErrorBoundary fallback={<TeamFallback />}>
+          <TeamSection />
+        </ErrorBoundary>
+      )}
+      {showSponsorsSection && (
+        <ErrorBoundary fallback={<div>Sponsors temporarily unavailable</div>}>
+          <OurSponsorsSection />
+        </ErrorBoundary>
+      )}
       <ProjectsSection />
       <TestimonialsSection />
       {/* Contact Section - Updated to match "What We Do" styling */}
@@ -304,5 +336,14 @@ export default function HomePage() {
         </div>
       </div>
     </main>
+  );
+}
+
+// Main HomePage component that provides tenant settings context
+export default function HomePage() {
+  return (
+    <TenantSettingsProvider>
+      <HomePageContent />
+    </TenantSettingsProvider>
   );
 }

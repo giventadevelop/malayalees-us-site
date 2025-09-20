@@ -27,20 +27,20 @@ export default function AdminNavigation({ currentPage, showHome = true }: AdminN
       key: 'manage-usage'
     },
     {
-      href: '/admin/events',
+      href: '/admin/manage-events',
       icon: FaCalendarAlt,
       label: 'Manage Events',
       color: 'green',
-      active: currentPage === 'events',
+      active: currentPage === 'manage-events',
       key: 'manage-events'
     },
     {
-      href: '/admin/events/dashboard',
+      href: '/admin/events',
       icon: FaChartLine,
       label: 'Event Analytics',
       color: 'teal',
-      active: currentPage === 'event-dashboard',
-      key: 'event-dashboard'
+      active: currentPage === 'events',
+      key: 'event-analytics'
     },
     {
       href: '/admin/events/registrations',

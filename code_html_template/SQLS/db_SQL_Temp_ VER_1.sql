@@ -113,6 +113,10 @@ DROP TRIGGER IF EXISTS trg_set_transaction_reference ON public.event_ticket_tran
 -- Drop sequence if exists and recreate
 DROP SEQUENCE IF EXISTS public.sequence_generator CASCADE;
 DROP SEQUENCE IF EXISTS public.discount_code_id_seq CASCADE;
+DROP SEQUENCE IF EXISTS public.event_live_update_id_seq CASCADE;
+DROP SEQUENCE IF EXISTS public.event_score_card_detail_id_seq CASCADE;
+DROP SEQUENCE IF EXISTS public.event_score_card_id_seq CASCADE;
+DROP SEQUENCE IF EXISTS public.event_live_update_attachment_id_seq  CASCADE;
 
 
 -- ===================================================
@@ -136,6 +140,13 @@ DROP TABLE IF EXISTS public.event_ticket_transaction_item CASCADE;
 DROP TABLE IF EXISTS public.user_payment_transaction CASCADE;
 DROP TABLE IF EXISTS public.event_ticket_type CASCADE;
 DROP TABLE IF EXISTS public.event_organizer CASCADE;
+-- New event-related tables (in reverse dependency order)
+DROP TABLE IF EXISTS public.event_program_directors CASCADE;
+DROP TABLE IF EXISTS public.event_emails CASCADE;
+DROP TABLE IF EXISTS public.event_sponsors_join CASCADE;
+DROP TABLE IF EXISTS public.event_sponsors CASCADE;
+DROP TABLE IF EXISTS public.event_contacts CASCADE;
+DROP TABLE IF EXISTS public.event_featured_performers CASCADE;
 DROP TABLE IF EXISTS public.event_details CASCADE;
 DROP TABLE IF EXISTS public.event_admin CASCADE;
 DROP TABLE IF EXISTS public.event_live_update_attachment CASCADE;
@@ -637,40 +648,44 @@ CREATE TABLE public.databasechangeloglock (
 --
 
 CREATE TABLE public.event_details (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    title character varying(255) NOT NULL,
-    caption character varying(500),
-    description text,
-    start_date date NOT NULL,
-    end_date date NOT NULL,
-    start_time character varying(100) NOT NULL,
-    end_time character varying(100) NOT NULL,
-    timezone varchar(64) NOT null,
-    location character varying(500),
-    directions_to_venue text,
-    capacity integer,
-    admission_type character varying(50),
-    is_active boolean DEFAULT true,
-    max_guests_per_attendee integer DEFAULT 0,
-    allow_guests boolean DEFAULT false,
-    require_guest_approval boolean DEFAULT false,
-    enable_guest_pricing boolean DEFAULT false,
-    registration_deadline timestamp without time zone,
-    cancellation_deadline timestamp without time zone,
-    minimum_age integer,
-    maximum_age integer,
-    requires_approval boolean DEFAULT false,
-    enable_waitlist boolean DEFAULT true,
-    enable_qr_code boolean DEFAULT false,
-    external_registration_url character varying(1024),
-    created_by_id bigint,
-    event_type_id bigint,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    is_registration_required boolean DEFAULT false,
-    is_sports_event boolean DEFAULT false,
-    is_live boolean DEFAULT false,
+   id int8 DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+	tenant_id varchar(255) NULL,
+	title varchar(255) NOT NULL,
+	caption varchar(500) NULL,
+	description text NULL,
+	start_date date NOT NULL,
+	promotion_start_date date NOT NULL,
+	end_date date NOT NULL,
+	start_time varchar(100) NOT NULL,
+	end_time varchar(100) NOT NULL,
+	timezone varchar(64) NOT NULL,
+	"location" varchar(500) NULL,
+	directions_to_venue text NULL,
+	capacity int4 NULL,
+	admission_type varchar(50) NULL,
+	is_active bool DEFAULT true NULL,
+	max_guests_per_attendee int4 DEFAULT 0 NULL,
+	allow_guests bool DEFAULT false NULL,
+	require_guest_approval bool DEFAULT false NULL,
+	enable_guest_pricing bool DEFAULT false NULL,
+	registration_deadline timestamp NULL,
+	cancellation_deadline timestamp NULL,
+	minimum_age int4 NULL,
+	maximum_age int4 NULL,
+	requires_approval bool DEFAULT false NULL,
+	enable_waitlist bool DEFAULT true NULL,
+	enable_qr_code bool DEFAULT false NULL,
+	external_registration_url varchar(1024) NULL,
+	created_by_id int8 NULL,
+	event_type_id int8 NULL,
+	created_at timestamp DEFAULT now() NOT NULL,
+	updated_at timestamp DEFAULT now() NOT NULL,
+	is_registration_required bool DEFAULT false NULL,
+	is_sports_event bool DEFAULT false NULL,
+	is_live bool DEFAULT false NULL,
+	is_featured_event BOOLEAN NOT NULL DEFAULT false,
+    featured_event_priority_ranking INT4 NOT NULL DEFAULT 0,
+    live_event_priority_ranking INT4 NOT NULL DEFAULT 0,
     CONSTRAINT check_age_ranges CHECK (((minimum_age IS NULL) OR (maximum_age IS NULL) OR (maximum_age >= minimum_age))),
     CONSTRAINT check_capacity_positive CHECK (((capacity IS NULL) OR (capacity > 0))),
     CONSTRAINT check_deadlines CHECK (((registration_deadline IS NULL) OR (cancellation_deadline IS NULL) OR (cancellation_deadline <= registration_deadline))),
@@ -1186,33 +1201,36 @@ sync_status character varying(50) DEFAULT 'PENDING'::character varying,
 --
 
 CREATE TABLE public.event_media (
-    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
-    tenant_id character varying(255),
-    title character varying(255) NOT NULL,
-    description character varying(2048),
-    event_media_type character varying(255) NOT NULL,
-    storage_type character varying(255) NOT NULL,
-    file_url character varying(2048),
-    file_data_content_type character varying(255),
-    content_type character varying(255),
-    file_size bigint,
-    is_public boolean DEFAULT true,
-    event_flyer boolean DEFAULT false,
-    is_event_management_official_document boolean DEFAULT false,
-    pre_signed_url character varying(2048),
-    pre_signed_url_expires_at timestamp without time zone,
-    alt_text character varying(500),
-    display_order integer DEFAULT 0,
-    download_count integer DEFAULT 0,
-    is_featured_video boolean DEFAULT false,
-    featured_video_url character varying(2048),
-    is_featured_image boolean DEFAULT false,
-    is_hero_image boolean DEFAULT false,
-    is_active_hero_image boolean DEFAULT false,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    event_id bigint,
-    uploaded_by_id bigint,
+    id int8 DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+	tenant_id varchar(255) NULL,
+	title varchar(255) NOT NULL,
+	description varchar(2048) NULL,
+	event_media_type varchar(255) NOT NULL,
+	storage_type varchar(255) NOT NULL,
+	file_url varchar(2048) NULL,
+	file_data_content_type varchar(255) NULL,
+	content_type varchar(255) NULL,
+	file_size int8 NULL,
+	is_public bool DEFAULT true NULL,
+	event_flyer bool DEFAULT false NULL,
+	is_event_management_official_document bool DEFAULT false NULL,
+	pre_signed_url varchar(2048) NULL,
+	pre_signed_url_expires_at timestamp NULL,
+	alt_text varchar(500) NULL,
+	display_order int4 DEFAULT 0 NULL,
+	download_count int4 DEFAULT 0 NULL,
+	is_featured_video bool DEFAULT false NULL,
+	featured_video_url varchar(2048) NULL,
+	is_hero_image bool DEFAULT false NULL,
+	is_active_hero_image bool DEFAULT false NULL,
+	start_displaying_from_date date NOT NULL,
+	created_at timestamp DEFAULT now() NOT NULL,
+	updated_at timestamp DEFAULT now() NOT NULL,
+	event_id int8 NULL,
+	uploaded_by_id int8 NULL,
+	is_home_page_hero_image bool DEFAULT false NOT NULL,
+	is_featured_event_image bool DEFAULT false NOT NULL,
+	is_live_event_image bool DEFAULT false NOT NULL,
     CONSTRAINT check_download_count_non_negative CHECK ((download_count >= 0)),
     CONSTRAINT check_file_size_positive CHECK (((file_size IS NULL) OR (file_size >= 0)))
 );
@@ -1452,6 +1470,7 @@ tax_amount numeric(21,2) DEFAULT 0,
 platform_fee_amount numeric(21,2) DEFAULT 0,
 discount_code_id bigint,
 discount_amount numeric(21,2) DEFAULT 0,
+service_fee numeric(21,2),
 final_amount numeric(21,2) NOT NULL,
 status character varying(255) DEFAULT 'PENDING'::character varying NOT NULL,
 payment_method character varying(100),
@@ -1710,6 +1729,7 @@ COMMENT ON TABLE public.tenant_organization IS 'Multi-tenant organization config
 CREATE TABLE public.tenant_settings (
     id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
     tenant_id character varying(255) NOT NULL,
+    tenant_organization_id bigint,
     allow_user_registration boolean DEFAULT true,
     require_admin_approval boolean DEFAULT false,
     enable_whatsapp_integration boolean DEFAULT false,
@@ -1732,11 +1752,15 @@ CREATE TABLE public.tenant_settings (
     CONSTRAINT check_max_guests_positive CHECK (((max_guests_per_attendee IS NULL) OR (max_guests_per_attendee >= 0))),
     CONSTRAINT tenant_settings_pkey PRIMARY KEY (id),
     CONSTRAINT tenant_settings_tenant_id_key UNIQUE (tenant_id),
-    CONSTRAINT fk_tenant_settings__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON DELETE CASCADE
+    CONSTRAINT fk_tenant_settings__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant_organization(tenant_id) ON DELETE CASCADE,
+    CONSTRAINT fk_tenant_settings_organization_id FOREIGN KEY (tenant_organization_id) REFERENCES public.tenant_organization(id) ON DELETE CASCADE
 );
 
 
 -- ALTER TABLE public.tenant_settings OWNER TO giventa_event_management;
+
+-- Index for tenant_organization_id foreign key for better query performance
+CREATE INDEX idx_tenant_settings_organization_id ON public.tenant_settings(tenant_organization_id);
 
 --
 -- TOC entry 3988 (class 0 OID 0)
@@ -1745,6 +1769,8 @@ CREATE TABLE public.tenant_settings (
 --
 
 COMMENT ON TABLE public.tenant_settings IS 'Tenant-specific configuration settings with enhanced options';
+
+COMMENT ON COLUMN public.tenant_settings.tenant_organization_id IS 'Foreign key reference to tenant_organization.id for standard Long->Long relationship';
 
 
 
@@ -2684,7 +2710,7 @@ ALTER TABLE ONLY public.user_task
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
 --
 
-GRANT USAGE ON SCHEMA public TO giventa_event_management;
+--GRANT USAGE ON SCHEMA public TO giventa_event_management;
 
 
 --
@@ -2693,7 +2719,7 @@ GRANT USAGE ON SCHEMA public TO giventa_event_management;
 -- Name: SEQUENCE sequence_generator; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,USAGE ON SEQUENCE public.sequence_generator TO giventa_event_management;
+--GRANT SELECT,USAGE ON SEQUENCE public.sequence_generator TO giventa_event_management;
 
 
 --
@@ -2702,7 +2728,7 @@ GRANT SELECT,USAGE ON SEQUENCE public.sequence_generator TO giventa_event_manage
 -- Name: TABLE bulk_operation_log; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.bulk_operation_log TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.bulk_operation_log TO giventa_event_management;
 
 
 --
@@ -2711,7 +2737,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.bu
 -- Name: TABLE databasechangelog; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.databasechangelog TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.databasechangelog TO giventa_event_management;
 
 
 --
@@ -2720,7 +2746,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.da
 -- Name: TABLE databasechangeloglock; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.databasechangeloglock TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.databasechangeloglock TO giventa_event_management;
 
 
 --
@@ -2729,7 +2755,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.da
 -- Name: TABLE discount_code; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.discount_code TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.discount_code TO giventa_event_management;
 
 
 --
@@ -2738,7 +2764,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.di
 -- Name: SEQUENCE discount_code_id_seq; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,USAGE ON SEQUENCE public.discount_code_id_seq TO giventa_event_management;
+--GRANT SELECT,USAGE ON SEQUENCE public.discount_code_id_seq TO giventa_event_management;
 
 
 --
@@ -2747,7 +2773,7 @@ GRANT SELECT,USAGE ON SEQUENCE public.discount_code_id_seq TO giventa_event_mana
 -- Name: TABLE event_admin; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_admin TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_admin TO giventa_event_management;
 
 
 --
@@ -2756,7 +2782,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_admin_audit_log; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_admin_audit_log TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_admin_audit_log TO giventa_event_management;
 
 
 --
@@ -2765,7 +2791,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_attendee; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_attendee TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_attendee TO giventa_event_management;
 
 
 --
@@ -2774,7 +2800,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_attendee_guest; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_attendee_guest TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_attendee_guest TO giventa_event_management;
 
 
 --
@@ -2783,7 +2809,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_calendar_entry; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_calendar_entry TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_calendar_entry TO giventa_event_management;
 
 
 --
@@ -2792,7 +2818,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_details; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_details TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_details TO giventa_event_management;
 
 
 
@@ -2802,7 +2828,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_guest_pricing; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_guest_pricing TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_guest_pricing TO giventa_event_management;
 
 
 --
@@ -2811,7 +2837,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_media; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_media TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_media TO giventa_event_management;
 
 
 --
@@ -2820,7 +2846,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_organizer; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_organizer TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_organizer TO giventa_event_management;
 
 
 --
@@ -2829,7 +2855,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_poll; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_poll TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_poll TO giventa_event_management;
 
 
 --
@@ -2838,7 +2864,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_poll_option; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_poll_option TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_poll_option TO giventa_event_management;
 
 
 --
@@ -2847,7 +2873,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_poll_response; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_poll_response TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_poll_response TO giventa_event_management;
 
 
 --
@@ -2856,7 +2882,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_ticket_transaction; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_ticket_transaction TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_ticket_transaction TO giventa_event_management;
 
 
 --
@@ -2865,7 +2891,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_ticket_type; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_ticket_type TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_ticket_type TO giventa_event_management;
 
 
 --
@@ -2874,7 +2900,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE event_type_details; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_type_details TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.event_type_details TO giventa_event_management;
 
 
 --
@@ -2883,7 +2909,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.ev
 -- Name: TABLE qr_code_usage; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.qr_code_usage TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.qr_code_usage TO giventa_event_management;
 
 
 --
@@ -2892,7 +2918,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.qr
 -- Name: TABLE tenant_organization; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.tenant_organization TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.tenant_organization TO giventa_event_management;
 
 
 --
@@ -2901,7 +2927,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.te
 -- Name: TABLE tenant_settings; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.tenant_settings TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.tenant_settings TO giventa_event_management;
 
 
 --
@@ -2910,7 +2936,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.te
 -- Name: TABLE user_payment_transaction; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_payment_transaction TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_payment_transaction TO giventa_event_management;
 
 
 --
@@ -2919,7 +2945,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.us
 -- Name: TABLE user_profile; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_profile TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_profile TO giventa_event_management;
 
 
 
@@ -2930,7 +2956,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.us
 -- Name: TABLE user_subscription; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_subscription TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_subscription TO giventa_event_management;
 
 
 --
@@ -2939,7 +2965,7 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.us
 -- Name: TABLE user_task; Type: ACL; Schema: public; Owner: giventa_event_management
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_task TO giventa_event_management;
+--GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE public.user_task TO giventa_event_management;
 
 
 -- Completed on 2025-06-08 23:51:06
@@ -2993,4 +3019,262 @@ type character varying(50), -- TRANSACTIONAL, BULK
     CONSTRAINT whatsapp_log_pkey PRIMARY KEY (id),
     CONSTRAINT fk_whatsapp_log_campaign FOREIGN KEY (campaign_id) REFERENCES public.communication_campaign(id) ON DELETE SET NULL
 );
+
+-- =============================================
+-- NEW EVENT-RELATED TABLES
+-- =============================================
+
+-- Table: event_featured_performers
+-- Stores comprehensive information about featured performers/artists for an event
+CREATE TABLE public.event_featured_performers (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    event_id bigint NOT NULL,
+    -- Basic performer information
+    name varchar(255) NOT NULL,
+    stage_name varchar(255) NULL,
+    role varchar(100) NULL,
+    -- Personal details
+    bio text NULL,
+    nationality varchar(100) NULL,
+    date_of_birth date NULL,
+    -- Contact information
+    email varchar(255) NULL,
+    phone varchar(50) NULL,
+    website_url varchar(1024) NULL,
+    -- Media URLs (AWS S3 or other cloud storage)
+    portrait_image_url varchar(1024) NULL,
+    performance_image_url varchar(1024) NULL,
+    gallery_image_urls text NULL, -- JSON array of additional image URLs
+    -- Performance details
+    performance_duration_minutes int4 NULL,
+    performance_order int4 DEFAULT 0 NOT NULL,
+    is_headliner boolean DEFAULT false NOT NULL,
+    -- Social media presence
+    facebook_url varchar(1024) NULL,
+    twitter_url varchar(1024) NULL,
+    instagram_url varchar(1024) NULL,
+    youtube_url varchar(1024) NULL,
+    linkedin_url varchar(1024) NULL,
+    tiktok_url varchar(1024) NULL,
+    -- Status and metadata
+    is_active boolean DEFAULT true NOT NULL,
+    priority_ranking int4 DEFAULT 0 NOT NULL,
+    -- Timestamps
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL,
+    -- Constraints
+    CONSTRAINT event_featured_performers_pkey PRIMARY KEY (id),
+    CONSTRAINT check_performance_duration CHECK (performance_duration_minutes IS NULL OR performance_duration_minutes > 0),
+    CONSTRAINT check_performance_order CHECK (performance_order >= 0),
+    CONSTRAINT check_priority_ranking CHECK (priority_ranking >= 0),
+    CONSTRAINT check_date_of_birth CHECK (date_of_birth IS NULL OR date_of_birth <= CURRENT_DATE),
+    CONSTRAINT check_url_format_website CHECK (website_url IS NULL OR website_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_portrait CHECK (portrait_image_url IS NULL OR portrait_image_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_performance CHECK (performance_image_url IS NULL OR performance_image_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_facebook CHECK (facebook_url IS NULL OR facebook_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_twitter CHECK (twitter_url IS NULL OR twitter_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_instagram CHECK (instagram_url IS NULL OR instagram_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_youtube CHECK (youtube_url IS NULL OR youtube_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_linkedin CHECK (linkedin_url IS NULL OR linkedin_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_tiktok CHECK (tiktok_url IS NULL OR tiktok_url ~* '^https?://.*'),
+    CONSTRAINT check_email_format CHECK (email IS NULL OR email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+);
+
+-- Table: event_contacts
+-- Stores booking or organizing contact info for events
+CREATE TABLE public.event_contacts (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    event_id bigint NOT NULL,
+    name varchar(255) NOT NULL,
+    phone varchar(50) NOT NULL,
+    email varchar(255) NULL,
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL,
+    CONSTRAINT event_contacts_pkey PRIMARY KEY (id)
+);
+
+-- Table: event_sponsors
+-- Stores comprehensive sponsor/company information
+CREATE TABLE public.event_sponsors (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    name varchar(255) NOT NULL,
+    type varchar(100) NOT NULL,
+    -- Company information
+    company_name varchar(255) NULL,
+    tagline varchar(500) NULL,
+    description text NULL,
+    website_url varchar(1024) NULL,
+    -- Contact information
+    contact_email varchar(255) NULL,
+    contact_phone varchar(50) NULL,
+    -- Media URLs (AWS S3 or other cloud storage)
+    logo_url varchar(1024) NULL,
+    hero_image_url varchar(1024) NULL,
+    banner_image_url varchar(1024) NULL,
+    -- Status and metadata
+    is_active boolean DEFAULT true NOT NULL,
+    priority_ranking int4 DEFAULT 0 NOT NULL,
+    -- Social media links
+    facebook_url varchar(1024) NULL,
+    twitter_url varchar(1024) NULL,
+    linkedin_url varchar(1024) NULL,
+    instagram_url varchar(1024) NULL,
+    -- Timestamps
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL,
+    -- Constraints
+    CONSTRAINT event_sponsors_pkey PRIMARY KEY (id),
+    CONSTRAINT check_priority_ranking CHECK (priority_ranking >= 0),
+    CONSTRAINT check_url_format_website CHECK (website_url IS NULL OR website_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_logo CHECK (logo_url IS NULL OR logo_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_hero CHECK (hero_image_url IS NULL OR hero_image_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_banner CHECK (banner_image_url IS NULL OR banner_image_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_facebook CHECK (facebook_url IS NULL OR facebook_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_twitter CHECK (twitter_url IS NULL OR twitter_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_linkedin CHECK (linkedin_url IS NULL OR linkedin_url ~* '^https?://.*'),
+    CONSTRAINT check_url_format_instagram CHECK (instagram_url IS NULL OR instagram_url ~* '^https?://.*'),
+    CONSTRAINT check_email_format CHECK (contact_email IS NULL OR contact_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+);
+
+-- Table: event_sponsors_join
+-- Join table for many-to-many relationship between events and sponsors
+CREATE TABLE public.event_sponsors_join (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    event_id bigint NOT NULL,
+    sponsor_id bigint NOT NULL,
+    created_at timestamp DEFAULT now() NOT NULL,
+    CONSTRAINT event_sponsors_join_pkey PRIMARY KEY (id),
+    CONSTRAINT unique_event_sponsor UNIQUE (event_id, sponsor_id)
+);
+
+-- Table: event_emails
+-- For general event-level emails (for public or organizers)
+CREATE TABLE public.event_emails (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    event_id bigint NOT NULL,
+    email varchar(255) NOT NULL,
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL,
+    CONSTRAINT event_emails_pkey PRIMARY KEY (id)
+);
+
+-- Table: event_program_directors
+-- Stores info about the event's program director
+CREATE TABLE public.event_program_directors (
+    id bigint DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+    event_id bigint NOT NULL,
+    name varchar(255) NOT NULL,
+    photo_url varchar(1024) NULL,
+    bio text NULL,
+    created_at timestamp DEFAULT now() NOT NULL,
+    updated_at timestamp DEFAULT now() NOT NULL,
+    CONSTRAINT event_program_directors_pkey PRIMARY KEY (id)
+);
+
+-- =============================================
+-- FOREIGN KEY CONSTRAINTS
+-- =============================================
+
+-- Foreign key constraints for event_featured_performers
+ALTER TABLE ONLY public.event_featured_performers
+    ADD CONSTRAINT fk_event_featured_performers_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+
+-- Foreign key constraints for event_contacts
+ALTER TABLE ONLY public.event_contacts
+    ADD CONSTRAINT fk_event_contacts_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+
+-- Foreign key constraints for event_sponsors_join
+ALTER TABLE ONLY public.event_sponsors_join
+    ADD CONSTRAINT fk_event_sponsors_join_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY public.event_sponsors_join
+    ADD CONSTRAINT fk_event_sponsors_join_sponsor_id FOREIGN KEY (sponsor_id) REFERENCES public.event_sponsors(id) ON DELETE CASCADE;
+
+-- Foreign key constraints for event_emails
+ALTER TABLE ONLY public.event_emails
+    ADD CONSTRAINT fk_event_emails_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+
+-- Foreign key constraints for event_program_directors
+ALTER TABLE ONLY public.event_program_directors
+    ADD CONSTRAINT fk_event_program_directors_event_id FOREIGN KEY (event_id) REFERENCES public.event_details(id) ON DELETE CASCADE;
+
+-- =============================================
+-- TABLE COMMENTS
+-- =============================================
+
+COMMENT ON TABLE public.event_featured_performers IS 'Stores comprehensive information about featured performers/artists including bios, media assets, social presence, and performance details';
+COMMENT ON TABLE public.event_contacts IS 'Stores booking or organizing contact info for events';
+COMMENT ON TABLE public.event_sponsors IS 'Stores comprehensive sponsor/company information including logos, contact details, and social media links';
+COMMENT ON TABLE public.event_sponsors_join IS 'Join table for many-to-many relationship between events and sponsors';
+COMMENT ON TABLE public.event_emails IS 'Stores general event-level emails for public or organizers';
+COMMENT ON TABLE public.event_program_directors IS 'Stores information about event program directors';
+
+-- =============================================
+-- COLUMN COMMENTS
+-- =============================================
+
+-- event_featured_performers column comments
+COMMENT ON COLUMN public.event_featured_performers.event_id IS 'Foreign key reference to event_details.id';
+COMMENT ON COLUMN public.event_featured_performers.name IS 'Full name of the featured performer/artist';
+COMMENT ON COLUMN public.event_featured_performers.stage_name IS 'Stage name or artistic name (may differ from legal name)';
+COMMENT ON COLUMN public.event_featured_performers.role IS 'Role of the performer (e.g., Singer, Violinist, Dancer, Comedian)';
+COMMENT ON COLUMN public.event_featured_performers.bio IS 'Detailed biography and background of the performer';
+COMMENT ON COLUMN public.event_featured_performers.nationality IS 'Nationality or country of origin';
+COMMENT ON COLUMN public.event_featured_performers.date_of_birth IS 'Date of birth of the performer';
+COMMENT ON COLUMN public.event_featured_performers.email IS 'Contact email for the performer or their management';
+COMMENT ON COLUMN public.event_featured_performers.phone IS 'Contact phone number for the performer or their management';
+COMMENT ON COLUMN public.event_featured_performers.website_url IS 'Official website URL of the performer (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_featured_performers.portrait_image_url IS 'URL to portrait/headshot image (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_featured_performers.performance_image_url IS 'URL to performance/action image (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_featured_performers.gallery_image_urls IS 'JSON array of additional image URLs for gallery display';
+COMMENT ON COLUMN public.event_featured_performers.performance_duration_minutes IS 'Expected duration of performance in minutes';
+COMMENT ON COLUMN public.event_featured_performers.performance_order IS 'Order of performance in the event lineup';
+COMMENT ON COLUMN public.event_featured_performers.is_headliner IS 'Whether this performer is a headliner for the event';
+COMMENT ON COLUMN public.event_featured_performers.facebook_url IS 'Facebook profile/page URL';
+COMMENT ON COLUMN public.event_featured_performers.twitter_url IS 'Twitter profile URL';
+COMMENT ON COLUMN public.event_featured_performers.instagram_url IS 'Instagram profile URL';
+COMMENT ON COLUMN public.event_featured_performers.youtube_url IS 'YouTube channel URL';
+COMMENT ON COLUMN public.event_featured_performers.linkedin_url IS 'LinkedIn profile URL';
+COMMENT ON COLUMN public.event_featured_performers.tiktok_url IS 'TikTok profile URL';
+COMMENT ON COLUMN public.event_featured_performers.is_active IS 'Whether the performer is currently active and should be displayed';
+COMMENT ON COLUMN public.event_featured_performers.priority_ranking IS 'Display priority ranking (higher numbers = higher priority)';
+
+-- event_contacts column comments
+COMMENT ON COLUMN public.event_contacts.event_id IS 'Foreign key reference to event_details.id';
+COMMENT ON COLUMN public.event_contacts.name IS 'Contact person name';
+COMMENT ON COLUMN public.event_contacts.phone IS 'Contact phone number';
+COMMENT ON COLUMN public.event_contacts.email IS 'Contact email address (optional)';
+
+-- event_sponsors column comments
+COMMENT ON COLUMN public.event_sponsors.name IS 'Sponsor display name';
+COMMENT ON COLUMN public.event_sponsors.type IS 'Type of sponsor (e.g., Tour Sponsor, Hospitality Partner, Title Sponsor)';
+COMMENT ON COLUMN public.event_sponsors.company_name IS 'Official company name (may differ from display name)';
+COMMENT ON COLUMN public.event_sponsors.tagline IS 'Company tagline or slogan';
+COMMENT ON COLUMN public.event_sponsors.description IS 'Detailed description of the sponsor/company';
+COMMENT ON COLUMN public.event_sponsors.website_url IS 'Company website URL (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_sponsors.contact_email IS 'Primary contact email for the sponsor';
+COMMENT ON COLUMN public.event_sponsors.contact_phone IS 'Primary contact phone number';
+COMMENT ON COLUMN public.event_sponsors.logo_url IS 'URL to sponsor logo image (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_sponsors.hero_image_url IS 'URL to sponsor hero/banner image (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_sponsors.banner_image_url IS 'URL to sponsor banner image for event displays (AWS S3 or other cloud storage)';
+COMMENT ON COLUMN public.event_sponsors.is_active IS 'Whether the sponsor is currently active and should be displayed';
+COMMENT ON COLUMN public.event_sponsors.priority_ranking IS 'Display priority ranking (higher numbers = higher priority)';
+COMMENT ON COLUMN public.event_sponsors.facebook_url IS 'Facebook page URL';
+COMMENT ON COLUMN public.event_sponsors.twitter_url IS 'Twitter profile URL';
+COMMENT ON COLUMN public.event_sponsors.linkedin_url IS 'LinkedIn company page URL';
+COMMENT ON COLUMN public.event_sponsors.instagram_url IS 'Instagram profile URL';
+
+-- event_sponsors_join column comments
+COMMENT ON COLUMN public.event_sponsors_join.event_id IS 'Foreign key reference to event_details.id';
+COMMENT ON COLUMN public.event_sponsors_join.sponsor_id IS 'Foreign key reference to event_sponsors.id';
+
+-- event_emails column comments
+COMMENT ON COLUMN public.event_emails.event_id IS 'Foreign key reference to event_details.id';
+COMMENT ON COLUMN public.event_emails.email IS 'Event-related email address';
+
+-- event_program_directors column comments
+COMMENT ON COLUMN public.event_program_directors.event_id IS 'Foreign key reference to event_details.id';
+COMMENT ON COLUMN public.event_program_directors.name IS 'Program director name';
+COMMENT ON COLUMN public.event_program_directors.photo_url IS 'URL to program director photo';
+COMMENT ON COLUMN public.event_program_directors.bio IS 'Program director biography';
 

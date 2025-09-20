@@ -47,7 +47,10 @@ export default function TenantSettingsForm({
       defaultEventCapacity: initialData?.defaultEventCapacity || 100,
       platformFeePercentage: initialData?.platformFeePercentage || undefined,
       customCss: initialData?.customCss || '',
-      customJs: initialData?.customJs || ''
+      customJs: initialData?.customJs || '',
+      showEventsSectionInHomePage: initialData?.showEventsSectionInHomePage ?? true,
+      showTeamMembersSectionInHomePage: initialData?.showTeamMembersSectionInHomePage ?? true,
+      showSponsorsSectionInHomePage: initialData?.showSponsorsSectionInHomePage ?? true
     }
   });
 
@@ -215,6 +218,42 @@ export default function TenantSettingsForm({
                 {errors.maxGuestsPerAttendee && (
                   <p className="mt-1 text-sm text-red-600">{errors.maxGuestsPerAttendee.message}</p>
                 )}
+              </div>
+            </div>
+
+            {/* Homepage Display Settings */}
+            <div className="space-y-4">
+              <h4 className="text-md font-medium text-gray-900">Homepage Display Settings</h4>
+              <p className="text-sm text-gray-600">Control which sections are displayed on the homepage</p>
+
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <ToggleSwitch
+                  name="showEventsSectionInHomePage"
+                  label="Show Events Section"
+                  description="Display the events section on the homepage"
+                  checked={watchedValues.showEventsSectionInHomePage || false}
+                  onChange={(checked) => setValue('showEventsSectionInHomePage', checked)}
+                />
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <ToggleSwitch
+                  name="showTeamMembersSectionInHomePage"
+                  label="Show Team Members Section"
+                  description="Display the team members section on the homepage"
+                  checked={watchedValues.showTeamMembersSectionInHomePage || false}
+                  onChange={(checked) => setValue('showTeamMembersSectionInHomePage', checked)}
+                />
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <ToggleSwitch
+                  name="showSponsorsSectionInHomePage"
+                  label="Show Sponsors Section"
+                  description="Display the sponsors section on the homepage"
+                  checked={watchedValues.showSponsorsSectionInHomePage || false}
+                  onChange={(checked) => setValue('showSponsorsSectionInHomePage', checked)}
+                />
               </div>
             </div>
           </div>

@@ -506,6 +506,9 @@ export interface TenantSettingsDTO {
   platformFeePercentage?: number;
   customCss?: string;
   customJs?: string;
+  showEventsSectionInHomePage?: boolean;
+  showTeamMembersSectionInHomePage?: boolean;
+  showSponsorsSectionInHomePage?: boolean;
   createdAt: string; // date-time
   updatedAt: string; // date-time
   tenantOrganization?: TenantOrganizationDTO;
@@ -714,7 +717,7 @@ export interface EventSponsorsDTO {
   heroImageUrl?: string;
   bannerImageUrl?: string;
   isActive: boolean;
-  priorityRanking?: number;
+  priorityRanking: number; // Required field based on database constraint
   facebookUrl?: string;
   twitterUrl?: string;
   linkedinUrl?: string;
