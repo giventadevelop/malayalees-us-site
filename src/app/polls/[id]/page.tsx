@@ -12,6 +12,9 @@ interface PollPageProps {
 }
 
 export default async function PollPage({ params }: PollPageProps) {
+  // Await params if it's a promise (Next.js 15+)
+  const resolvedParams = typeof params.then === 'function' ? await params : params;
+  
   const { userId } = await auth();
   
   // Get user profile if logged in
@@ -29,7 +32,7 @@ export default async function PollPage({ params }: PollPageProps) {
   let options: EventPollOptionDTO[] = [];
 
   try {
-    const pollId = parseInt(params.id);
+    const pollId = parseInt(resolvedParams.id);
     if (isNaN(pollId)) {
       notFound();
     }

@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import { PollList } from './components/PollList';
 import { PollCreationForm } from './components/PollCreationForm';
 import { PollDetailsModal } from './components/PollDetailsModal';
+import { SuccessDialog } from '@/components/ui/SuccessDialog';
 import { 
   createEventPollServer, 
   updateEventPollServer, 
   deleteEventPollServer,
   createEventPollOptionServer,
+  updateEventPollOptionServer,
   fetchEventPollOptionsServer,
   deleteEventPollOptionServer
 } from './ApiServerActions';
@@ -25,6 +27,13 @@ export function PollManagementClient({ initialPolls }: PollManagementClientProps
   const [editingPoll, setEditingPoll] = useState<EventPollDTO | null>(null);
   const [viewingPoll, setViewingPoll] = useState<EventPollDTO | null>(null);
   const [pollOptions, setPollOptions] = useState<EventPollOptionDTO[]>([]);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [successMessage, setSuccessMessage] = useState({ title: '', message: '' });
+
+  const showSuccess = (title: string, message: string) => {
+    setSuccessMessage({ title, message });
+    setShowSuccessDialog(true);
+  };
 
   const handleCreatePoll = async (
     pollData: Omit<EventPollDTO, 'id' | 'createdAt' | 'updatedAt'>,
@@ -51,7 +60,7 @@ export function PollManagementClient({ initialPolls }: PollManagementClientProps
       setShowCreateForm(false);
       
       // Show success message
-      alert('Poll created successfully!');
+      showSuccess('Poll Created Successfully!', 'Your new poll has been created and is now available for voting.');
     } catch (error) {
       console.error('Error creating poll:', error);
       alert('Failed to create poll. Please try again.');
@@ -62,7 +71,7 @@ export function PollManagementClient({ initialPolls }: PollManagementClientProps
 
   const handleUpdatePoll = async (
     pollData: Omit<EventPollDTO, 'id' | 'createdAt' | 'updatedAt'>,
-    options: Omit<EventPollOptionDTO, 'id' | 'createdAt' | 'updatedAt' | 'pollId'>[]
+    options: (Omit<EventPollOptionDTO, 'id' | 'createdAt' | 'updatedAt' | 'pollId'> & { id?: number })[]
   ) => {
     if (!editingPoll?.id) return;
 
@@ -77,22 +86,42 @@ export function PollManagementClient({ initialPolls }: PollManagementClientProps
         'pollId.equals': editingPoll.id 
       });
       
-      // Delete existing options
+      // Separate options into existing (with ID) and new (without ID)
+      const existingOptionIds = options.filter(opt => opt.id).map(opt => opt.id!);
+      const newOptions = options.filter(opt => !opt.id);
+      
+      // Delete options that were removed (exist in database but not in form)
+      const optionsToDelete = existingOptions.filter(
+        existing => !existingOptionIds.includes(existing.id!)
+      );
+      
       await Promise.all(
-        existingOptions.map(option => 
+        optionsToDelete.map(option => 
           option.id ? deleteEventPollOptionServer(option.id) : Promise.resolve()
         )
       );
       
-      // Create new options
-      const createdOptions = await Promise.all(
-        options.map(option => 
-          createEventPollOptionServer({
-            ...option,
+      // Update existing options (PATCH calls)
+      const updatePromises = options
+        .filter(opt => opt.id) // Only existing options
+        .map(option => {
+          const { id, ...optionData } = option;
+          return updateEventPollOptionServer(id!, {
+            ...optionData,
             pollId: editingPoll.id,
-          })
-        )
+          });
+        });
+      
+      // Create new options (POST calls)
+      const createPromises = newOptions.map(option => 
+        createEventPollOptionServer({
+          ...option,
+          pollId: editingPoll.id,
+        })
       );
+      
+      // Execute all updates and creates in parallel
+      await Promise.all([...updatePromises, ...createPromises]);
       
       // Update local state
       setPolls(prev => prev.map(poll => 
@@ -101,7 +130,7 @@ export function PollManagementClient({ initialPolls }: PollManagementClientProps
       setEditingPoll(null);
       
       // Show success message
-      alert('Poll updated successfully!');
+      showSuccess('Poll Updated Successfully!', 'Your poll has been updated with the latest changes.');
     } catch (error) {
       console.error('Error updating poll:', error);
       alert('Failed to update poll. Please try again.');
@@ -136,7 +165,7 @@ export function PollManagementClient({ initialPolls }: PollManagementClientProps
       setPolls(prev => prev.filter(poll => poll.id !== pollId));
       
       // Show success message
-      alert('Poll deleted successfully!');
+      showSuccess('Poll Deleted Successfully!', 'The poll has been permanently removed from the system.');
     } catch (error) {
       console.error('Error deleting poll:', error);
       alert('Failed to delete poll. Please try again.');
@@ -224,14 +253,25 @@ export function PollManagementClient({ initialPolls }: PollManagementClientProps
   }
 
   return (
-    <PollList
-      polls={polls}
-      onEdit={handleEditPoll}
-      onDelete={handleDeletePoll}
-      onView={handleViewPoll}
-      onCreate={() => setShowCreateForm(true)}
-      isLoading={isLoading}
-    />
+    <>
+      <PollList
+        polls={polls}
+        onEdit={handleEditPoll}
+        onDelete={handleDeletePoll}
+        onView={handleViewPoll}
+        onCreate={() => setShowCreateForm(true)}
+        isLoading={isLoading}
+      />
+
+      {/* Success Dialog */}
+      <SuccessDialog
+        open={showSuccessDialog}
+        onClose={() => setShowSuccessDialog(false)}
+        title={successMessage.title}
+        message={successMessage.message}
+        buttonText="Continue"
+      />
+    </>
   );
 }
 

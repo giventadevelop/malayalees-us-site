@@ -39,18 +39,18 @@ export function PollList({
     const endDate = poll.endDate ? new Date(poll.endDate) : null;
 
     if (!poll.isActive) {
-      return <Badge variant="secondary">Inactive</Badge>;
+      return <Badge className="bg-gray-100 text-gray-600 border-gray-200">Inactive</Badge>;
     }
 
     if (now < startDate) {
-      return <Badge variant="outline">Scheduled</Badge>;
+      return <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">Scheduled</Badge>;
     }
 
     if (endDate && now > endDate) {
-      return <Badge variant="destructive">Ended</Badge>;
+      return <Badge className="bg-red-50 text-red-700 border-red-200">Ended</Badge>;
     }
 
-    return <Badge variant="default">Active</Badge>;
+    return <Badge className="bg-green-50 text-green-700 border-green-200">Active</Badge>;
   };
 
   const formatDate = (dateString: string) => {
@@ -105,22 +105,27 @@ export function PollList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Polls</h2>
-        <Button onClick={onCreate}>
-          <Plus className="h-4 w-4 mr-2" />
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-cyan-600 bg-clip-text text-transparent">
+          Poll Management
+        </h2>
+        <Button 
+          onClick={onCreate}
+          className="bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          <Plus className="h-5 w-5 mr-2" />
           Create Poll
         </Button>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-indigo-500 h-5 w-5" />
         <Input
           placeholder="Search polls..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
+          className="pl-12 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 transition-all"
         />
       </div>
 
@@ -139,15 +144,15 @@ export function PollList({
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-6">
           {filteredPolls.map((poll) => (
-            <Card key={poll.id}>
-              <CardHeader>
+            <Card key={poll.id} className="border-2 border-gray-100 hover:border-indigo-200 bg-gradient-to-br from-white to-indigo-50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <CardHeader className="bg-gradient-to-r from-indigo-50 to-cyan-50 border-b border-indigo-100">
                 <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg">{poll.title}</CardTitle>
+                  <div className="space-y-2">
+                    <CardTitle className="text-xl font-bold text-gray-800">{poll.title}</CardTitle>
                     {poll.description && (
-                      <CardDescription className="line-clamp-2">
+                      <CardDescription className="text-gray-600 text-base">
                         {poll.description}
                       </CardDescription>
                     )}
@@ -181,30 +186,30 @@ export function PollList({
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-2 mt-4">
+                <div className="flex justify-end space-x-3 mt-6">
                   <Button
-                    variant="outline"
-                    size="sm"
                     onClick={() => onView(poll)}
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
                   >
-                    <Eye className="h-4 w-4 mr-1" />
+                    <Eye className="h-4 w-4 mr-2" />
                     View
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
                     onClick={() => onEdit(poll)}
+                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
                   >
-                    <Edit className="h-4 w-4 mr-1" />
+                    <Edit className="h-4 w-4 mr-2" />
                     Edit
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
                     onClick={() => handleDelete(poll.id!)}
-                    className={deleteConfirm === poll.id ? 'text-red-600 border-red-600' : 'text-red-500 hover:text-red-700'}
+                    className={`font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ${
+                      deleteConfirm === poll.id 
+                        ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white' 
+                        : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white'
+                    }`}
                   >
-                    <Trash2 className="h-4 w-4 mr-1" />
+                    <Trash2 className="h-4 w-4 mr-2" />
                     {deleteConfirm === poll.id ? 'Confirm Delete' : 'Delete'}
                   </Button>
                 </div>

@@ -369,8 +369,13 @@ export interface EventPollResponseDTO {
   id?: number;
   tenantId?: string;
   comment?: string;
+  responseValue?: string; // varchar(1000) - Custom response value for rating/custom responses
+  isAnonymous?: boolean; // boolean - Anonymous response flag, overrides poll-level setting
   createdAt: string;
   updatedAt: string;
+  pollId?: number;
+  pollOptionId?: number;
+  userId?: number;
   poll?: EventPollDTO;
   pollOption?: EventPollOptionDTO;
   user?: UserProfileDTO;

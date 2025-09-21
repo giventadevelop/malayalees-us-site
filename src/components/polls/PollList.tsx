@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, BarChart3, Users, Clock, MessageSquare } from 'lucide-react';
+import { Search, BarChart3, Users, Clock, MessageSquare, ExternalLink } from 'lucide-react';
 import type { EventPollDTO, EventPollOptionDTO } from '@/types';
 import { fetchEventPollsServer, fetchEventPollOptionsServer } from '@/app/admin/polls/ApiServerActions';
 
@@ -52,16 +53,22 @@ export function PollList({ eventId, userId, onPollSelect }: PollListProps) {
 
   const handlePollClick = async (poll: EventPollDTO) => {
     try {
+      console.log('Fetching options for poll:', poll.id, poll.title);
       const options = await fetchEventPollOptionsServer({
         'pollId.equals': poll.id,
         'isActive.equals': true
       });
       
+      console.log('Fetched poll options:', options);
       setSelectedPoll(poll);
       setPollOptions(options);
       onPollSelect?.(poll, options);
     } catch (error) {
       console.error('Error loading poll options:', error);
+      // Still show the poll even if options fail to load
+      setSelectedPoll(poll);
+      setPollOptions([]);
+      onPollSelect?.(poll, []);
     }
   };
 
@@ -71,18 +78,34 @@ export function PollList({ eventId, userId, onPollSelect }: PollListProps) {
     const endDate = poll.endDate ? new Date(poll.endDate) : null;
 
     if (!poll.isActive) {
-      return { text: 'Inactive', variant: 'secondary' as const };
+      return { 
+        text: 'Inactive', 
+        variant: 'secondary' as const,
+        className: 'bg-gray-100 text-gray-600 border-gray-200'
+      };
     }
 
     if (now < startDate) {
-      return { text: 'Not Started', variant: 'outline' as const };
+      return { 
+        text: 'Not Started', 
+        variant: 'outline' as const,
+        className: 'bg-yellow-50 text-yellow-700 border-yellow-200'
+      };
     }
 
     if (endDate && now > endDate) {
-      return { text: 'Ended', variant: 'destructive' as const };
+      return { 
+        text: 'Ended', 
+        variant: 'destructive' as const,
+        className: 'bg-red-50 text-red-700 border-red-200'
+      };
     }
 
-    return { text: 'Active', variant: 'default' as const };
+    return { 
+      text: 'Active', 
+      variant: 'default' as const,
+      className: 'bg-green-50 text-green-700 border-green-200'
+    };
   };
 
   const formatDate = (dateString: string) => {
@@ -129,14 +152,16 @@ export function PollList({ eventId, userId, onPollSelect }: PollListProps) {
   if (selectedPoll) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-4">
           <Button
-            variant="outline"
             onClick={() => setSelectedPoll(null)}
+            className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
           >
             ← Back to Polls
           </Button>
-          <h2 className="text-xl font-bold">{selectedPoll.title}</h2>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            {selectedPoll.title}
+          </h2>
         </div>
         <PollVotingCard
           poll={selectedPoll}
@@ -152,23 +177,25 @@ export function PollList({ eventId, userId, onPollSelect }: PollListProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Available Polls</h2>
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Available Polls
+        </h2>
         {polls.length > 0 && (
-          <Badge variant="outline">
+          <Badge className="bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0 px-4 py-2">
             {polls.length} poll{polls.length !== 1 ? 's' : ''} available
           </Badge>
         )}
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500 h-5 w-5" />
         <Input
           placeholder="Search polls..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
+          className="pl-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
         />
       </div>
 
@@ -189,8 +216,10 @@ export function PollList({ eventId, userId, onPollSelect }: PollListProps) {
             return (
               <Card 
                 key={poll.id} 
-                className={`cursor-pointer transition-all hover:shadow-md ${
-                  active ? 'hover:border-blue-300' : 'opacity-75'
+                className={`cursor-pointer transition-all duration-300 hover:shadow-xl border-2 ${
+                  active 
+                    ? 'hover:border-blue-400 bg-gradient-to-br from-white to-blue-50 hover:shadow-blue-100' 
+                    : 'opacity-75 bg-gray-50'
                 }`}
                 onClick={() => handlePollClick(poll)}
               >
@@ -204,7 +233,7 @@ export function PollList({ eventId, userId, onPollSelect }: PollListProps) {
                         </CardDescription>
                       )}
                     </div>
-                    <Badge variant={status.variant}>{status.text}</Badge>
+                    <Badge className={status.className}>{status.text}</Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -240,14 +269,35 @@ export function PollList({ eventId, userId, onPollSelect }: PollListProps) {
                       )}
                     </div>
 
-                    <div className="flex justify-end">
+                    <div className="flex justify-end space-x-2">
                       <Button
-                        variant={active ? "default" : "outline"}
+                        className={`${
+                          active 
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300' 
+                            : 'bg-gray-100 text-gray-500 border-gray-200'
+                        }`}
                         size="sm"
                         disabled={!active}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePollClick(poll);
+                        }}
                       >
-                        <BarChart3 className="h-4 w-4 mr-1" />
+                        <BarChart3 className="h-4 w-4 mr-2" />
                         {active ? 'Vote Now' : 'View Details'}
+                      </Button>
+                      
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Link href={`/polls/${poll.id}`}>
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Full Page
+                        </Link>
                       </Button>
                     </div>
                   </div>

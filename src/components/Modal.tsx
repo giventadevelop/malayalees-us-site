@@ -14,7 +14,14 @@ export function Modal({
   title?: string;
   preventBackdropClose?: boolean;
 }) {
-  if (!open) return null;
+  console.log('[MODAL] Component called with open:', open, 'title:', title);
+  
+  if (!open) {
+    console.log('[MODAL] Not rendering because open is false');
+    return null;
+  }
+  
+  console.log('[MODAL] Rendering modal');
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     e.preventDefault();

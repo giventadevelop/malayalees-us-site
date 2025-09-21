@@ -25,8 +25,17 @@ export async function fetchUserProfileServer(userId: string): Promise<UserProfil
 
     // Step 2: Fallback to email lookup with reconciliation
     console.log('[Profile Server] Step 2: Looking up profile by email with reconciliation');
-    const user = await currentUser();
-    const email = user?.emailAddresses?.[0]?.emailAddress || "";
+    let user = null;
+    let email = "";
+    try {
+      // Ensure currentUser() is properly awaited
+      const currentUserResult = await currentUser();
+      user = currentUserResult;
+      email = user?.emailAddresses?.[0]?.emailAddress || "";
+    } catch (error) {
+      console.log('[Profile Server] Error getting current user:', error);
+      // Continue without user data if currentUser() fails
+    }
 
     if (email) {
       const emailUrl = `${baseUrl}/api/proxy/user-profiles?email.equals=${encodeURIComponent(email)}`;

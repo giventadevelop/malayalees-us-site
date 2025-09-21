@@ -1,8 +1,7 @@
-import { fetchWithJwtRetry } from '@/lib/proxyHandler';
 import { getAppUrl } from '@/lib/env';
+import { withTenantId } from '@/lib/withTenantId';
 import type { EventPollDTO, EventPollOptionDTO, EventPollResponseDTO } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const baseUrl = getAppUrl();
 
 // Event Polls API calls
@@ -18,10 +17,11 @@ export async function fetchEventPollsServer(filters?: Record<string, any>) {
     }
     
     const qs = params.toString();
-    const apiUrl = `${API_BASE_URL}/api/event-polls${qs ? `?${qs}` : ''}`;
+    const proxyUrl = `${baseUrl}/api/proxy/event-polls${qs ? `?${qs}` : ''}`;
     
-    const res = await fetchWithJwtRetry(apiUrl, {
+    const res = await fetch(proxyUrl, {
       cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' }
     });
     
     if (!res.ok) {
@@ -37,10 +37,11 @@ export async function fetchEventPollsServer(filters?: Record<string, any>) {
 
 export async function fetchEventPollServer(pollId: number) {
   try {
-    const apiUrl = `${API_BASE_URL}/api/event-polls/${pollId}`;
+    const proxyUrl = `${baseUrl}/api/proxy/event-polls/${pollId}`;
     
-    const res = await fetchWithJwtRetry(apiUrl, {
+    const res = await fetch(proxyUrl, {
       cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' }
     });
     
     if (!res.ok) {
@@ -56,20 +57,24 @@ export async function fetchEventPollServer(pollId: number) {
 
 export async function createEventPollServer(pollData: Omit<EventPollDTO, 'id' | 'createdAt' | 'updatedAt'>) {
   try {
-    const apiUrl = `${API_BASE_URL}/api/event-polls`;
+    const proxyUrl = `${baseUrl}/api/proxy/event-polls`;
     
-    const res = await fetchWithJwtRetry(apiUrl, {
+    const payload = withTenantId({
+      ...pollData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    
+    const res = await fetch(proxyUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...pollData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }),
+      body: JSON.stringify(payload),
     });
     
     if (!res.ok) {
-      throw new Error(`Failed to create poll: ${res.status}`);
+      const errorText = await res.text();
+      console.error(`Failed to create poll: ${res.status} - ${errorText}`);
+      throw new Error(`Failed to create poll: ${res.status} - ${errorText}`);
     }
     
     return await res.json();
@@ -81,20 +86,30 @@ export async function createEventPollServer(pollData: Omit<EventPollDTO, 'id' | 
 
 export async function updateEventPollServer(pollId: number, pollData: Partial<EventPollDTO>) {
   try {
-    const apiUrl = `${API_BASE_URL}/api/event-polls/${pollId}`;
+    // First fetch the existing poll to preserve required fields
+    const existingPoll = await fetchEventPollServer(pollId);
+    if (!existingPoll) {
+      throw new Error(`Poll with ID ${pollId} not found`);
+    }
+
+    const proxyUrl = `${baseUrl}/api/proxy/event-polls/${pollId}`;
     
-    const res = await fetchWithJwtRetry(apiUrl, {
+    const res = await fetch(proxyUrl, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/merge-patch+json' },
       body: JSON.stringify({
         ...pollData,
         id: pollId,
+        tenantId: existingPoll.tenantId, // Preserve existing tenantId
+        createdAt: existingPoll.createdAt, // Preserve original createdAt
         updatedAt: new Date().toISOString(),
       }),
     });
     
     if (!res.ok) {
-      throw new Error(`Failed to update poll: ${res.status}`);
+      const errorText = await res.text();
+      console.error(`Failed to update poll: ${res.status} - ${errorText}`);
+      throw new Error(`Failed to update poll: ${res.status} - ${errorText}`);
     }
     
     return await res.json();
@@ -106,10 +121,11 @@ export async function updateEventPollServer(pollId: number, pollData: Partial<Ev
 
 export async function deleteEventPollServer(pollId: number) {
   try {
-    const apiUrl = `${API_BASE_URL}/api/event-polls/${pollId}`;
+    const proxyUrl = `${baseUrl}/api/proxy/event-polls/${pollId}`;
     
-    const res = await fetchWithJwtRetry(apiUrl, {
+    const res = await fetch(proxyUrl, {
       method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
     });
     
     if (!res.ok) {
@@ -124,6 +140,27 @@ export async function deleteEventPollServer(pollId: number) {
 }
 
 // Event Poll Options API calls
+export async function fetchEventPollOptionServer(optionId: number) {
+  try {
+    const proxyUrl = `${baseUrl}/api/proxy/event-poll-options/${optionId}`;
+    
+    const res = await fetch(proxyUrl, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store'
+    });
+    
+    if (!res.ok) {
+      return null;
+    }
+    
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching event poll option:', error);
+    return null;
+  }
+}
+
 export async function fetchEventPollOptionsServer(filters?: Record<string, any>) {
   try {
     const params = new URLSearchParams();
@@ -136,10 +173,11 @@ export async function fetchEventPollOptionsServer(filters?: Record<string, any>)
     }
     
     const qs = params.toString();
-    const apiUrl = `${API_BASE_URL}/api/event-poll-options${qs ? `?${qs}` : ''}`;
+    const proxyUrl = `${baseUrl}/api/proxy/event-poll-options${qs ? `?${qs}` : ''}`;
     
-    const res = await fetchWithJwtRetry(apiUrl, {
+    const res = await fetch(proxyUrl, {
       cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' }
     });
     
     if (!res.ok) {
@@ -155,20 +193,24 @@ export async function fetchEventPollOptionsServer(filters?: Record<string, any>)
 
 export async function createEventPollOptionServer(optionData: Omit<EventPollOptionDTO, 'id' | 'createdAt' | 'updatedAt'>) {
   try {
-    const apiUrl = `${API_BASE_URL}/api/event-poll-options`;
+    const proxyUrl = `${baseUrl}/api/proxy/event-poll-options`;
     
-    const res = await fetchWithJwtRetry(apiUrl, {
+    const payload = withTenantId({
+      ...optionData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    
+    const res = await fetch(proxyUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...optionData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }),
+      body: JSON.stringify(payload),
     });
     
     if (!res.ok) {
-      throw new Error(`Failed to create poll option: ${res.status}`);
+      const errorText = await res.text();
+      console.error(`Failed to create poll option: ${res.status} - ${errorText}`);
+      throw new Error(`Failed to create poll option: ${res.status} - ${errorText}`);
     }
     
     return await res.json();
@@ -180,20 +222,30 @@ export async function createEventPollOptionServer(optionData: Omit<EventPollOpti
 
 export async function updateEventPollOptionServer(optionId: number, optionData: Partial<EventPollOptionDTO>) {
   try {
-    const apiUrl = `${API_BASE_URL}/api/event-poll-options/${optionId}`;
+    // First fetch the existing poll option to preserve required fields
+    const existingOption = await fetchEventPollOptionServer(optionId);
+    if (!existingOption) {
+      throw new Error(`Poll option with ID ${optionId} not found`);
+    }
+
+    const proxyUrl = `${baseUrl}/api/proxy/event-poll-options/${optionId}`;
     
-    const res = await fetchWithJwtRetry(apiUrl, {
+    const res = await fetch(proxyUrl, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/merge-patch+json' },
       body: JSON.stringify({
         ...optionData,
         id: optionId,
+        tenantId: existingOption.tenantId, // Preserve existing tenantId
+        createdAt: existingOption.createdAt, // Preserve original createdAt
         updatedAt: new Date().toISOString(),
       }),
     });
     
     if (!res.ok) {
-      throw new Error(`Failed to update poll option: ${res.status}`);
+      const errorText = await res.text();
+      console.error(`Failed to update poll option: ${res.status} - ${errorText}`);
+      throw new Error(`Failed to update poll option: ${res.status} - ${errorText}`);
     }
     
     return await res.json();
@@ -205,10 +257,11 @@ export async function updateEventPollOptionServer(optionId: number, optionData: 
 
 export async function deleteEventPollOptionServer(optionId: number) {
   try {
-    const apiUrl = `${API_BASE_URL}/api/event-poll-options/${optionId}`;
+    const proxyUrl = `${baseUrl}/api/proxy/event-poll-options/${optionId}`;
     
-    const res = await fetchWithJwtRetry(apiUrl, {
+    const res = await fetch(proxyUrl, {
       method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
     });
     
     if (!res.ok) {
@@ -235,10 +288,11 @@ export async function fetchEventPollResponsesServer(filters?: Record<string, any
     }
     
     const qs = params.toString();
-    const apiUrl = `${API_BASE_URL}/api/event-poll-responses${qs ? `?${qs}` : ''}`;
+    const proxyUrl = `${baseUrl}/api/proxy/event-poll-responses${qs ? `?${qs}` : ''}`;
     
-    const res = await fetchWithJwtRetry(apiUrl, {
+    const res = await fetch(proxyUrl, {
       cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' }
     });
     
     if (!res.ok) {
@@ -254,23 +308,39 @@ export async function fetchEventPollResponsesServer(filters?: Record<string, any
 
 export async function createEventPollResponseServer(responseData: Omit<EventPollResponseDTO, 'id' | 'createdAt' | 'updatedAt'>) {
   try {
-    const apiUrl = `${API_BASE_URL}/api/event-poll-responses`;
+    const proxyUrl = `${baseUrl}/api/proxy/event-poll-responses`;
     
-    const res = await fetchWithJwtRetry(apiUrl, {
+    // Convert ID fields to relationship objects as expected by backend
+    // Backend API schema now includes responseValue and isAnonymous fields
+    const payload = withTenantId({
+      comment: responseData.comment,
+      responseValue: responseData.responseValue,
+      isAnonymous: responseData.isAnonymous,
+      poll: responseData.pollId ? { id: responseData.pollId } : undefined,
+      pollOption: responseData.pollOptionId ? { id: responseData.pollOptionId } : undefined,
+      user: responseData.userId ? { id: responseData.userId } : undefined,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    
+    console.log('[CREATE POLL RESPONSE] Request data:', responseData);
+    console.log('[CREATE POLL RESPONSE] Final payload:', payload);
+    
+    const res = await fetch(proxyUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...responseData,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }),
+      body: JSON.stringify(payload),
     });
     
     if (!res.ok) {
-      throw new Error(`Failed to create poll response: ${res.status}`);
+      const errorText = await res.text();
+      console.error(`Failed to create poll response: ${res.status} - ${errorText}`);
+      throw new Error(`Failed to create poll response: ${res.status} - ${errorText}`);
     }
     
-    return await res.json();
+    const result = await res.json();
+    console.log('[CREATE POLL RESPONSE] Success:', result);
+    return result;
   } catch (error) {
     console.error('Error creating event poll response:', error);
     throw error;
@@ -279,10 +349,11 @@ export async function createEventPollResponseServer(responseData: Omit<EventPoll
 
 export async function deleteEventPollResponseServer(responseId: number) {
   try {
-    const apiUrl = `${API_BASE_URL}/api/event-poll-responses/${responseId}`;
+    const proxyUrl = `${baseUrl}/api/proxy/event-poll-responses/${responseId}`;
     
-    const res = await fetchWithJwtRetry(apiUrl, {
+    const res = await fetch(proxyUrl, {
       method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
     });
     
     if (!res.ok) {

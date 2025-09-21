@@ -18,7 +18,7 @@ interface PollOption {
 }
 
 interface PollCreationFormProps {
-  onSubmit: (pollData: Omit<EventPollDTO, 'id' | 'createdAt' | 'updatedAt'>, options: Omit<EventPollOptionDTO, 'id' | 'createdAt' | 'updatedAt' | 'pollId'>[]) => Promise<void>;
+  onSubmit: (pollData: Omit<EventPollDTO, 'id' | 'createdAt' | 'updatedAt'>, options: (Omit<EventPollOptionDTO, 'id' | 'createdAt' | 'updatedAt' | 'pollId'> & { id?: number })[]) => Promise<void>;
   onCancel: () => void;
   initialData?: EventPollDTO;
   initialOptions?: EventPollOptionDTO[];
@@ -96,9 +96,20 @@ export function PollCreationForm({
       return;
     }
 
-    const validOptions = options.filter(opt => opt.optionText.trim());
+    const validOptions = options.filter(opt => opt.optionText.trim()).map(opt => ({
+      ...opt,
+      // Preserve the ID if it exists (for updates)
+      ...(opt.id && { id: opt.id })
+    }));
     
-    await onSubmit(formData, validOptions);
+    // Convert datetime-local format to proper ISO format for backend
+    const formattedFormData = {
+      ...formData,
+      startDate: formData.startDate ? new Date(formData.startDate).toISOString() : '',
+      endDate: formData.endDate ? new Date(formData.endDate).toISOString() : '',
+    };
+    
+    await onSubmit(formattedFormData, validOptions);
   };
 
   const addOption = () => {
@@ -310,12 +321,35 @@ export function PollCreationForm({
         </CardContent>
       </Card>
 
-      <div className="flex justify-end space-x-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
+      <div className="flex justify-end space-x-4">
+        <Button 
+          type="button" 
+          onClick={onCancel}
+          className="bg-teal-100 hover:bg-teal-200 text-teal-800 font-semibold px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
           Cancel
         </Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Saving...' : initialData ? 'Update Poll' : 'Create Poll'}
+        <Button 
+          type="submit" 
+          disabled={isLoading}
+          className="bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          {isLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Saving...
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              {initialData ? 'Update Poll' : 'Create Poll'}
+            </>
+          )}
         </Button>
       </div>
     </form>

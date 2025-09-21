@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Clock, Users, MessageSquare, BarChart3 } from 'lucide-react';
+import { CheckCircle, Clock, Users, BarChart3 } from 'lucide-react';
 import type { EventPollDTO, EventPollOptionDTO, EventPollResponseDTO } from '@/types';
 import { createEventPollResponseServer, fetchEventPollResponsesServer } from '@/app/admin/polls/ApiServerActions';
 
@@ -16,300 +17,14 @@ interface PollVotingCardProps {
   onVoteSubmitted?: () => void;
 }
 
-export function PollVotingCard({ poll, options, userId, onVoteSubmitted }: PollVotingCardProps) {
-  const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
-  const [comment, setComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
-  const [userResponses, setUserResponses] = useState<EventPollResponseDTO[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadUserResponses = async () => {
-      if (!userId) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const responses = await fetchEventPollResponsesServer({
-          'pollId.equals': poll.id,
-          'userId.equals': userId
-        });
-        setUserResponses(responses);
-        setHasVoted(responses.length > 0);
-        
-        // If user has voted, show results
-        if (responses.length > 0) {
-          setShowResults(true);
-        }
-      } catch (error) {
-        console.error('Error loading user responses:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUserResponses();
-  }, [poll.id, userId]);
-
-  const isPollActive = () => {
-    const now = new Date();
-    const startDate = new Date(poll.startDate);
-    const endDate = poll.endDate ? new Date(poll.endDate) : null;
-
-    return poll.isActive && now >= startDate && (!endDate || now <= endDate);
-  };
-
-  const canVote = () => {
-    return isPollActive() && !hasVoted && userId;
-  };
-
-  const handleOptionChange = (optionId: number) => {
-    if (!poll.allowMultipleChoices) {
-      setSelectedOptions([optionId]);
-    } else {
-      setSelectedOptions(prev => 
-        prev.includes(optionId)
-          ? prev.filter(id => id !== optionId)
-          : [...prev, optionId]
-      );
-    }
-  };
-
-  const handleSubmitVote = async () => {
-    if (selectedOptions.length === 0) {
-      alert('Please select at least one option');
-      return;
-    }
-
-    if (!userId) {
-      alert('You must be logged in to vote');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      // Submit responses for each selected option
-      await Promise.all(
-        selectedOptions.map(optionId =>
-          createEventPollResponseServer({
-            userId,
-            pollId: poll.id!,
-            pollOptionId: optionId,
-            comment: comment.trim() || undefined,
-          })
-        )
-      );
-
-      setHasVoted(true);
-      setShowResults(true);
-      onVoteSubmitted?.();
-      
-      alert('Vote submitted successfully!');
-    } catch (error) {
-      console.error('Error submitting vote:', error);
-      alert('Failed to submit vote. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const getPollStatus = () => {
-    const now = new Date();
-    const startDate = new Date(poll.startDate);
-    const endDate = poll.endDate ? new Date(poll.endDate) : null;
-
-    if (!poll.isActive) {
-      return { text: 'Inactive', variant: 'secondary' as const };
-    }
-
-    if (now < startDate) {
-      return { text: 'Not Started', variant: 'outline' as const };
-    }
-
-    if (endDate && now > endDate) {
-      return { text: 'Ended', variant: 'destructive' as const };
-    }
-
-    return { text: 'Active', variant: 'default' as const };
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="space-y-2">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-10 bg-gray-200 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const status = getPollStatus();
-
-  return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-xl">{poll.title}</CardTitle>
-            {poll.description && (
-              <CardDescription className="mt-2">{poll.description}</CardDescription>
-            )}
-          </div>
-          <Badge variant={status.variant}>{status.text}</Badge>
-        </div>
-        
-        <div className="flex items-center space-x-4 text-sm text-gray-600 mt-4">
-          <div className="flex items-center">
-            <Clock className="h-4 w-4 mr-1" />
-            Starts: {formatDate(poll.startDate)}
-          </div>
-          {poll.endDate && (
-            <div className="flex items-center">
-              <Clock className="h-4 w-4 mr-1" />
-              Ends: {formatDate(poll.endDate)}
-            </div>
-          )}
-          <div className="flex items-center">
-            <Users className="h-4 w-4 mr-1" />
-            Max: {poll.maxResponsesPerUser || 1} per user
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-6">
-        {canVote() ? (
-          <div className="space-y-4">
-            <div className="space-y-3">
-              {options.map((option) => (
-                <label
-                  key={option.id}
-                  className={`flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors ${
-                    selectedOptions.includes(option.id!)
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <input
-                    type={poll.allowMultipleChoices ? 'checkbox' : 'radio'}
-                    name="poll-option"
-                    checked={selectedOptions.includes(option.id!)}
-                    onChange={() => handleOptionChange(option.id!)}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  <span className="flex-1">{option.optionText}</span>
-                  {selectedOptions.includes(option.id!) && (
-                    <CheckCircle className="h-5 w-5 text-blue-600" />
-                  )}
-                </label>
-              ))}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="comment" className="text-sm font-medium">
-                Add a comment (optional)
-              </label>
-              <Textarea
-                id="comment"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Share your thoughts about this poll..."
-                rows={3}
-              />
-            </div>
-
-            <Button
-              onClick={handleSubmitVote}
-              disabled={isSubmitting || selectedOptions.length === 0}
-              className="w-full"
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Vote'}
-            </Button>
-          </div>
-        ) : hasVoted ? (
-          <div className="text-center space-y-4">
-            <div className="flex items-center justify-center space-x-2 text-green-600">
-              <CheckCircle className="h-6 w-6" />
-              <span className="font-medium">You have already voted!</span>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowResults(!showResults)}
-              className="w-full"
-            >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              {showResults ? 'Hide Results' : 'View Results'}
-            </Button>
-          </div>
-        ) : !userId ? (
-          <div className="text-center space-y-4">
-            <p className="text-gray-600">Please log in to vote on this poll.</p>
-            <Button variant="outline" onClick={() => window.location.href = '/sign-in'}>
-              Sign In
-            </Button>
-          </div>
-        ) : (
-          <div className="text-center space-y-4">
-            <p className="text-gray-600">
-              {status.text === 'Not Started' 
-                ? 'This poll has not started yet.'
-                : status.text === 'Ended'
-                ? 'This poll has ended.'
-                : 'This poll is currently inactive.'
-              }
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => setShowResults(!showResults)}
-              className="w-full"
-            >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              {showResults ? 'Hide Results' : 'View Results'}
-            </Button>
-          </div>
-        )}
-
-        {showResults && (
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg flex items-center">
-              <BarChart3 className="h-5 w-5 mr-2" />
-              Poll Results
-            </h3>
-            <PollResultsDisplay poll={poll} options={options} />
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// Poll Results Display Component
 function PollResultsDisplay({ poll, options }: { poll: EventPollDTO; options: EventPollOptionDTO[] }) {
   const [responses, setResponses] = useState<EventPollResponseDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadResponses = async () => {
+      if (!poll.id) return;
+      
       try {
         const pollResponses = await fetchEventPollResponsesServer({
           'pollId.equals': poll.id
@@ -325,31 +40,27 @@ function PollResultsDisplay({ poll, options }: { poll: EventPollDTO; options: Ev
     loadResponses();
   }, [poll.id]);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-            <div className="h-2 bg-gray-200 rounded w-1/2"></div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   const getOptionStats = () => {
     const optionStats = options.map(option => {
-      const optionResponses = responses.filter(response => response.pollOptionId === option.id);
+      const count = responses.filter(response => response.pollOption?.id === option.id).length;
       return {
         option,
-        count: optionResponses.length,
-        percentage: responses.length > 0 ? (optionResponses.length / responses.length) * 100 : 0,
+        count,
+        percentage: responses.length > 0 ? (count / responses.length) * 100 : 0
       };
     });
 
     return optionStats.sort((a, b) => b.count - a.count);
   };
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="text-gray-600 mt-2">Loading results...</p>
+      </div>
+    );
+  }
 
   const optionStats = getOptionStats();
   const totalResponses = responses.length;
@@ -387,3 +98,338 @@ function PollResultsDisplay({ poll, options }: { poll: EventPollDTO; options: Ev
   );
 }
 
+export function PollVotingCard({ poll, options, userId, onVoteSubmitted }: PollVotingCardProps) {
+  const router = useRouter();
+  const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
+  const [comment, setComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasVoted, setHasVoted] = useState(false);
+  const [userResponses, setUserResponses] = useState<EventPollResponseDTO[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadUserResponses = async () => {
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const responses = await fetchEventPollResponsesServer({
+          'pollId.equals': poll.id,
+          'userId.equals': userId
+        });
+        setUserResponses(responses);
+        setHasVoted(responses.length > 0);
+        
+        // If user has voted, show results
+        if (responses.length > 0) {
+          setShowResults(true);
+        }
+      } catch (error) {
+        console.error('Error loading user responses:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUserResponses();
+  }, [userId, poll.id]);
+
+  const canVote = () => {
+    if (!userId || !poll.isActive || hasVoted) return false;
+    
+    const now = new Date();
+    const startDate = new Date(poll.startDate);
+    const endDate = poll.endDate ? new Date(poll.endDate) : null;
+    
+    if (now < startDate) return false;
+    if (endDate && now > endDate) return false;
+    
+    return true;
+  };
+
+  const handleOptionChange = (optionId: number) => {
+    if (poll.allowMultipleChoices) {
+      setSelectedOptions(prev => 
+        prev.includes(optionId) 
+          ? prev.filter(id => id !== optionId)
+          : [...prev, optionId]
+      );
+    } else {
+      setSelectedOptions([optionId]);
+    }
+  };
+
+  const redirectToSuccessPage = () => {
+    // Redirect to success page with poll information
+    const successUrl = `/polls/vote-success?pollTitle=${encodeURIComponent(poll.title || 'this poll')}&pollId=${poll.id}`;
+    router.push(successUrl);
+  };
+
+  const handleSubmitVote = async () => {
+    if (!userId || !poll.id || selectedOptions.length === 0) {
+      alert('Please select an option and ensure you are logged in.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      // Submit responses for each selected option
+      const responses = await Promise.all(
+        selectedOptions.map(optionId => {
+          const option = options.find(opt => opt.id === optionId);
+          return createEventPollResponseServer({
+            userId,
+            pollId: poll.id!,
+            pollOptionId: optionId,
+            responseValue: option?.optionText || '',
+            isAnonymous: poll.isAnonymous || false,
+            comment: comment.trim() || undefined,
+          });
+        })
+      );
+
+      // Redirect to success page
+      console.log('Vote submitted successfully, redirecting to success page');
+      redirectToSuccessPage();
+      
+    } catch (error) {
+      console.error('Error submitting vote:', error);
+      alert('Failed to submit vote. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getPollStatus = () => {
+    const now = new Date();
+    const startDate = new Date(poll.startDate);
+    const endDate = poll.endDate ? new Date(poll.endDate) : null;
+
+    if (!poll.isActive) {
+      return { 
+        text: 'Inactive', 
+        variant: 'secondary' as const,
+        className: 'bg-gray-100 text-gray-600 border-gray-200'
+      };
+    }
+
+    if (now < startDate) {
+      return { 
+        text: 'Not Started', 
+        variant: 'outline' as const,
+        className: 'bg-yellow-50 text-yellow-700 border-yellow-200'
+      };
+    }
+
+    if (endDate && now > endDate) {
+      return { 
+        text: 'Ended', 
+        variant: 'destructive' as const,
+        className: 'bg-red-50 text-red-700 border-red-200'
+      };
+    }
+
+    return { 
+      text: 'Active', 
+      variant: 'default' as const,
+      className: 'bg-green-50 text-green-700 border-green-200'
+    };
+  };
+
+  const status = getPollStatus();
+
+  return (
+    <>
+      <Card className="w-full max-w-2xl mx-auto border-2 border-blue-100 bg-gradient-to-br from-white to-blue-50 shadow-xl">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-blue-100">
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                {poll.title}
+              </CardTitle>
+              {poll.description && (
+                <CardDescription className="mt-2 text-gray-600 text-lg">
+                  {poll.description}
+                </CardDescription>
+              )}
+            </div>
+            <Badge className={status.className || 'bg-green-50 text-green-700 border-green-200'}>
+              {status.text}
+            </Badge>
+          </div>
+          
+          <div className="flex items-center space-x-4 text-sm text-gray-600 mt-4">
+            <div className="flex items-center">
+              <Clock className="h-4 w-4 mr-1" />
+              Starts: {formatDate(poll.startDate)}
+            </div>
+            {poll.endDate && (
+              <div className="flex items-center">
+                <Clock className="h-4 w-4 mr-1" />
+                Ends: {formatDate(poll.endDate)}
+              </div>
+            )}
+            <div className="flex items-center">
+              <Users className="h-4 w-4 mr-1" />
+              Max: {poll.maxResponsesPerUser || 1} per user
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {canVote() ? (
+            <div className="space-y-4">
+              {options.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">No Poll Options Available</h3>
+                  <p className="text-gray-600 mb-4">
+                    This poll doesn't have any voting options configured yet. Please contact the poll administrator.
+                  </p>
+                  <Button 
+                    onClick={() => window.history.back()}
+                    className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+                  >
+                    ← Back to Polls
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-3">
+                    {options.map((option) => (
+                      <label
+                        key={option.id}
+                        className={`flex items-center space-x-4 p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 ${
+                          selectedOptions.includes(option.id!)
+                            ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 shadow-lg'
+                            : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <input
+                          type={poll.allowMultipleChoices ? 'checkbox' : 'radio'}
+                          name="poll-option"
+                          checked={selectedOptions.includes(option.id!)}
+                          onChange={() => handleOptionChange(option.id!)}
+                          className="w-5 h-5 text-blue-600 accent-blue-600"
+                        />
+                        <span className="flex-1 text-lg font-medium text-gray-700">
+                          {option.optionText}
+                        </span>
+                        {selectedOptions.includes(option.id!) && (
+                          <CheckCircle className="h-6 w-6 text-blue-600" />
+                        )}
+                      </label>
+                    ))}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="comment" className="text-sm font-medium">
+                      Add a comment (optional)
+                    </label>
+                    <Textarea
+                      id="comment"
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Share your thoughts about this poll..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleSubmitVote}
+                    disabled={isSubmitting || selectedOptions.length === 0}
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-5 w-5 mr-2" />
+                        Submit Vote
+                      </>
+                    )}
+                  </Button>
+                  
+                  {/* Manual test button for debugging */}
+                </>
+              )}
+            </div>
+          ) : hasVoted ? (
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center space-x-2 text-green-600">
+                <CheckCircle className="h-6 w-6" />
+                <span className="font-medium">You have already voted!</span>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowResults(!showResults)}
+                className="w-full"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                {showResults ? 'Hide Results' : 'View Results'}
+              </Button>
+            </div>
+          ) : !userId ? (
+            <div className="text-center space-y-4">
+              <p className="text-gray-600">Please log in to vote on this poll.</p>
+              <Button variant="outline" onClick={() => window.location.href = '/sign-in'}>
+                Sign In
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center space-y-4">
+              <p className="text-gray-600">
+                {status.text === 'Not Started' 
+                  ? 'This poll has not started yet.'
+                  : status.text === 'Ended'
+                  ? 'This poll has ended.'
+                  : 'This poll is currently inactive.'
+                }
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => setShowResults(!showResults)}
+                className="w-full"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                {showResults ? 'Hide Results' : 'View Results'}
+              </Button>
+            </div>
+          )}
+
+          {showResults && (
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg flex items-center">
+                <BarChart3 className="h-5 w-5 mr-2" />
+                Poll Results
+              </h3>
+              <PollResultsDisplay poll={poll} options={options} />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+    </>
+  );
+}
