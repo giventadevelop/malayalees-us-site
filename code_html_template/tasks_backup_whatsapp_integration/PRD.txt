@@ -1,0 +1,488 @@
+# WhatsApp Integration PRD (Product Requirements Document)
+## Malayalees US Site - Twilio WhatsApp Business API Integration
+
+### Executive Summary
+This PRD outlines the implementation of a comprehensive WhatsApp integration system using Twilio's WhatsApp Business API for the Malayalees US Site. The system will enable multi-tenant WhatsApp messaging capabilities with dynamic credential management, message templates, and comprehensive logging.
+
+### Current State Analysis
+
+#### ✅ **Existing Infrastructure**
+1. **Database Schema** - Partially Ready:
+   - `tenant_settings` table exists with basic WhatsApp fields:
+     - `enable_whatsapp_integration` (boolean)
+     - `whatsapp_api_key` (varchar 500) - Currently stores single key
+   - `whatsapp_log` table exists with comprehensive logging:
+     - `recipient_phone`, `message_body`, `sent_at`, `status`, `type`, `campaign_id`, `metadata`
+   - `communication_campaign` table supports both EMAIL and WHATSAPP types
+
+2. **Backend API** - Partially Ready:
+   - WhatsApp log endpoints exist (`/api/whats-app-logs`)
+   - Tenant settings endpoints support WhatsApp configuration
+   - Communication campaign endpoints support WhatsApp campaigns
+
+3. **Frontend Components** - Basic Setup:
+   - Tenant settings form includes WhatsApp integration toggle
+   - Basic WhatsApp API key input field exists
+
+#### ❌ **Missing Components**
+1. **Database Fields** - Need Twilio-specific credentials:
+   - `twilio_account_sid` (varchar 255)
+   - `twilio_auth_token` (varchar 255) - Encrypted
+   - `twilio_whatsapp_from` (varchar 50)
+   - `whatsapp_webhook_url` (varchar 500)
+   - `whatsapp_webhook_token` (varchar 255) - Encrypted
+
+2. **Backend Services** - Need Twilio integration:
+   - Twilio WhatsApp service layer
+   - Webhook handling for delivery receipts
+   - Message template management
+   - Bulk messaging capabilities
+
+3. **Frontend Features** - Need comprehensive UI:
+   - WhatsApp settings management page
+   - Message template builder
+   - Bulk messaging interface
+   - Delivery status dashboard
+   - Analytics and reporting
+
+### Requirements
+
+#### 1. **Database Schema Updates**
+
+##### 1.1 Add Twilio Credential Fields to tenant_settings
+```sql
+ALTER TABLE public.tenant_settings
+ADD COLUMN twilio_account_sid VARCHAR(255),
+ADD COLUMN twilio_auth_token VARCHAR(500), -- Encrypted
+ADD COLUMN twilio_whatsapp_from VARCHAR(50),
+ADD COLUMN whatsapp_webhook_url VARCHAR(500),
+ADD COLUMN whatsapp_webhook_token VARCHAR(255); -- Encrypted
+
+-- Add comments
+COMMENT ON COLUMN public.tenant_settings.twilio_account_sid IS 'Twilio Account SID for WhatsApp Business API';
+COMMENT ON COLUMN public.tenant_settings.twilio_auth_token IS 'Encrypted Twilio Auth Token for WhatsApp Business API';
+COMMENT ON COLUMN public.tenant_settings.twilio_whatsapp_from IS 'Twilio WhatsApp Business number (e.g., whatsapp:+1234567890)';
+COMMENT ON COLUMN public.tenant_settings.whatsapp_webhook_url IS 'Webhook URL for receiving WhatsApp delivery receipts';
+COMMENT ON COLUMN public.tenant_settings.whatsapp_webhook_token IS 'Encrypted webhook verification token';
+```
+
+##### 1.2 Update TenantSettingsDTO Schema
+```json
+{
+  "twilioAccountSid": {
+    "maxLength": 255,
+    "minLength": 0,
+    "type": "string"
+  },
+  "twilioAuthToken": {
+    "maxLength": 500,
+    "minLength": 0,
+    "type": "string"
+  },
+  "twilioWhatsappFrom": {
+    "maxLength": 50,
+    "minLength": 0,
+    "type": "string"
+  },
+  "whatsappWebhookUrl": {
+    "maxLength": 500,
+    "minLength": 0,
+    "type": "string"
+  },
+  "whatsappWebhookToken": {
+    "maxLength": 255,
+    "minLength": 0,
+    "type": "string"
+  }
+}
+```
+
+#### 2. **Backend API Enhancements**
+
+##### 2.1 New WhatsApp Service Endpoints
+- `POST /api/whatsapp/send-message` - Send individual WhatsApp message
+- `POST /api/whatsapp/send-bulk` - Send bulk WhatsApp messages
+- `GET /api/whatsapp/templates` - Get approved message templates
+- `POST /api/whatsapp/templates` - Create message template
+- `GET /api/whatsapp/delivery-status/{messageId}` - Check delivery status
+- `POST /api/whatsapp/webhook` - Handle Twilio webhooks
+
+##### 2.2 Twilio Integration Service
+```java
+@Service
+public class TwilioWhatsAppService {
+
+    public WhatsAppMessageResponse sendMessage(String tenantId, WhatsAppMessageRequest request);
+    public BulkWhatsAppResponse sendBulkMessages(String tenantId, BulkWhatsAppRequest request);
+    public DeliveryStatus checkDeliveryStatus(String tenantId, String messageId);
+    public List<MessageTemplate> getApprovedTemplates(String tenantId);
+    public MessageTemplate createTemplate(String tenantId, CreateTemplateRequest request);
+    public void handleWebhook(String tenantId, WebhookPayload payload);
+
+    private TwilioCredentials getTenantCredentials(String tenantId);
+    private void encryptAndStoreCredentials(String tenantId, TwilioCredentials credentials);
+    private void logMessage(WhatsAppLogDTO logEntry);
+}
+```
+
+##### 2.3 Webhook Handler
+```java
+@RestController
+@RequestMapping("/api/whatsapp")
+public class WhatsAppWebhookController {
+
+    @PostMapping("/webhook")
+    public ResponseEntity<?> handleWebhook(
+        @RequestHeader("X-Twilio-Signature") String signature,
+        @RequestBody String payload,
+        HttpServletRequest request
+    ) {
+        // Verify webhook signature
+        // Process delivery status updates
+        // Update whatsapp_log table
+        // Trigger any follow-up actions
+    }
+}
+```
+
+#### 3. **Frontend Implementation**
+
+##### 3.1 WhatsApp Settings Page
+**Location**: `/admin/whatsapp-settings`
+**Components**:
+- `WhatsAppSettingsForm.tsx` - Main settings form
+- `TwilioCredentialsSection.tsx` - Credential management
+- `WebhookConfiguration.tsx` - Webhook setup
+- `TestConnection.tsx` - Connection testing
+- `MessageTemplatesManager.tsx` - Template management
+
+##### 3.2 Bulk Messaging Interface
+**Location**: `/admin/whatsapp/bulk-messaging`
+**Components**:
+- `BulkMessageComposer.tsx` - Message composition
+- `RecipientSelector.tsx` - Audience selection
+- `MessagePreview.tsx` - Preview before sending
+- `SendingProgress.tsx` - Progress tracking
+- `DeliveryReport.tsx` - Results dashboard
+
+##### 3.3 WhatsApp Dashboard
+**Location**: `/admin/whatsapp/dashboard`
+**Components**:
+- `WhatsAppAnalytics.tsx` - Usage statistics
+- `MessageHistory.tsx` - Message log viewer
+- `DeliveryStatusGrid.tsx` - Status tracking
+- `TemplateLibrary.tsx` - Template management
+
+##### 3.4 Update Tenant Settings Form
+**Enhancement**: Expand existing WhatsApp section in `TenantSettingsForm.tsx`
+```typescript
+// Add new fields to existing WhatsApp integration section
+<div className="space-y-4">
+  <h4 className="text-md font-medium text-gray-900">WhatsApp Integration</h4>
+
+  <ToggleSwitch
+    name="enableWhatsappIntegration"
+    label="Enable WhatsApp Integration"
+    description="Allow sending notifications via WhatsApp"
+    checked={watchedValues.enableWhatsappIntegration || false}
+    onChange={(checked) => setValue('enableWhatsappIntegration', checked)}
+  />
+
+  {watchedValues.enableWhatsappIntegration && (
+    <>
+      <TwilioCredentialsSection />
+      <WebhookConfigurationSection />
+      <TestConnectionSection />
+    </>
+  )}
+</div>
+```
+
+#### 4. **Proxy API Routes** (Following nextjs_api_routes.mdc)
+
+##### 4.1 WhatsApp Logs Proxy
+```typescript
+// src/pages/api/proxy/whats-app-logs/index.ts
+import { createProxyHandler } from '@/lib/proxyHandler';
+export default createProxyHandler({ backendPath: '/api/whats-app-logs' });
+```
+
+##### 4.2 WhatsApp Logs by ID Proxy
+```typescript
+// src/pages/api/proxy/whats-app-logs/[...slug].ts
+import { createProxyHandler } from '@/lib/proxyHandler';
+export default createProxyHandler({ backendPath: '/api/whats-app-logs' });
+```
+
+##### 4.3 WhatsApp Messages Proxy
+```typescript
+// src/pages/api/proxy/whatsapp-messages/index.ts
+import { createProxyHandler } from '@/lib/proxyHandler';
+export default createProxyHandler({ backendPath: '/api/whatsapp-messages' });
+```
+
+#### 5. **Server Actions** (Following nextjs_api_routes.mdc)
+
+##### 5.1 WhatsApp Settings Actions
+```typescript
+// src/app/admin/whatsapp-settings/ApiServerActions.ts
+import { fetchWithJwtRetry } from '@/lib/proxyHandler';
+import { getTenantId } from '@/lib/env';
+import { withTenantId } from '@/lib/withTenantId';
+
+export async function updateWhatsAppSettingsServer(settings: Partial<TenantSettingsDTO>) {
+  const baseUrl = getAppUrl();
+  const payload = withTenantId({
+    ...settings,
+    updatedAt: new Date().toISOString(),
+  });
+
+  const response = await fetchWithJwtRetry(`${baseUrl}/api/proxy/tenant-settings`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/merge-patch+json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update WhatsApp settings: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+export async function testWhatsAppConnectionServer(tenantId: string) {
+  const baseUrl = getAppUrl();
+  const response = await fetchWithJwtRetry(`${baseUrl}/api/proxy/whatsapp/test-connection`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(withTenantId({ tenantId })),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Connection test failed: ${response.status}`);
+  }
+
+  return await response.json();
+}
+```
+
+##### 5.2 WhatsApp Messaging Actions
+```typescript
+// src/app/admin/whatsapp/bulk-messaging/ApiServerActions.ts
+export async function sendWhatsAppMessageServer(messageData: WhatsAppMessageRequest) {
+  const baseUrl = getAppUrl();
+  const payload = withTenantId({
+    ...messageData,
+    sentAt: new Date().toISOString(),
+  });
+
+  const response = await fetchWithJwtRetry(`${baseUrl}/api/proxy/whatsapp-messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to send WhatsApp message: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+export async function sendBulkWhatsAppMessagesServer(bulkData: BulkWhatsAppRequest) {
+  const baseUrl = getAppUrl();
+  const payload = withTenantId(bulkData);
+
+  const response = await fetchWithJwtRetry(`${baseUrl}/api/proxy/whatsapp-messages/bulk`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to send bulk WhatsApp messages: ${response.status}`);
+  }
+
+  return await response.json();
+}
+```
+
+#### 6. **Type Definitions**
+
+##### 6.1 Update types/index.ts
+```typescript
+// Add to existing types
+export interface TwilioCredentials {
+  accountSid: string;
+  authToken: string;
+  whatsappFrom: string;
+  webhookUrl?: string;
+  webhookToken?: string;
+}
+
+export interface WhatsAppMessageRequest {
+  recipientPhone: string;
+  messageBody: string;
+  templateName?: string;
+  templateParams?: Record<string, string>;
+  type: 'TRANSACTIONAL' | 'MARKETING';
+}
+
+export interface BulkWhatsAppRequest {
+  recipients: Array<{
+    phone: string;
+    name?: string;
+    customParams?: Record<string, string>;
+  }>;
+  messageBody: string;
+  templateName?: string;
+  scheduledAt?: string;
+  type: 'TRANSACTIONAL' | 'MARKETING';
+}
+
+export interface MessageTemplate {
+  id: string;
+  name: string;
+  category: string;
+  language: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  components: Array<{
+    type: 'HEADER' | 'BODY' | 'FOOTER';
+    text?: string;
+    format?: string;
+  }>;
+}
+
+export interface WhatsAppAnalytics {
+  totalMessages: number;
+  sentMessages: number;
+  deliveredMessages: number;
+  failedMessages: number;
+  readMessages: number;
+  deliveryRate: number;
+  readRate: number;
+  periodStart: string;
+  periodEnd: string;
+}
+```
+
+#### 7. **Environment Variables**
+
+##### 7.1 Required Environment Variables
+```env
+# Twilio Configuration (Global defaults - can be overridden per tenant)
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_WHATSAPP_FROM=whatsapp:+1234567890
+
+# Encryption keys for sensitive data
+TWILIO_ENCRYPTION_KEY=your-32-character-encryption-key
+WEBHOOK_ENCRYPTION_KEY=your-webhook-encryption-key
+
+# Webhook configuration
+WHATSAPP_WEBHOOK_BASE_URL=https://yourdomain.com
+```
+
+#### 8. **Security Considerations**
+
+##### 8.1 Data Encryption
+- Encrypt `twilio_auth_token` and `whatsapp_webhook_token` in database
+- Use AES-256 encryption with tenant-specific keys
+- Implement key rotation mechanism
+
+##### 8.2 Webhook Security
+- Verify Twilio webhook signatures
+- Implement rate limiting for webhook endpoints
+- Log all webhook attempts for security monitoring
+
+##### 8.3 Access Control
+- WhatsApp settings only accessible to admin users
+- Implement tenant isolation for all WhatsApp operations
+- Audit logging for all WhatsApp activities
+
+#### 9. **Implementation Phases**
+
+##### Phase 1: Database & Backend Foundation (Week 1-2)
+1. Update database schema with Twilio credential fields
+2. Implement Twilio service layer in backend
+3. Create basic WhatsApp API endpoints
+4. Implement webhook handler for delivery receipts
+
+##### Phase 2: Frontend Settings Management (Week 3-4)
+1. Enhance tenant settings form with Twilio credentials
+2. Create WhatsApp settings page
+3. Implement connection testing functionality
+4. Add credential validation and encryption
+
+##### Phase 3: Messaging Features (Week 5-6)
+1. Build bulk messaging interface
+2. Implement message template management
+3. Create message preview and validation
+4. Add delivery status tracking
+
+##### Phase 4: Analytics & Reporting (Week 7-8)
+1. Build WhatsApp analytics dashboard
+2. Implement message history viewer
+3. Create delivery reports and insights
+4. Add usage monitoring and alerts
+
+##### Phase 5: Testing & Optimization (Week 9-10)
+1. Comprehensive testing with Twilio sandbox
+2. Performance optimization and caching
+3. Error handling and retry mechanisms
+4. Documentation and user guides
+
+#### 10. **Success Metrics**
+
+##### 10.1 Technical Metrics
+- Message delivery rate > 95%
+- API response time < 2 seconds
+- Webhook processing time < 1 second
+- System uptime > 99.9%
+
+##### 10.2 User Experience Metrics
+- Settings configuration completion rate > 90%
+- Message composition success rate > 95%
+- User satisfaction score > 4.5/5
+- Support ticket reduction by 50%
+
+#### 11. **Risk Mitigation**
+
+##### 11.1 Technical Risks
+- **Twilio API Rate Limits**: Implement queuing and retry mechanisms
+- **Message Template Approval Delays**: Create fallback text messages
+- **Webhook Failures**: Implement retry logic and manual status updates
+
+##### 11.2 Business Risks
+- **Compliance Issues**: Ensure GDPR/CCPA compliance for message storage
+- **Cost Management**: Implement usage monitoring and alerts
+- **User Adoption**: Provide comprehensive training and documentation
+
+#### 12. **Future Enhancements**
+
+##### 12.1 Advanced Features
+- WhatsApp Business API v2.0 integration
+- Rich media message support (images, documents)
+- Interactive message buttons and lists
+- WhatsApp chatbot integration
+- Multi-language template support
+
+##### 12.2 Integration Opportunities
+- Event registration confirmations
+- Ticket delivery via WhatsApp
+- Payment confirmation messages
+- Event reminder notifications
+- Survey and feedback collection
+
+### Conclusion
+
+This PRD provides a comprehensive roadmap for implementing WhatsApp integration using Twilio's Business API. The solution leverages existing infrastructure while adding the necessary components for a full-featured WhatsApp messaging system. The phased approach ensures manageable implementation while delivering value incrementally.
+
+The integration will significantly enhance user engagement and provide a modern communication channel that aligns with current user preferences and expectations.
+
+---
+
+**Document Version**: 1.0
+**Last Updated**: January 2025
+**Next Review**: February 2025
+**Status**: Ready for Development

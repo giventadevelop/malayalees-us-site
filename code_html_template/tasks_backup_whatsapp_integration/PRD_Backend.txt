@@ -50,7 +50,7 @@ ADD COLUMN whatsapp_webhook_token VARCHAR(255); -- Encrypted
 -- Add comments
 COMMENT ON COLUMN public.tenant_settings.twilio_account_sid IS 'Twilio Account SID for WhatsApp Business API';
 COMMENT ON COLUMN public.tenant_settings.twilio_auth_token IS 'Encrypted Twilio Auth Token for WhatsApp Business API';
-COMMENT ON COLUMN public.tenant_settings.twilio_whatsapp_from IS 'Twilio WhatsApp Business number (e.g., whatsapp:+14155238886)';
+COMMENT ON COLUMN public.tenant_settings.twilio_whatsapp_from IS 'Twilio WhatsApp Business number (e.g., whatsapp:+1234567890)';
 COMMENT ON COLUMN public.tenant_settings.whatsapp_webhook_url IS 'Webhook URL for receiving WhatsApp delivery receipts';
 COMMENT ON COLUMN public.tenant_settings.whatsapp_webhook_token IS 'Encrypted webhook verification token';
 ```

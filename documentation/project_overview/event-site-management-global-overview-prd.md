@@ -220,7 +220,7 @@ AWS_SES_FROM_EMAIL=noreply@yourplatform.com
 # Communication
 TWILIO_ACCOUNT_SID=ACxxxxx
 TWILIO_AUTH_TOKEN=xxxxx
-TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+TWILIO_WHATSAPP_NUMBER=whatsapp:+1234567890
 
 # Application
 APP_FRONTEND_BASE_URL=https://yourplatform.com

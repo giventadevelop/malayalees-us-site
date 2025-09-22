@@ -39,7 +39,7 @@ INSERT INTO public.event_media
 (
 
 id, title, description, event_media_type, storage_type, file_url, file_data, file_data_content_type, content_type, file_size, is_public, event_flyer, is_event_management_official_document, created_at, updated_at, event_id, uploaded_by_id, pre_signed_url)
-VALUES(1756, 'xxcx', 'xxxx', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/event-id/1502/hanzh_1747836718150_f0603b68.jpg', NULL, NULL, 'image/jpeg', 51594, false, false, false, '2025-05-21 14:11:58.661', '2025-05-21 14:11:58.661', 1502, NULL, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/event-id/1502/hanzh_1747836718150_f0603b68.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250521T141158Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIATIT5HARDKCWNLQMU%2F20250521%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=edaa7bb0b8fb5bc6f27370959fa184a86daf04542b7b601d7b12abcc9b9042c7');
+VALUES(1756, 'xxcx', 'xxxx', 'image/jpeg', 'S3', 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/event-id/1502/hanzh_1747836718150_f0603b68.jpg', NULL, NULL, 'image/jpeg', 51594, false, false, false, '2025-05-21 14:11:58.661', '2025-05-21 14:11:58.661', 1502, NULL, 'https://eventapp-media-bucket.s3.us-east-2.amazonaws.com/events/event-id/1502/hanzh_1747836718150_f0603b68.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20250521T141158Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3599&X-Amz-Credential=AKIAXXXXXXXXXXXXXXXX%2F20250521%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=edaa7bb0b8fb5bc6f27370959fa184a86daf04542b7b601d7b12abcc9b9042c7');
 
 
 ALTER TABLE public.event_media
