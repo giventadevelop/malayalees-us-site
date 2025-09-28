@@ -1,8 +1,7 @@
-'use client'
+'use client';
 
+import React from 'react';
 import { usePathname } from 'next/navigation';
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer_original_backup";
 
 interface ConditionalLayoutProps {
   children: React.ReactNode;
@@ -10,25 +9,15 @@ interface ConditionalLayoutProps {
 
 export default function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
-
-  // Check if we're on routes that should not render Header and Footer
-  const isCharityTheme = pathname === '/charity-theme';
-
-  // Only exclude Header and Footer for charity theme route
-  // Root route (/) should use the main Header and Footer
-  if (isCharityTheme) {
+  
+  // Check if this is a MOSC route
+  const isMOSCRoute = pathname.startsWith("/mosc");
+  
+  // For MOSC routes, just render children without main app header/footer
+  if (isMOSCRoute) {
     return <>{children}</>;
   }
-
-  // For all other routes (including root route /), render with Header and Footer
-  return (
-    <>
-      <Header hideMenuItems={false} />
-      <div className="flex-1 flex flex-col">
-        {children}
-      </div>
-      <Footer />
-    </>
-  );
+  
+  // For all other routes, render children normally (header/footer handled by parent)
+  return <>{children}</>;
 }
-

@@ -1,4 +1,5 @@
 import { authMiddleware } from "@clerk/nextjs";
+import { NextResponse } from "next/server";
 
 export default authMiddleware({
   // Public routes that don't require authentication
@@ -24,6 +25,8 @@ export default authMiddleware({
     "/events/(.*)/success",
     "/events/(.*)/success/(.*)",
     "/events/(.*)",
+    "/mosc",
+    "/mosc/(.*)",
     "/api/proxy/(.*)",
     "/api/webhooks/(.*)",
     "/api/event/success/process",
@@ -64,10 +67,16 @@ export default authMiddleware({
 
   // After authentication, redirect to this path if the user is not signed in
   afterAuth(auth, req) {
+    // Add pathname header for layout detection
+    const response = NextResponse.next();
+    response.headers.set('x-pathname', req.nextUrl.pathname);
+    
     // Handle users who aren't authenticated
     if (!auth.userId && !auth.isPublicRoute) {
       return Response.redirect(new URL('/sign-in', req.url));
     }
+    
+    return response;
   }
 });
 

@@ -1,0 +1,157 @@
+/* MOSC Section Specific Styles */
+/* Import base styles but override for MOSC */
+@import '../globals.css';
+
+/* Reset any conflicting styles from main app */
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+  font-family: 'Source Sans Pro', sans-serif !important;
+}
+
+/* MOSC Layout specific overrides */
+.mosc-layout {
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+  font-family: 'Source Sans Pro', sans-serif !important;
+}
+
+/* Override any main app styles that might interfere */
+.mosc-layout * {
+  box-sizing: border-box;
+}
+
+/* Ensure MOSC pages have proper styling */
+.mosc-layout .bg-background {
+  background-color: var(--background) !important;
+}
+
+.mosc-layout .text-foreground {
+  color: var(--foreground) !important;
+}
+
+/* MOSC Custom CSS Variables */
+:root {
+  /* Sacred Design System Colors */
+  --background: #F5F1E8;
+  --foreground: #2D2A26;
+  --border: rgba(139, 125, 107, 0.2);
+  --input: #FFFFFF;
+  --ring: #8B7D6B;
+
+  /* Semantic Colors */
+  --primary: #8B7D6B;
+  --primary-foreground: #FFFFFF;
+  --secondary: #A0926B;
+  --secondary-foreground: #FFFFFF;
+  --accent: #6B4E3D;
+  --accent-foreground: #FFFFFF;
+  --success: #4A6741;
+  --success-foreground: #FFFFFF;
+  --warning: #A67C52;
+  --warning-foreground: #FFFFFF;
+  --destructive: #8B4A42;
+  --destructive-foreground: #FFFFFF;
+  --muted: #EDE7D3;
+  --muted-foreground: #6B4E3D;
+
+  /* Card & Surface Colors */
+  --card: #FFFFFF;
+  --card-foreground: #2D2A26;
+  --popover: #FFFFFF;
+  --popover-foreground: #2D2A26;
+}
+
+/* MOSC Typography */
+.font-heading {
+  font-family: 'Crimson Text', serif;
+}
+
+.font-body {
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
+.font-caption {
+  font-family: 'Lato', sans-serif;
+}
+
+/* MOSC Custom Utilities */
+.sacred-shadow {
+  box-shadow: 0 4px 6px -1px rgba(139, 125, 107, 0.1), 0 2px 4px -1px rgba(139, 125, 107, 0.06);
+}
+
+.sacred-shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(139, 125, 107, 0.05);
+}
+
+.sacred-shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(139, 125, 107, 0.1), 0 4px 6px -2px rgba(139, 125, 107, 0.05);
+}
+
+.sacred-gradient {
+  background: linear-gradient(135deg, #F5F1E8 0%, #EDE7D3 100%);
+}
+
+.reverent-transition {
+  transition: all 0.2s ease-out;
+}
+
+.reverent-hover {
+  transform: scale(1.02);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* MOSC Layout Specific Styles */
+.mosc-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mosc-main {
+  flex: 1;
+}
+
+/* Override any conflicting styles from main app */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+}
+
+/* Ensure MOSC pages don't inherit main app styles */
+.mosc-layout * {
+  box-sizing: border-box;
+}
+
+/* Custom scrollbar for MOSC pages */
+.mosc-layout ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.mosc-layout ::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+.mosc-layout ::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+.mosc-layout ::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}

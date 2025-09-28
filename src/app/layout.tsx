@@ -5,6 +5,7 @@ import TrpcProvider from "@/lib/trpc/Provider";
 import Script from "next/script";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import ConditionalLayout from "../components/ConditionalLayout";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -58,11 +59,12 @@ export default function RootLayout({
           }}
         >
           <TrpcProvider>
-            <Header hideMenuItems={false} />
-            <div className="flex-1 flex flex-col">
+            <ConditionalLayout
+              header={<Header hideMenuItems={false} />}
+              footer={<Footer />}
+            >
               {children}
-            </div>
-            <Footer />
+            </ConditionalLayout>
           </TrpcProvider>
         </ClerkProvider>
         <Script
