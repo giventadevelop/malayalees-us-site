@@ -4,432 +4,351 @@
     "version": "1.5.0",
     "source": ".task-master/PRD.txt",
     "description": "Tasks generated from PRD",
-    "totalTasksGenerated": 32,
-    "tasksIncluded": 32
+    "totalTasksGenerated": 28,
+    "tasksIncluded": 28
   },
   "tasks": [
     {
       "id": 1,
-      "title": "Update Database Schema with Twilio Credential Fields",
-      "description": "Alter the tenant_settings table to add new fields for Twilio credentials and configuration.",
-      "status": "pending",
+      "title": "Create WhatsApp Settings Management Page Structure",
+      "description": "Create the basic structure for the WhatsApp Settings page at /admin/whatsapp-settings with main container components.",
+      "status": "done",
       "dependencies": [],
       "priority": "high",
-      "details": "Execute the SQL to add the following columns to the tenant_settings table:\n- twilio_account_sid\n- twilio_auth_token\n- twilio_whatsapp_from\n- whatsapp_webhook_url\n- whatsapp_webhook_token\n\nAdd appropriate comments to these columns as specified in the PRD.",
-      "testStrategy": "Verify that the columns are added correctly to the database with proper data types and constraints."
+      "details": "Create the following components:\n- Create page route at `/admin/whatsapp-settings`\n- Implement `WhatsAppSettingsForm.tsx` as the main container\n- Set up the layout structure following existing design patterns\n- Add page title and description\n- Create navigation breadcrumbs",
+      "testStrategy": "Verify that the page loads correctly and follows the established UI patterns."
     },
     {
       "id": 2,
-      "title": "Update TenantSettingsDTO Schema",
-      "description": "Extend the TenantSettingsDTO to include the new Twilio WhatsApp credential fields.",
-      "status": "pending",
+      "title": "Implement Twilio Credentials Section",
+      "description": "Create the Twilio credentials input section with proper validation and security indicators.",
+      "status": "done",
       "dependencies": [
         1
       ],
       "priority": "high",
-      "details": "Add the following fields to the TenantSettingsDTO schema:\n- twilioAccountSid\n- twilioAuthToken\n- twilioWhatsappFrom\n- whatsappWebhookUrl\n- whatsappWebhookToken\n\nEnsure proper validation rules are set for each field.",
-      "testStrategy": "Validate that the DTO correctly maps to and from the database entity and properly validates field constraints."
+      "details": "Implement `TwilioCredentialsSection.tsx` with:\n- Form fields for Account SID, Auth Token, and WhatsApp From number\n- Input validation according to the specified regex patterns\n- Visual security indicators for credential encryption\n- Show/hide password toggle for sensitive fields\n- Proper error messages for invalid inputs",
+      "testStrategy": "Test form validation with both valid and invalid inputs. Verify that proper error messages are displayed."
     },
     {
       "id": 3,
-      "title": "Implement WhatsApp Type Definitions",
-      "description": "Create TypeScript interfaces for WhatsApp integration in types/index.ts.",
-      "status": "pending",
-      "dependencies": [],
+      "title": "Implement Webhook Configuration Component",
+      "description": "Create the webhook setup and validation interface for WhatsApp integration.",
+      "status": "done",
+      "dependencies": [
+        1
+      ],
       "priority": "medium",
-      "details": "Add the following interfaces to types/index.ts:\n- TwilioCredentials\n- WhatsAppMessageRequest\n- BulkWhatsAppRequest\n- MessageTemplate\n- WhatsAppAnalytics\n\nEnsure all types match the specifications in the PRD.",
-      "testStrategy": "Verify that all types are correctly defined and can be imported and used in components."
+      "details": "Implement `WebhookConfiguration.tsx` with:\n- URL input field with HTTPS validation\n- Webhook token generation/input\n- Copy to clipboard functionality\n- Webhook verification status indicator\n- Help text explaining webhook purpose",
+      "testStrategy": "Test URL validation, token generation, and clipboard functionality."
     },
     {
       "id": 4,
-      "title": "Create Twilio WhatsApp Service",
-      "description": "Implement the backend service for Twilio WhatsApp integration.",
-      "status": "pending",
+      "title": "Create Test Connection Component",
+      "description": "Build the real-time connection testing functionality for Twilio credentials.",
+      "status": "done",
       "dependencies": [
-        1,
-        2
+        2,
+        3
       ],
       "priority": "high",
-      "details": "Create a TwilioWhatsAppService class with the following methods:\n- sendMessage\n- sendBulkMessages\n- checkDeliveryStatus\n- getApprovedTemplates\n- createTemplate\n- handleWebhook\n- getTenantCredentials (private)\n- encryptAndStoreCredentials (private)\n- logMessage (private)",
-      "testStrategy": "Unit test each method with mocked Twilio responses. Test error handling and edge cases."
+      "details": "Implement `TestConnection.tsx` with:\n- Test connection button\n- Loading state during testing\n- Success/failure status display\n- Detailed error messages for different failure scenarios\n- Connection details display (account status, WhatsApp status, webhook status)",
+      "testStrategy": "Test the component with both valid and invalid credentials. Verify proper error handling and status display."
     },
     {
       "id": 5,
-      "title": "Implement Data Encryption for Sensitive Credentials",
-      "description": "Create encryption/decryption utilities for Twilio auth tokens and webhook tokens.",
-      "status": "pending",
+      "title": "Implement WhatsApp Settings Server Actions",
+      "description": "Create server actions for WhatsApp settings management following the nextjs_api_routes pattern.",
+      "status": "done",
       "dependencies": [
         1
       ],
       "priority": "high",
-      "details": "Implement AES-256 encryption for sensitive data:\n- Create encryption utility for twilio_auth_token\n- Create encryption utility for whatsapp_webhook_token\n- Implement key rotation mechanism\n- Ensure encrypted values are properly stored and retrieved from database",
-      "testStrategy": "Test encryption and decryption with various inputs. Verify that encrypted values cannot be reversed without the proper key."
+      "details": "Create `ApiServerActions.ts` with the following functions:\n- `updateWhatsAppSettingsServer` for saving settings\n- `testWhatsAppConnectionServer` for testing Twilio connection\n- `getWhatsAppTemplatesServer` for retrieving message templates\n- Implement proper error handling and response parsing",
+      "testStrategy": "Test API calls with valid and invalid data. Verify error handling and response processing."
     },
     {
       "id": 6,
-      "title": "Create WhatsApp API Endpoints",
-      "description": "Implement backend REST API endpoints for WhatsApp functionality.",
-      "status": "pending",
-      "dependencies": [
-        4,
-        5
-      ],
-      "priority": "high",
-      "details": "Create the following API endpoints:\n- POST /api/whatsapp/send-message\n- POST /api/whatsapp/send-bulk\n- GET /api/whatsapp/templates\n- POST /api/whatsapp/templates\n- GET /api/whatsapp/delivery-status/{messageId}\n- POST /api/whatsapp/webhook",
-      "testStrategy": "Test each endpoint with valid and invalid requests. Verify proper error handling and response formats."
-    },
-    {
-      "id": 7,
-      "title": "Implement WhatsApp Webhook Handler",
-      "description": "Create the webhook controller to receive and process Twilio delivery receipts.",
-      "status": "pending",
-      "dependencies": [
-        4,
-        6
-      ],
-      "priority": "medium",
-      "details": "Implement the WhatsAppWebhookController with:\n- Webhook signature verification\n- Delivery status processing\n- WhatsApp log table updates\n- Follow-up action triggers\n- Rate limiting for security",
-      "testStrategy": "Test with sample Twilio webhook payloads. Verify that signatures are properly validated and statuses correctly updated."
-    },
-    {
-      "id": 8,
-      "title": "Create WhatsApp API Proxy Routes",
-      "description": "Implement Next.js API proxy routes for WhatsApp endpoints.",
-      "status": "pending",
-      "dependencies": [
-        6
-      ],
-      "priority": "medium",
-      "details": "Create the following proxy routes:\n- src/pages/api/proxy/whats-app-logs/index.ts\n- src/pages/api/proxy/whats-app-logs/[...slug].ts\n- src/pages/api/proxy/whatsapp-messages/index.ts\n\nEnsure they correctly proxy to the backend API endpoints.",
-      "testStrategy": "Test that proxy routes correctly forward requests to the backend and handle responses appropriately."
-    },
-    {
-      "id": 9,
-      "title": "Implement WhatsApp Settings Server Actions",
-      "description": "Create server actions for managing WhatsApp settings.",
-      "status": "pending",
+      "title": "Implement WhatsApp Settings Form State Management",
+      "description": "Set up form state management using React Hook Form with zod validation.",
+      "status": "done",
       "dependencies": [
         2,
         3,
-        8
+        4
+      ],
+      "priority": "high",
+      "details": "Implement form state management with:\n- React Hook Form setup with zod resolver\n- Form validation schema according to PRD requirements\n- Form submission handling with loading states\n- Form reset functionality\n- Success/error notifications",
+      "testStrategy": "Test form submission, validation, and error handling. Verify that form state is properly managed."
+    },
+    {
+      "id": 7,
+      "title": "Create Message Templates Manager Component",
+      "description": "Implement the template library management interface for WhatsApp message templates.",
+      "status": "done",
+      "dependencies": [
+        1,
+        5
       ],
       "priority": "medium",
-      "details": "Implement the following server actions in src/app/admin/whatsapp-settings/ApiServerActions.ts:\n- updateWhatsAppSettingsServer\n- testWhatsAppConnectionServer\n\nEnsure proper error handling and tenant isolation.",
-      "testStrategy": "Test server actions with various inputs and verify they correctly interact with the API proxy routes."
+      "details": "Implement `MessageTemplatesManager.tsx` with:\n- Template list display with filtering/sorting\n- Template status indicators (pending, approved, rejected)\n- Template details view\n- Template usage statistics\n- Integration with Twilio template API",
+      "testStrategy": "Test template listing, filtering, and detail viewing functionality."
+    },
+    {
+      "id": 8,
+      "title": "Enhance Tenant Settings Form with WhatsApp Section",
+      "description": "Update the existing TenantSettingsForm to include WhatsApp integration options.",
+      "status": "done",
+      "dependencies": [
+        5,
+        6
+      ],
+      "priority": "medium",
+      "details": "Enhance `TenantSettingsForm.tsx` with:\n- WhatsApp integration toggle switch\n- Condensed credentials input section\n- Quick test connection option\n- Navigation links to full WhatsApp settings and bulk messaging\n- Integration with existing form submission logic",
+      "testStrategy": "Test the enhanced form with the new WhatsApp section. Verify that it integrates properly with the existing form."
+    },
+    {
+      "id": 9,
+      "title": "Create Bulk Messaging Page Structure",
+      "description": "Set up the basic structure for the WhatsApp bulk messaging interface.",
+      "status": "done",
+      "dependencies": [],
+      "priority": "high",
+      "details": "Create the following components:\n- Create page route at `/admin/whatsapp/bulk-messaging`\n- Implement step-based UI flow according to BulkMessagingFlow\n- Create stepper component for navigation\n- Set up page layout with responsive design",
+      "testStrategy": "Verify that the page loads correctly and the step navigation works as expected."
     },
     {
       "id": 10,
-      "title": "Implement WhatsApp Messaging Server Actions",
-      "description": "Create server actions for sending WhatsApp messages.",
-      "status": "pending",
+      "title": "Implement Message Composer Component",
+      "description": "Create the rich text editor for WhatsApp message composition with template support.",
+      "status": "done",
       "dependencies": [
-        3,
-        8
+        9
       ],
-      "priority": "medium",
-      "details": "Implement the following server actions in src/app/admin/whatsapp/bulk-messaging/ApiServerActions.ts:\n- sendWhatsAppMessageServer\n- sendBulkWhatsAppMessagesServer\n\nEnsure proper error handling and tenant isolation.",
-      "testStrategy": "Test server actions with various message payloads and verify they correctly interact with the API proxy routes."
+      "priority": "high",
+      "details": "Implement `BulkMessageComposer.tsx` with:\n- Rich text editor for message content\n- Character counter with WhatsApp limits\n- Template variable placeholder support\n- Template selection dropdown\n- Message type selection (Transactional/Marketing)",
+      "testStrategy": "Test message composition, template selection, and character counting functionality."
     },
     {
       "id": 11,
-      "title": "Create WhatsApp Settings Form Component",
-      "description": "Implement the main WhatsApp settings form component.",
-      "status": "pending",
+      "title": "Create Recipient Selector Component",
+      "description": "Build the interface for selecting and filtering message recipients.",
+      "status": "done",
       "dependencies": [
-        3,
         9
       ],
-      "priority": "medium",
-      "details": "Create WhatsAppSettingsForm.tsx component with:\n- Form fields for all Twilio credentials\n- Toggle for enabling/disabling WhatsApp\n- Validation for required fields\n- Save functionality using server actions\n- Error handling and success messages",
-      "testStrategy": "Test form validation, submission, and error handling. Verify that settings are correctly saved."
+      "priority": "high",
+      "details": "Implement `RecipientSelector.tsx` with:\n- Contact list display with search/filter\n- CSV upload functionality\n- Recipient group selection\n- Custom filtering options\n- Selected recipients count and summary\n- Validation for phone number format",
+      "testStrategy": "Test recipient selection, CSV import, and filtering functionality."
     },
     {
       "id": 12,
-      "title": "Implement Twilio Credentials Section Component",
-      "description": "Create the component for managing Twilio API credentials.",
-      "status": "pending",
+      "title": "Implement Message Preview Component",
+      "description": "Create the preview interface for reviewing messages before sending.",
+      "status": "done",
       "dependencies": [
-        3,
+        10,
         11
       ],
       "priority": "medium",
-      "details": "Create TwilioCredentialsSection.tsx component with:\n- Input fields for Twilio Account SID\n- Secure input for Auth Token\n- Input for WhatsApp From number\n- Validation and formatting help\n- Credential testing functionality",
-      "testStrategy": "Test input validation and formatting. Verify that sensitive fields are properly masked."
+      "details": "Implement `MessagePreview.tsx` with:\n- WhatsApp message preview in mobile device frame\n- Template variable preview with actual values\n- Sample recipient preview\n- Message validation warnings\n- Estimated sending cost/credits",
+      "testStrategy": "Test the preview rendering with various message types and template variables."
     },
     {
       "id": 13,
-      "title": "Implement Webhook Configuration Component",
-      "description": "Create the component for configuring WhatsApp webhooks.",
-      "status": "pending",
+      "title": "Create Sending Progress Component",
+      "description": "Build the real-time progress tracking interface for bulk message sending.",
+      "status": "done",
       "dependencies": [
-        3,
-        11
+        9
       ],
       "priority": "medium",
-      "details": "Create WebhookConfiguration.tsx component with:\n- Webhook URL input field\n- Webhook token generation/management\n- Copy to clipboard functionality\n- Instructions for Twilio webhook setup\n- Webhook testing functionality",
-      "testStrategy": "Test token generation and URL validation. Verify copy to clipboard functionality works correctly."
+      "details": "Implement `SendingProgress.tsx` with:\n- Progress bar showing completion percentage\n- Success/failure counters\n- Estimated time remaining\n- Cancel option for in-progress sending\n- Live status updates using React Query",
+      "testStrategy": "Test progress tracking with simulated bulk sending operations."
     },
     {
       "id": 14,
-      "title": "Implement Test Connection Component",
-      "description": "Create component for testing WhatsApp connection.",
-      "status": "pending",
+      "title": "Implement Delivery Report Component",
+      "description": "Create the results and analytics dashboard for sent messages.",
+      "status": "done",
       "dependencies": [
-        3,
-        9,
-        11
+        13
       ],
-      "priority": "low",
-      "details": "Create TestConnection.tsx component with:\n- Test connection button\n- Status indicator\n- Error display\n- Connection details display\n- Integration with testWhatsAppConnectionServer action",
-      "testStrategy": "Test connection success and failure scenarios. Verify that status is correctly displayed."
+      "priority": "medium",
+      "details": "Implement `DeliveryReport.tsx` with:\n- Success/failure statistics\n- Delivery status breakdown\n- Error categorization\n- Message cost summary\n- Export results option\n- Retry failed messages option",
+      "testStrategy": "Test report generation with various success/failure scenarios."
     },
     {
       "id": 15,
-      "title": "Enhance Existing Tenant Settings Form",
-      "description": "Update the existing tenant settings form to include WhatsApp settings.",
-      "status": "pending",
+      "title": "Implement Bulk Messaging Server Actions",
+      "description": "Create server actions for WhatsApp bulk messaging following the nextjs_api_routes pattern.",
+      "status": "done",
       "dependencies": [
-        11,
-        12,
-        13,
-        14
+        9
       ],
-      "priority": "medium",
-      "details": "Modify TenantSettingsForm.tsx to:\n- Include WhatsApp integration toggle\n- Conditionally render WhatsApp settings components\n- Integrate with server actions\n- Ensure form validation includes WhatsApp fields",
-      "testStrategy": "Test form with WhatsApp settings enabled and disabled. Verify that settings are correctly saved and loaded."
+      "priority": "high",
+      "details": "Create bulk messaging server actions with:\n- `sendWhatsAppMessageServer` for single messages\n- `sendBulkWhatsAppMessagesServer` for batch sending\n- Progress tracking functionality\n- Error handling and retry logic\n- Scheduled message support",
+      "testStrategy": "Test API calls with various message payloads. Verify error handling and response processing."
     },
     {
       "id": 16,
-      "title": "Create Message Templates Manager Component",
-      "description": "Implement component for managing WhatsApp message templates.",
-      "status": "pending",
+      "title": "Implement Bulk Messaging Form State Management",
+      "description": "Set up form state management for the multi-step bulk messaging process.",
+      "status": "done",
       "dependencies": [
-        3,
-        10
+        10,
+        11,
+        12
       ],
-      "priority": "medium",
-      "details": "Create MessageTemplatesManager.tsx component with:\n- Template listing\n- Template creation form\n- Template preview\n- Template status indicators\n- Template deletion functionality",
-      "testStrategy": "Test template creation, preview, and management. Verify templates are correctly stored and retrieved."
+      "priority": "high",
+      "details": "Implement state management with:\n- Multi-step form state preservation\n- Step validation before progression\n- Form data consolidation for submission\n- React Query for server state management\n- Error handling across steps",
+      "testStrategy": "Test the complete form flow from composition to sending. Verify state preservation between steps."
     },
     {
       "id": 17,
-      "title": "Implement Bulk Message Composer Component",
-      "description": "Create component for composing bulk WhatsApp messages.",
-      "status": "pending",
-      "dependencies": [
-        3,
-        10
-      ],
+      "title": "Create WhatsApp Dashboard Page Structure",
+      "description": "Set up the basic structure for the WhatsApp analytics and monitoring dashboard.",
+      "status": "done",
+      "dependencies": [],
       "priority": "medium",
-      "details": "Create BulkMessageComposer.tsx component with:\n- Message body input\n- Template selection\n- Dynamic parameter inputs\n- Message type selection (TRANSACTIONAL/MARKETING)\n- Character count and validation",
-      "testStrategy": "Test message composition with various templates and parameters. Verify character count and validation works correctly."
+      "details": "Create the following components:\n- Create page route at `/admin/whatsapp/dashboard`\n- Set up dashboard layout with responsive grid\n- Create filter controls for date range selection\n- Implement dashboard navigation tabs",
+      "testStrategy": "Verify that the dashboard page loads correctly and the layout is responsive."
     },
     {
       "id": 18,
-      "title": "Implement Recipient Selector Component",
-      "description": "Create component for selecting message recipients.",
-      "status": "pending",
+      "title": "Implement WhatsApp Analytics Component",
+      "description": "Build the analytics visualization component for WhatsApp messaging statistics.",
+      "status": "done",
       "dependencies": [
-        3,
-        10,
         17
       ],
       "priority": "medium",
-      "details": "Create RecipientSelector.tsx component with:\n- Manual phone number input\n- CSV upload functionality\n- Recipient list preview\n- Validation for phone numbers\n- Recipient count and limit indicators",
-      "testStrategy": "Test recipient selection via manual input and CSV upload. Verify phone number validation works correctly."
+      "details": "Implement `WhatsAppAnalytics.tsx` with:\n- Message volume charts (daily/weekly/monthly)\n- Delivery rate visualizations\n- Success/failure pie charts\n- Trend analysis graphs\n- Data export functionality\n- Filtering by date range",
+      "testStrategy": "Test analytics rendering with various data sets. Verify chart interactions and filtering."
     },
     {
       "id": 19,
-      "title": "Implement Message Preview Component",
-      "description": "Create component for previewing WhatsApp messages before sending.",
-      "status": "pending",
+      "title": "Create Message History Component",
+      "description": "Implement the message log viewer with filtering and search capabilities.",
+      "status": "done",
       "dependencies": [
-        3,
-        17,
-        18
+        17
       ],
-      "priority": "low",
-      "details": "Create MessagePreview.tsx component with:\n- WhatsApp-style message preview\n- Template parameter preview\n- Recipient count summary\n- Estimated delivery time\n- Send confirmation dialog",
-      "testStrategy": "Test preview with various message types and templates. Verify that preview accurately reflects what will be sent."
+      "priority": "medium",
+      "details": "Implement `MessageHistory.tsx` with:\n- Message list with pagination\n- Advanced filtering options\n- Search functionality\n- Message detail view\n- Status indicators for each message\n- Retry/resend options for failed messages",
+      "testStrategy": "Test message listing, filtering, searching, and detail viewing functionality."
     },
     {
       "id": 20,
-      "title": "Implement Sending Progress Component",
-      "description": "Create component for tracking bulk message sending progress.",
-      "status": "pending",
+      "title": "Implement Delivery Status Grid Component",
+      "description": "Create the real-time status tracking grid for message delivery.",
+      "status": "done",
       "dependencies": [
-        3,
-        10,
-        17,
-        18
+        17
       ],
       "priority": "low",
-      "details": "Create SendingProgress.tsx component with:\n- Progress bar\n- Success/failure counters\n- Real-time status updates\n- Error details\n- Cancel functionality",
-      "testStrategy": "Test progress tracking with various batch sizes. Verify that progress is accurately displayed and cancel functionality works."
+      "details": "Implement `DeliveryStatusGrid.tsx` with:\n- Real-time status updates\n- Color-coded status indicators\n- Timestamp display\n- Filtering by status\n- Error details for failed messages\n- Retry options",
+      "testStrategy": "Test status grid with various delivery statuses. Verify real-time updates."
     },
     {
       "id": 21,
-      "title": "Implement Delivery Report Component",
-      "description": "Create component for displaying message delivery reports.",
-      "status": "pending",
+      "title": "Create Usage Alerts Component",
+      "description": "Implement the cost and limit monitoring interface for WhatsApp usage.",
+      "status": "done",
       "dependencies": [
-        3,
-        10,
-        20
+        17
       ],
       "priority": "low",
-      "details": "Create DeliveryReport.tsx component with:\n- Summary statistics\n- Delivery status breakdown\n- Failed message details\n- Export functionality\n- Retry options for failed messages",
-      "testStrategy": "Test report generation with various delivery outcomes. Verify that statistics are correctly calculated and displayed."
+      "details": "Implement `UsageAlerts.tsx` with:\n- Usage quota visualization\n- Cost tracking metrics\n- Limit approaching warnings\n- Usage trend analysis\n- Alert settings configuration",
+      "testStrategy": "Test alert visualization with various usage levels. Verify warning thresholds."
     },
     {
       "id": 22,
-      "title": "Create WhatsApp Analytics Component",
-      "description": "Implement component for displaying WhatsApp usage analytics.",
-      "status": "pending",
+      "title": "Implement Dashboard Server Actions",
+      "description": "Create server actions for WhatsApp dashboard data retrieval.",
+      "status": "done",
       "dependencies": [
-        3
+        17
       ],
-      "priority": "low",
-      "details": "Create WhatsAppAnalytics.tsx component with:\n- Message volume charts\n- Delivery rate metrics\n- Read rate metrics\n- Time period selection\n- Export functionality",
-      "testStrategy": "Test analytics with various data sets and time periods. Verify that metrics are correctly calculated and charts properly rendered."
+      "priority": "medium",
+      "details": "Create dashboard server actions with:\n- `getWhatsAppAnalyticsServer` for metrics retrieval\n- Functions for message history and status data\n- Usage statistics retrieval\n- Data filtering and aggregation\n- Caching strategies for performance",
+      "testStrategy": "Test API calls with various parameters. Verify data processing and transformation."
     },
     {
       "id": 23,
-      "title": "Implement Message History Component",
-      "description": "Create component for viewing WhatsApp message history.",
-      "status": "pending",
-      "dependencies": [
-        3
-      ],
-      "priority": "low",
-      "details": "Create MessageHistory.tsx component with:\n- Paginated message list\n- Filtering by status/date/type\n- Message detail view\n- Resend functionality\n- Export functionality",
-      "testStrategy": "Test history viewing with various filters. Verify pagination works correctly and message details are accurately displayed."
+      "title": "Add Type Definitions for WhatsApp Frontend",
+      "description": "Create comprehensive TypeScript type definitions for WhatsApp integration components.",
+      "status": "done",
+      "dependencies": [],
+      "priority": "high",
+      "details": "Update `src/types/index.ts` with:\n- WhatsApp message and template interfaces\n- Analytics and reporting types\n- Form validation schemas\n- API request/response types\n- Status and progress tracking interfaces",
+      "testStrategy": "Verify type completeness and accuracy through implementation usage."
     },
     {
       "id": 24,
-      "title": "Implement Delivery Status Grid Component",
-      "description": "Create component for tracking message delivery statuses.",
-      "status": "pending",
-      "dependencies": [
-        3
-      ],
-      "priority": "low",
-      "details": "Create DeliveryStatusGrid.tsx component with:\n- Status grid with color coding\n- Real-time updates\n- Filtering options\n- Status detail view\n- Bulk action functionality",
-      "testStrategy": "Test status grid with various message statuses. Verify that real-time updates work correctly."
+      "title": "Implement Error Handling Patterns",
+      "description": "Create consistent error handling utilities for WhatsApp integration components.",
+      "status": "done",
+      "dependencies": [],
+      "priority": "medium",
+      "details": "Create error handling utilities with:\n- Error categorization by type/code\n- User-friendly error messages\n- Logging and reporting\n- Recovery suggestions\n- Retry functionality",
+      "testStrategy": "Test error handling with various error scenarios. Verify user-friendly message display."
     },
     {
       "id": 25,
-      "title": "Create WhatsApp Dashboard Page",
-      "description": "Assemble the main WhatsApp dashboard page.",
-      "status": "pending",
+      "title": "Implement Accessibility Enhancements",
+      "description": "Ensure all WhatsApp integration components meet WCAG 2.1 AA standards.",
+      "status": "done",
       "dependencies": [
-        22,
-        23,
-        24
+        1,
+        9,
+        17
       ],
       "priority": "medium",
-      "details": "Create WhatsApp Dashboard page at /admin/whatsapp/dashboard with:\n- WhatsAppAnalytics component\n- MessageHistory component\n- DeliveryStatusGrid component\n- TemplateLibrary component\n- Navigation and layout",
-      "testStrategy": "Test dashboard page with various data. Verify that all components render correctly and interact properly."
+      "details": "Implement accessibility enhancements including:\n- Proper ARIA attributes\n- Keyboard navigation support\n- Screen reader compatibility\n- Sufficient color contrast\n- Focus management\n- Skip navigation links",
+      "testStrategy": "Test with screen readers and keyboard navigation. Verify compliance with accessibility standards."
     },
     {
       "id": 26,
-      "title": "Create Bulk Messaging Page",
-      "description": "Assemble the bulk WhatsApp messaging page.",
+      "title": "Create End-to-End Tests for WhatsApp Integration",
+      "description": "Implement comprehensive E2E tests for the WhatsApp integration workflow.",
       "status": "pending",
       "dependencies": [
-        17,
-        18,
-        19,
-        20,
-        21
+        8,
+        16,
+        22
       ],
-      "priority": "medium",
-      "details": "Create Bulk Messaging page at /admin/whatsapp/bulk-messaging with:\n- BulkMessageComposer component\n- RecipientSelector component\n- MessagePreview component\n- SendingProgress component\n- DeliveryReport component\n- Navigation and layout",
-      "testStrategy": "Test bulk messaging page end-to-end. Verify that the entire messaging flow works correctly from composition to delivery report."
+      "priority": "low",
+      "details": "Create E2E tests covering:\n- Settings configuration workflow\n- Bulk messaging process\n- Dashboard functionality\n- Error scenarios and recovery\n- Cross-browser compatibility",
+      "testStrategy": "Run E2E tests across different browsers and screen sizes. Verify complete workflow functionality."
     },
     {
       "id": 27,
-      "title": "Create WhatsApp Settings Page",
-      "description": "Assemble the WhatsApp settings page.",
+      "title": "Optimize Performance for WhatsApp Components",
+      "description": "Implement performance optimizations for WhatsApp integration components.",
       "status": "pending",
       "dependencies": [
-        11,
-        12,
-        13,
-        14,
-        16
+        8,
+        16,
+        22
       ],
-      "priority": "medium",
-      "details": "Create WhatsApp Settings page at /admin/whatsapp-settings with:\n- WhatsAppSettingsForm component\n- TwilioCredentialsSection component\n- WebhookConfiguration component\n- TestConnection component\n- MessageTemplatesManager component\n- Navigation and layout",
-      "testStrategy": "Test settings page end-to-end. Verify that all settings can be configured and saved correctly."
+      "priority": "low",
+      "details": "Implement performance optimizations including:\n- Component code splitting\n- Lazy loading for heavy components\n- Memoization for expensive calculations\n- Efficient re-rendering strategies\n- Data fetching optimizations",
+      "testStrategy": "Measure performance metrics before and after optimization. Verify improvements in load time and interactivity."
     },
     {
       "id": 28,
-      "title": "Configure Environment Variables",
-      "description": "Set up required environment variables for WhatsApp integration.",
-      "status": "pending",
-      "dependencies": [],
-      "priority": "high",
-      "details": "Configure the following environment variables:\n- TWILIO_ACCOUNT_SID (default)\n- TWILIO_AUTH_TOKEN (default)\n- TWILIO_WHATSAPP_FROM (default)\n- TWILIO_ENCRYPTION_KEY\n- WEBHOOK_ENCRYPTION_KEY\n- WHATSAPP_WEBHOOK_BASE_URL",
-      "testStrategy": "Verify that environment variables are correctly loaded and used by the application."
-    },
-    {
-      "id": 29,
-      "title": "Implement Webhook Security",
-      "description": "Implement security measures for WhatsApp webhooks.",
+      "title": "Create User Documentation for WhatsApp Features",
+      "description": "Develop comprehensive user documentation for the WhatsApp integration features.",
       "status": "pending",
       "dependencies": [
-        7
-      ],
-      "priority": "high",
-      "details": "Implement the following security measures:\n- Twilio webhook signature verification\n- Rate limiting for webhook endpoints\n- Webhook attempt logging\n- IP filtering (optional)\n- Security alerts for suspicious activity",
-      "testStrategy": "Test webhook security with valid and invalid signatures. Verify that rate limiting works correctly and suspicious activity is detected."
-    },
-    {
-      "id": 30,
-      "title": "Implement Access Control for WhatsApp Features",
-      "description": "Set up proper access control for WhatsApp functionality.",
-      "status": "pending",
-      "dependencies": [
-        6,
-        27,
-        26,
-        25
-      ],
-      "priority": "high",
-      "details": "Implement the following access controls:\n- WhatsApp settings only accessible to admin users\n- Tenant isolation for all WhatsApp operations\n- Audit logging for WhatsApp activities\n- Role-based permissions for messaging features",
-      "testStrategy": "Test access control with various user roles. Verify that unauthorized users cannot access WhatsApp functionality."
-    },
-    {
-      "id": 31,
-      "title": "Comprehensive Testing with Twilio Sandbox",
-      "description": "Conduct end-to-end testing using Twilio sandbox environment.",
-      "status": "pending",
-      "dependencies": [
-        4,
-        6,
-        7,
-        27,
-        26,
-        25
-      ],
-      "priority": "medium",
-      "details": "Perform comprehensive testing:\n- Test message sending with sandbox numbers\n- Test webhook functionality\n- Test template submissions\n- Test bulk messaging with rate limits\n- Test error scenarios and recovery",
-      "testStrategy": "Create a test plan covering all WhatsApp functionality. Execute tests in the sandbox environment and document results."
-    },
-    {
-      "id": 32,
-      "title": "Create User Documentation",
-      "description": "Develop user documentation for WhatsApp integration features.",
-      "status": "pending",
-      "dependencies": [
-        27,
-        26,
-        25
+        8,
+        16,
+        22
       ],
       "priority": "low",
-      "details": "Create documentation covering:\n- WhatsApp setup guide\n- Template creation guidelines\n- Bulk messaging best practices\n- Troubleshooting guide\n- FAQ section",
-      "testStrategy": "Review documentation for clarity and completeness. Have non-technical users test following the documentation."
+      "details": "Create documentation including:\n- Setup instructions\n- Feature walkthroughs\n- Best practices\n- Troubleshooting guides\n- FAQ section\n- Video tutorials",
+      "testStrategy": "Review documentation for accuracy and completeness. Test with new users for clarity."
     }
   ]
 }

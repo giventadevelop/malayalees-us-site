@@ -1,18 +1,16 @@
 # Task ID: 21
-# Title: Create comprehensive testing suite
-# Status: pending
-# Dependencies: 3 ⏱️, 4 ⏱️, 5 ⏱️, 6 ⏱️, 10 ⏱️, 12 ⏱️, 13 ⏱️
+# Title: Create Usage Alerts Component
+# Status: done
+# Dependencies: 17 ✅
 # Priority: low
-# Description: Implement tests for WhatsApp integration components
+# Description: Implement the cost and limit monitoring interface for WhatsApp usage.
 # Details:
-Create tests for:
-- Twilio service layer
-- API endpoints
-- Webhook handling
-- UI components
-- Server actions
-
-Implement integration tests for complete workflows.
+Implement `UsageAlerts.tsx` with:
+- Usage quota visualization
+- Cost tracking metrics
+- Limit approaching warnings
+- Usage trend analysis
+- Alert settings configuration
 
 # Test Strategy:
-Run tests with various scenarios. Verify all components work correctly together.
+Test alert visualization with various usage levels. Verify warning thresholds.

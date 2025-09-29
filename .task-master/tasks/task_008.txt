@@ -1,19 +1,16 @@
 # Task ID: 8
-# Title: Add environment variables for Twilio configuration
-# Status: pending
-# Dependencies: None
+# Title: Enhance Tenant Settings Form with WhatsApp Section
+# Status: done
+# Dependencies: 5 ✅, 6 ✅
 # Priority: medium
-# Description: Set up environment variables for Twilio defaults and encryption keys
+# Description: Update the existing TenantSettingsForm to include WhatsApp integration options.
 # Details:
-Add the following environment variables:
-- TWILIO_ACCOUNT_SID
-- TWILIO_AUTH_TOKEN
-- TWILIO_WHATSAPP_FROM
-- TWILIO_ENCRYPTION_KEY
-- WEBHOOK_ENCRYPTION_KEY
-- WHATSAPP_WEBHOOK_BASE_URL
-
-Update configuration loaders to use these variables.
+Enhance `TenantSettingsForm.tsx` with:
+- WhatsApp integration toggle switch
+- Condensed credentials input section
+- Quick test connection option
+- Navigation links to full WhatsApp settings and bulk messaging
+- Integration with existing form submission logic
 
 # Test Strategy:
-Verify environment variables are correctly loaded and used as defaults when tenant-specific values are not provided.
+Test the enhanced form with the new WhatsApp section. Verify that it integrates properly with the existing form.

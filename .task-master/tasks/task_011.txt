@@ -1,17 +1,17 @@
 # Task ID: 11
-# Title: Enhance tenant settings form with WhatsApp section
-# Status: pending
-# Dependencies: 10 ⏱️
-# Priority: medium
-# Description: Update existing tenant settings form to include expanded WhatsApp configuration
+# Title: Create Recipient Selector Component
+# Status: done
+# Dependencies: 9 ✅
+# Priority: high
+# Description: Build the interface for selecting and filtering message recipients.
 # Details:
-Expand the WhatsApp section in TenantSettingsForm.tsx to include:
-- Toggle for enabling WhatsApp
-- Twilio credentials section
-- Webhook configuration
-- Test connection button
-
-Ensure conditional rendering based on enableWhatsappIntegration flag.
+Implement `RecipientSelector.tsx` with:
+- Contact list display with search/filter
+- CSV upload functionality
+- Recipient group selection
+- Custom filtering options
+- Selected recipients count and summary
+- Validation for phone number format
 
 # Test Strategy:
-Test form with different combinations of settings. Verify conditional rendering works correctly.
+Test recipient selection, CSV import, and filtering functionality.

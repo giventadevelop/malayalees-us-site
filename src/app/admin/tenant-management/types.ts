@@ -47,6 +47,17 @@ export interface TenantSettingsDTO {
   showEventsSectionInHomePage?: boolean;
   showTeamMembersSectionInHomePage?: boolean;
   showSponsorsSectionInHomePage?: boolean;
+  // Enhanced WhatsApp Integration Fields
+  whatsappPhoneNumber?: string;
+  twilioAccountSid?: string;
+  twilioAuthToken?: string;
+  enableWhatsappNotifications?: boolean;
+  enableWhatsappMarketing?: boolean;
+  whatsappDefaultTemplate?: string;
+  whatsappMaxMessagesPerDay?: number;
+  whatsappRateLimit?: number;
+  whatsappWebhookUrl?: string;
+  whatsappWebhookToken?: string;
   createdAt: string; // ISO date-time
   updatedAt: string; // ISO date-time
   tenantOrganization?: TenantOrganizationDTO;

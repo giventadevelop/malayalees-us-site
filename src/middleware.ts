@@ -70,12 +70,12 @@ export default authMiddleware({
     // Add pathname header for layout detection
     const response = NextResponse.next();
     response.headers.set('x-pathname', req.nextUrl.pathname);
-    
+
     // Handle users who aren't authenticated
     if (!auth.userId && !auth.isPublicRoute) {
       return Response.redirect(new URL('/sign-in', req.url));
     }
-    
+
     return response;
   }
 });

@@ -1,20 +1,16 @@
 # Task ID: 3
-# Title: Implement TwilioWhatsAppService
-# Status: pending
-# Dependencies: 2 ⏱️
-# Priority: high
-# Description: Create a service layer to handle Twilio WhatsApp API interactions
+# Title: Implement Webhook Configuration Component
+# Status: done
+# Dependencies: 1 ✅
+# Priority: medium
+# Description: Create the webhook setup and validation interface for WhatsApp integration.
 # Details:
-Implement TwilioWhatsAppService with the following methods:
-- sendMessage(tenantId, request)
-- sendBulkMessages(tenantId, request)
-- checkDeliveryStatus(tenantId, messageId)
-- getApprovedTemplates(tenantId)
-- createTemplate(tenantId, request)
-- handleWebhook(tenantId, payload)
-- getTenantCredentials(tenantId) (private)
-- encryptAndStoreCredentials(tenantId, credentials) (private)
-- logMessage(logEntry) (private)
+Implement `WebhookConfiguration.tsx` with:
+- URL input field with HTTPS validation
+- Webhook token generation/input
+- Copy to clipboard functionality
+- Webhook verification status indicator
+- Help text explaining webhook purpose
 
 # Test Strategy:
-Unit test each method with mock Twilio responses. Test credential retrieval and encryption functionality.
+Test URL validation, token generation, and clipboard functionality.

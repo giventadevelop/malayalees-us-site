@@ -1,105 +1,184 @@
-/* MOSC Section Specific Styles */
+/* MOSC Section Specific Styles - Sacred Design System */
 /* Import base styles but override for MOSC */
 @import '../globals.css';
 
-/* Reset any conflicting styles from main app */
-body {
-  margin: 0 !important;
-  padding: 0 !important;
-  background-color: var(--background) !important;
-  color: var(--foreground) !important;
-  font-family: 'Source Sans Pro', sans-serif !important;
-}
+/* Import Sacred Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap');
 
-/* MOSC Layout specific overrides */
-.mosc-layout {
-  background-color: var(--background) !important;
-  color: var(--foreground) !important;
-  font-family: 'Source Sans Pro', sans-serif !important;
-}
-
-/* Override any main app styles that might interfere */
-.mosc-layout * {
-  box-sizing: border-box;
-}
-
-/* Ensure MOSC pages have proper styling */
-.mosc-layout .bg-background {
-  background-color: var(--background) !important;
-}
-
-.mosc-layout .text-foreground {
-  color: var(--foreground) !important;
-}
-
-/* MOSC Custom CSS Variables */
+/* Sacred Design System - CSS Variables */
 :root {
-  /* Sacred Design System Colors */
-  --background: #F5F1E8;
-  --foreground: #2D2A26;
-  --border: rgba(139, 125, 107, 0.2);
-  --input: #FFFFFF;
-  --ring: #8B7D6B;
+  /* Core System Colors */
+  --color-background: #F5F1E8;
+  /* soft cream */
+  --color-foreground: #2D2A26;
+  /* near-black with warm undertones */
+  --color-border: rgba(139, 125, 107, 0.2);
+  /* warm earth tone with transparency */
+  --color-input: #FFFFFF;
+  /* pure white */
+  --color-ring: #8B7D6B;
+  /* warm earth tone */
 
-  /* Semantic Colors */
-  --primary: #8B7D6B;
-  --primary-foreground: #FFFFFF;
-  --secondary: #A0926B;
-  --secondary-foreground: #FFFFFF;
-  --accent: #6B4E3D;
-  --accent-foreground: #FFFFFF;
-  --success: #4A6741;
-  --success-foreground: #FFFFFF;
-  --warning: #A67C52;
-  --warning-foreground: #FFFFFF;
-  --destructive: #8B4A42;
-  --destructive-foreground: #FFFFFF;
-  --muted: #EDE7D3;
-  --muted-foreground: #6B4E3D;
+  /* Card Colors */
+  --color-card: #FFFFFF;
+  /* pure white */
+  --color-card-foreground: #2D2A26;
+  /* near-black with warm undertones */
 
-  /* Card & Surface Colors */
-  --card: #FFFFFF;
-  --card-foreground: #2D2A26;
-  --popover: #FFFFFF;
-  --popover-foreground: #2D2A26;
+  /* Popover Colors */
+  --color-popover: #FFFFFF;
+  /* pure white */
+  --color-popover-foreground: #2D2A26;
+  /* near-black with warm undertones */
+
+  /* Muted Colors */
+  --color-muted: #EDE7D3;
+  /* lighter complement */
+  --color-muted-foreground: #5A5550;
+  /* muted brown */
+
+  /* Primary Colors */
+  --color-primary: #8B7D6B;
+  /* warm earth tone */
+  --color-primary-foreground: #FFFFFF;
+  /* white */
+
+  /* Secondary Colors */
+  --color-secondary: #A0926B;
+  /* lighter complement */
+  --color-secondary-foreground: #2D2A26;
+  /* near-black with warm undertones */
+
+  /* Accent Colors */
+  --color-accent: #6B4E3D;
+  /* rich brown */
+  --color-accent-foreground: #FFFFFF;
+  /* white */
+
+  /* Success Colors */
+  --color-success: #4A6741;
+  /* muted sage green */
+  --color-success-foreground: #FFFFFF;
+  /* white */
+
+  /* Warning Colors */
+  --color-warning: #A67C52;
+  /* warm amber */
+  --color-warning-foreground: #FFFFFF;
+  /* white */
+
+  /* Error/Destructive Colors */
+  --color-error: #8B4A42;
+  /* subdued terracotta */
+  --color-error-foreground: #FFFFFF;
+  /* white */
+  --color-destructive: #8B4A42;
+  /* subdued terracotta */
+  --color-destructive-foreground: #FFFFFF;
+  /* white */
+
+  /* Legacy variable mapping for compatibility */
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
+  --border: var(--color-border);
+  --input: var(--color-input);
+  --ring: var(--color-ring);
+  --primary: var(--color-primary);
+  --primary-foreground: var(--color-primary-foreground);
+  --secondary: var(--color-secondary);
+  --secondary-foreground: var(--color-secondary-foreground);
+  --accent: var(--color-accent);
+  --accent-foreground: var(--color-accent-foreground);
+  --success: var(--color-success);
+  --success-foreground: var(--color-success-foreground);
+  --warning: var(--color-warning);
+  --warning-foreground: var(--color-warning-foreground);
+  --destructive: var(--color-destructive);
+  --destructive-foreground: var(--color-destructive-foreground);
+  --muted: var(--color-muted);
+  --muted-foreground: var(--color-muted-foreground);
+  --card: var(--color-card);
+  --card-foreground: var(--color-card-foreground);
+  --popover: var(--color-popover);
+  --popover-foreground: var(--color-popover-foreground);
 }
 
-/* MOSC Typography */
+/* Sacred Typography System */
 .font-heading {
-  font-family: 'Crimson Text', serif;
+  font-family: 'Crimson Text', serif !important;
 }
 
 .font-body {
-  font-family: 'Source Sans Pro', sans-serif;
+  font-family: 'Source Sans Pro', sans-serif !important;
 }
 
 .font-caption {
-  font-family: 'Lato', sans-serif;
+  font-family: 'Lato', sans-serif !important;
 }
 
-/* MOSC Custom Utilities */
+.font-mono {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Sacred Design Utilities */
 .sacred-shadow {
-  box-shadow: 0 4px 6px -1px rgba(139, 125, 107, 0.1), 0 2px 4px -1px rgba(139, 125, 107, 0.06);
+  box-shadow: 0 2px 8px rgba(139, 125, 107, 0.15) !important;
 }
 
 .sacred-shadow-sm {
-  box-shadow: 0 1px 2px 0 rgba(139, 125, 107, 0.05);
+  box-shadow: 0 2px 4px rgba(139, 125, 107, 0.15) !important;
 }
 
 .sacred-shadow-lg {
-  box-shadow: 0 10px 15px -3px rgba(139, 125, 107, 0.1), 0 4px 6px -2px rgba(139, 125, 107, 0.05);
+  box-shadow: 0 4px 12px rgba(139, 125, 107, 0.15) !important;
 }
 
 .sacred-gradient {
-  background: linear-gradient(135deg, #F5F1E8 0%, #EDE7D3 100%);
+  background: linear-gradient(135deg, #F5F1E8 0%, #EDE7D3 100%) !important;
+}
+
+.circular-frame {
+  border-radius: 50% !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
 .reverent-transition {
-  transition: all 0.2s ease-out;
+  transition: all 200ms ease-out !important;
 }
 
-.reverent-hover {
-  transform: scale(1.02);
+.reverent-hover:hover {
+  transform: scale(1.02) !important;
+}
+
+/* Sacred Spacing */
+.space-sacred>*+* {
+  margin-top: 2rem !important;
+}
+
+/* Sacred Border Radius */
+.rounded-sacred {
+  border-radius: 8px !important;
+}
+
+/* Responsive Typography */
+.text-responsive-body {
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+}
+
+@media (min-width: 640px) {
+  .text-responsive-body {
+    font-size: 1.125rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-responsive-body {
+    font-size: 1.25rem !important;
+  }
 }
 
 .sr-only {
@@ -114,44 +193,132 @@ body {
   border: 0;
 }
 
-/* MOSC Layout Specific Styles */
+/* Sacred Layout System */
 .mosc-layout {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background-color: var(--color-background) !important;
+  color: var(--color-foreground) !important;
+  font-family: 'Source Sans Pro', sans-serif !important;
 }
 
 .mosc-main {
-  flex: 1;
+  flex: 1 !important;
 }
 
-/* Override any conflicting styles from main app */
-body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--background) !important;
-  color: var(--foreground) !important;
+/* Reset and Override Main App Styles */
+.mosc-layout body {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: var(--color-background) !important;
+  color: var(--color-foreground) !important;
+  font-family: 'Source Sans Pro', sans-serif !important;
+  font-feature-settings: "rlig" 1, "calt" 1 !important;
 }
 
-/* Ensure MOSC pages don't inherit main app styles */
 .mosc-layout * {
-  box-sizing: border-box;
+  box-sizing: border-box !important;
+  border-color: var(--color-border) !important;
 }
 
-/* Custom scrollbar for MOSC pages */
+/* Ensure all color classes work properly */
+.mosc-layout .bg-background {
+  background-color: var(--color-background) !important;
+}
+
+.mosc-layout .bg-foreground {
+  background-color: var(--color-foreground) !important;
+}
+
+.mosc-layout .bg-primary {
+  background-color: var(--color-primary) !important;
+}
+
+.mosc-layout .bg-secondary {
+  background-color: var(--color-secondary) !important;
+}
+
+.mosc-layout .bg-accent {
+  background-color: var(--color-accent) !important;
+}
+
+.mosc-layout .bg-muted {
+  background-color: var(--color-muted) !important;
+}
+
+.mosc-layout .bg-card {
+  background-color: var(--color-card) !important;
+}
+
+.mosc-layout .text-background {
+  color: var(--color-background) !important;
+}
+
+.mosc-layout .text-foreground {
+  color: var(--color-foreground) !important;
+}
+
+.mosc-layout .text-primary {
+  color: var(--color-primary) !important;
+}
+
+.mosc-layout .text-secondary {
+  color: var(--color-secondary) !important;
+}
+
+.mosc-layout .text-accent {
+  color: var(--color-accent) !important;
+}
+
+.mosc-layout .text-muted-foreground {
+  color: var(--color-muted-foreground) !important;
+}
+
+.mosc-layout .text-card-foreground {
+  color: var(--color-card-foreground) !important;
+}
+
+.mosc-layout .border-border {
+  border-color: var(--color-border) !important;
+}
+
+.mosc-layout .ring-ring {
+  --tw-ring-color: var(--color-ring) !important;
+}
+
+/* Sacred Scrollbar */
 .mosc-layout ::-webkit-scrollbar {
-  width: 8px;
+  width: 8px !important;
 }
 
 .mosc-layout ::-webkit-scrollbar-track {
-  background: var(--muted);
+  background: var(--color-muted) !important;
 }
 
 .mosc-layout ::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 4px;
+  background: var(--color-primary) !important;
+  border-radius: 4px !important;
 }
 
 .mosc-layout ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  background: var(--color-accent) !important;
+}
+
+/* Focus States */
+.mosc-layout .focus-visible\:ring-ring:focus-visible {
+  --tw-ring-color: var(--color-ring) !important;
+}
+
+/* Accessibility */
+.mosc-layout .sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }

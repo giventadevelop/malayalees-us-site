@@ -50,7 +50,18 @@ export default function TenantSettingsForm({
       customJs: initialData?.customJs || '',
       showEventsSectionInHomePage: initialData?.showEventsSectionInHomePage ?? true,
       showTeamMembersSectionInHomePage: initialData?.showTeamMembersSectionInHomePage ?? true,
-      showSponsorsSectionInHomePage: initialData?.showSponsorsSectionInHomePage ?? true
+      showSponsorsSectionInHomePage: initialData?.showSponsorsSectionInHomePage ?? true,
+      // Enhanced WhatsApp Integration Fields
+      whatsappPhoneNumber: initialData?.whatsappPhoneNumber || '',
+      twilioAccountSid: initialData?.twilioAccountSid || '',
+      twilioAuthToken: initialData?.twilioAuthToken || '',
+      enableWhatsappNotifications: initialData?.enableWhatsappNotifications ?? false,
+      enableWhatsappMarketing: initialData?.enableWhatsappMarketing ?? false,
+      whatsappDefaultTemplate: initialData?.whatsappDefaultTemplate || '',
+      whatsappMaxMessagesPerDay: initialData?.whatsappMaxMessagesPerDay || 1000,
+      whatsappRateLimit: initialData?.whatsappRateLimit || 10,
+      whatsappWebhookUrl: initialData?.whatsappWebhookUrl || '',
+      whatsappWebhookToken: initialData?.whatsappWebhookToken || ''
     }
   });
 
@@ -265,8 +276,26 @@ export default function TenantSettingsForm({
             <h3 className="text-lg font-medium text-gray-900">Integration Settings</h3>
 
             {/* WhatsApp Integration */}
-            <div className="space-y-4">
-              <h4 className="text-md font-medium text-gray-900">WhatsApp Integration</h4>
+            <div className="space-y-6">
+              <div className="border-b border-gray-200 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-md font-medium text-gray-900 flex items-center">
+                      <span className="mr-2">📱</span>
+                      WhatsApp Integration
+                    </h4>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Configure WhatsApp Business API integration for automated messaging
+                    </p>
+                  </div>
+                  <a
+                    href="/admin/whatsapp-settings"
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    Advanced Settings →
+                  </a>
+                </div>
+              </div>
 
               <div className="bg-gray-50 p-4 rounded-lg">
                 <ToggleSwitch
@@ -279,24 +308,243 @@ export default function TenantSettingsForm({
               </div>
 
               {watchedValues.enableWhatsappIntegration && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    WhatsApp API Key
-                  </label>
-                  <input
-                    type="password"
-                    {...register('whatsappApiKey', {
-                      maxLength: {
-                        value: 500,
-                        message: 'API key must be less than 500 characters'
-                      }
-                    })}
-                    className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
-                    placeholder="Enter your WhatsApp API key"
-                  />
-                  {errors.whatsappApiKey && (
-                    <p className="mt-1 text-sm text-red-600">{errors.whatsappApiKey.message}</p>
-                  )}
+                <div className="space-y-6 bg-white border border-gray-200 rounded-lg p-6">
+                  {/* Basic Configuration */}
+                  <div className="space-y-4">
+                    <h5 className="text-sm font-medium text-gray-900">Basic Configuration</h5>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        WhatsApp Business Phone Number
+                      </label>
+                      <input
+                        type="text"
+                        {...register('whatsappPhoneNumber', {
+                          pattern: {
+                            value: /^\+[1-9]\d{1,14}$/,
+                            message: 'Please enter a valid international phone number (e.g., +1234567890)'
+                          }
+                        })}
+                        className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+                        placeholder="+1234567890"
+                      />
+                      {errors.whatsappPhoneNumber && (
+                        <p className="mt-1 text-sm text-red-600">{errors.whatsappPhoneNumber.message}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Twilio Account SID
+                      </label>
+                      <input
+                        type="text"
+                        {...register('twilioAccountSid', {
+                          required: watchedValues.enableWhatsappIntegration ? 'Account SID is required' : false,
+                          pattern: {
+                            value: /^AC[a-f0-9]{32}$/,
+                            message: 'Please enter a valid Twilio Account SID'
+                          }
+                        })}
+                        className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+                        placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      />
+                      {errors.twilioAccountSid && (
+                        <p className="mt-1 text-sm text-red-600">{errors.twilioAccountSid.message}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Twilio Auth Token
+                      </label>
+                      <input
+                        type="password"
+                        {...register('twilioAuthToken', {
+                          required: watchedValues.enableWhatsappIntegration ? 'Auth Token is required' : false,
+                          minLength: {
+                            value: 32,
+                            message: 'Auth Token must be at least 32 characters'
+                          }
+                        })}
+                        className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+                        placeholder="Enter your Twilio Auth Token"
+                      />
+                      {errors.twilioAuthToken && (
+                        <p className="mt-1 text-sm text-red-600">{errors.twilioAuthToken.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Message Settings */}
+                  <div className="space-y-4 border-t border-gray-200 pt-6">
+                    <h5 className="text-sm font-medium text-gray-900">Message Settings</h5>
+
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <ToggleSwitch
+                        name="enableWhatsappNotifications"
+                        label="Enable WhatsApp Notifications"
+                        description="Send automated notifications for events, payments, and updates"
+                        checked={watchedValues.enableWhatsappNotifications || false}
+                        onChange={(checked) => setValue('enableWhatsappNotifications', checked)}
+                      />
+                    </div>
+
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <ToggleSwitch
+                        name="enableWhatsappMarketing"
+                        label="Enable WhatsApp Marketing"
+                        description="Allow sending marketing messages and promotional content"
+                        checked={watchedValues.enableWhatsappMarketing || false}
+                        onChange={(checked) => setValue('enableWhatsappMarketing', checked)}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Default Message Template
+                      </label>
+                      <select
+                        {...register('whatsappDefaultTemplate')}
+                        className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+                      >
+                        <option value="">Select a template</option>
+                        <option value="welcome_template">Welcome Template</option>
+                        <option value="event_reminder">Event Reminder</option>
+                        <option value="payment_confirmation">Payment Confirmation</option>
+                        <option value="ticket_confirmation">Ticket Confirmation</option>
+                      </select>
+                      {errors.whatsappDefaultTemplate && (
+                        <p className="mt-1 text-sm text-red-600">{errors.whatsappDefaultTemplate.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Delivery Settings */}
+                  <div className="space-y-4 border-t border-gray-200 pt-6">
+                    <h5 className="text-sm font-medium text-gray-900">Delivery Settings</h5>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Maximum Messages Per Day
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10000"
+                        {...register('whatsappMaxMessagesPerDay', {
+                          min: { value: 1, message: 'Must be at least 1' },
+                          max: { value: 10000, message: 'Must be at most 10,000' }
+                        })}
+                        className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+                        placeholder="1000"
+                      />
+                      {errors.whatsappMaxMessagesPerDay && (
+                        <p className="mt-1 text-sm text-red-600">{errors.whatsappMaxMessagesPerDay.message}</p>
+                      )}
+                      <p className="mt-1 text-xs text-gray-500">
+                        Set a daily limit to control costs and prevent abuse
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Message Rate Limit (per minute)
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        {...register('whatsappRateLimit', {
+                          min: { value: 1, message: 'Must be at least 1' },
+                          max: { value: 100, message: 'Must be at most 100' }
+                        })}
+                        className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+                        placeholder="10"
+                      />
+                      {errors.whatsappRateLimit && (
+                        <p className="mt-1 text-sm text-red-600">{errors.whatsappRateLimit.message}</p>
+                      )}
+                      <p className="mt-1 text-xs text-gray-500">
+                        Maximum number of messages that can be sent per minute
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Webhook Configuration */}
+                  <div className="space-y-4 border-t border-gray-200 pt-6">
+                    <h5 className="text-sm font-medium text-gray-900">Webhook Configuration</h5>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Webhook URL
+                      </label>
+                      <input
+                        type="url"
+                        {...register('whatsappWebhookUrl', {
+                          pattern: {
+                            value: /^https?:\/\/.+/,
+                            message: 'Please enter a valid webhook URL'
+                          }
+                        })}
+                        className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+                        placeholder="https://yourdomain.com/api/webhooks/whatsapp"
+                      />
+                      {errors.whatsappWebhookUrl && (
+                        <p className="mt-1 text-sm text-red-600">{errors.whatsappWebhookUrl.message}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Webhook Token
+                      </label>
+                      <input
+                        type="password"
+                        {...register('whatsappWebhookToken', {
+                          minLength: {
+                            value: 16,
+                            message: 'Webhook token must be at least 16 characters'
+                          }
+                        })}
+                        className="mt-1 block w-full border border-gray-400 rounded-xl focus:border-blue-500 focus:ring-blue-500 px-4 py-3 text-base"
+                        placeholder="Enter webhook verification token"
+                      />
+                      {errors.whatsappWebhookToken && (
+                        <p className="mt-1 text-sm text-red-600">{errors.whatsappWebhookToken.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="border-t border-gray-200 pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-900">Quick Actions</h5>
+                        <p className="text-xs text-gray-600 mt-1">
+                          Test your configuration or access advanced settings
+                        </p>
+                      </div>
+                      <div className="flex space-x-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Test connection functionality would be implemented here
+                            alert('Test connection functionality will be implemented');
+                          }}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+                        >
+                          🔗 Test Connection
+                        </button>
+                        <a
+                          href="/admin/whatsapp-settings"
+                          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm font-medium"
+                        >
+                          ⚙️ Advanced Settings
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

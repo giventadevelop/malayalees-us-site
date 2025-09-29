@@ -1,11 +1,16 @@
 # Task ID: 15
-# Title: Create proxy API route for WhatsApp messages
-# Status: pending
-# Dependencies: None
-# Priority: medium
-# Description: Implement Next.js API route to proxy WhatsApp message requests
+# Title: Implement Bulk Messaging Server Actions
+# Status: done
+# Dependencies: 9 ✅
+# Priority: high
+# Description: Create server actions for WhatsApp bulk messaging following the nextjs_api_routes pattern.
 # Details:
-Create proxy route at src/pages/api/proxy/whatsapp-messages/index.ts using createProxyHandler to forward requests to backend API.
+Create bulk messaging server actions with:
+- `sendWhatsAppMessageServer` for single messages
+- `sendBulkWhatsAppMessagesServer` for batch sending
+- Progress tracking functionality
+- Error handling and retry logic
+- Scheduled message support
 
 # Test Strategy:
-Test proxy route with various message requests. Verify requests are correctly forwarded to backend API.
+Test API calls with various message payloads. Verify error handling and response processing.

@@ -498,12 +498,21 @@ This frontend PRD provides a comprehensive roadmap for implementing the user int
 
 The phased approach ensures manageable development while delivering value incrementally, with each phase building upon the previous one to create a complete WhatsApp management solution.
 
+  Once again verify cursor Cursor rules nextjs_api_routes.mdc
+For rest api calls. Refer documentation\Swagger_API_Docs\api-docs.json for json schema.. and
+@ui_style_guide.mdc for ui standards
+
 ---
 
 **Document Version**: 1.0
 **Last Updated**: January 2025
 **Next Review**: February 2025
 **Status**: Ready for Development
+
+
+
+
+
 
 
 

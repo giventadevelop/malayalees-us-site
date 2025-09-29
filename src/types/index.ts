@@ -767,3 +767,157 @@ export interface EventProgramDirectorsDTO {
   updatedAt: string;
   event?: EventDetailsDTO;
 }
+
+// WhatsApp Integration Types
+
+/**
+ * Twilio credentials for WhatsApp integration
+ */
+export interface TwilioCredentials {
+  accountSid: string;
+  authToken: string;
+  whatsappFrom: string;
+  webhookUrl?: string;
+  webhookToken?: string;
+}
+
+/**
+ * WhatsApp message request for sending individual messages
+ */
+export interface WhatsAppMessageRequest {
+  recipientPhone: string;
+  messageBody: string;
+  templateName?: string;
+  templateParams?: Record<string, string>;
+  type: 'TRANSACTIONAL' | 'MARKETING';
+}
+
+/**
+ * Bulk WhatsApp message request for sending to multiple recipients
+ */
+export interface BulkWhatsAppRequest {
+  recipients: Array<{
+    phone: string;
+    name?: string;
+    customParams?: Record<string, string>;
+  }>;
+  messageBody: string;
+  templateName?: string;
+  scheduledAt?: string;
+  type: 'TRANSACTIONAL' | 'MARKETING';
+}
+
+/**
+ * WhatsApp message template
+ */
+export interface MessageTemplate {
+  id: string;
+  name: string;
+  category: string;
+  language: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  components: Array<{
+    type: 'HEADER' | 'BODY' | 'FOOTER';
+    text?: string;
+    format?: string;
+  }>;
+}
+
+/**
+ * WhatsApp analytics data
+ */
+export interface WhatsAppAnalytics {
+  totalMessages: number;
+  sentMessages: number;
+  deliveredMessages: number;
+  failedMessages: number;
+  readMessages: number;
+  deliveryRate: number;
+  readRate: number;
+  periodStart: string;
+  periodEnd: string;
+  dailyVolume?: Array<{
+    date: string;
+    count: number;
+  }>;
+  maxDailyVolume?: number;
+  costData?: {
+    totalCost: number;
+    costPerMessage: number;
+    currency: string;
+  };
+  performanceMetrics?: {
+    averageDeliveryTime: number;
+    errorRate: number;
+    responseRate: number;
+  };
+}
+
+/**
+ * Connection test result for WhatsApp integration
+ */
+export interface ConnectionTestResult {
+  success: boolean;
+  message: string;
+  timestamp: string;
+  details?: {
+    accountStatus: string;
+    whatsappStatus: string;
+    webhookStatus: string;
+  };
+}
+
+/**
+ * Bulk message progress tracking
+ */
+export interface BulkMessageProgress {
+  total: number;
+  sent: number;
+  delivered: number;
+  failed: number;
+  inProgress: boolean;
+  estimatedTimeRemaining?: string;
+}
+
+/**
+ * WhatsApp message delivery status
+ */
+export interface WhatsAppMessageStatus {
+  id: string;
+  recipientPhone: string;
+  messageBody: string;
+  status: 'SENT' | 'DELIVERED' | 'READ' | 'FAILED';
+  sentAt: string;
+  deliveredAt?: string;
+  readAt?: string;
+  errorMessage?: string;
+  templateId?: string;
+}
+
+/**
+ * WhatsApp usage statistics
+ */
+export interface WhatsAppUsageStats {
+  period: string;
+  totalMessages: number;
+  successfulMessages: number;
+  failedMessages: number;
+  totalCost: number;
+  costPerMessage: number;
+  deliveryRate: number;
+  readRate: number;
+}
+
+/**
+ * WhatsApp webhook payload
+ */
+export interface WhatsAppWebhookPayload {
+  MessageSid: string;
+  From: string;
+  To: string;
+  Body?: string;
+  Status: string;
+  ErrorCode?: string;
+  ErrorMessage?: string;
+  Timestamp: string;
+}

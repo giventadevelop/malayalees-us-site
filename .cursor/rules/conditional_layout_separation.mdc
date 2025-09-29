@@ -34,15 +34,15 @@ interface ConditionalLayoutProps {
 
 export default function ConditionalLayout({ children, header, footer }: ConditionalLayoutProps) {
   const pathname = usePathname();
-  
+
   // Define which routes should use separate layout
   const isSeparateLayoutRoute = pathname?.startsWith("/section-prefix") ?? false;
-  
+
   // For separate layout routes, just render children (section handles its own header/footer)
   if (isSeparateLayoutRoute) {
     return <>{children}</>;
   }
-  
+
   // For main app routes, render the full layout with header and footer
   return (
     <>
@@ -70,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ClerkProvider>
           <TrpcProvider>
-            <ConditionalLayout 
+            <ConditionalLayout
               header={<Header hideMenuItems={false} />}
               footer={<Footer />}
             >
@@ -110,11 +110,11 @@ export default function SectionLayout({ children }: SectionLayoutProps) {
   return (
     <div className="section-layout min-h-screen bg-section-background flex flex-col">
       <SectionHeader />
-      
+
       <main className="section-main flex-1">
         {children}
       </main>
-      
+
       <SectionFooter />
     </div>
   );
@@ -178,7 +178,7 @@ const isSeparateLayoutRoute = pathname?.startsWith("/mosc") ?? false;
 
 // Multiple sections
 const separateLayoutSections = ["/mosc", "/docs", "/marketing"];
-const isSeparateLayoutRoute = separateLayoutSections.some(section => 
+const isSeparateLayoutRoute = separateLayoutSections.some(section =>
   pathname?.startsWith(section)
 ) ?? false;
 
@@ -199,12 +199,12 @@ const isSeparateLayoutRoute = pathname?.startsWith("/section") ?? false;
 export default function ConditionalLayout({ children, header, footer }: ConditionalLayoutProps) {
   const pathname = usePathname();
   const isPublicSection = pathname?.startsWith("/public-section") ?? false;
-  
+
   if (isPublicSection) {
     // Render without authentication providers
     return <>{children}</>;
   }
-  
+
   // Render with full app providers
   return (
     <AuthProvider>
@@ -290,14 +290,14 @@ interface ConditionalLayoutProps {
 
 export default function ConditionalLayout({ children, header, footer }: ConditionalLayoutProps) {
   const pathname = usePathname();
-  
+
   // MOSC routes use their own layout (no auth, different styling)
   const isMOSCRoute = pathname?.startsWith("/mosc") ?? false;
-  
+
   if (isMOSCRoute) {
     return <>{children}</>;
   }
-  
+
   return (
     <>
       {header}
