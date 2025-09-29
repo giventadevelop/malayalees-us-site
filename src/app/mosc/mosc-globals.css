@@ -8,102 +8,147 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap');
 
-/* Sacred Design System - CSS Variables */
-:root {
-  /* Core System Colors */
-  --color-background: #F5F1E8;
-  /* soft cream */
-  --color-foreground: #2D2A26;
-  /* near-black with warm undertones */
-  --color-border: rgba(139, 125, 107, 0.2);
-  /* warm earth tone with transparency */
-  --color-input: #FFFFFF;
-  /* pure white */
-  --color-ring: #8B7D6B;
-  /* warm earth tone */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  /* Card Colors */
-  --color-card: #FFFFFF;
-  /* pure white */
-  --color-card-foreground: #2D2A26;
-  /* near-black with warm undertones */
+@layer base {
+  :root {
+    /* Core System Colors */
+    --color-background: #F5F1E8;
+    /* soft cream */
+    --color-foreground: #2D2A26;
+    /* near-black with warm undertones */
+    --color-border: rgba(139, 125, 107, 0.2);
+    /* warm earth tone with transparency */
+    --color-input: #FFFFFF;
+    /* pure white */
+    --color-ring: #8B7D6B;
+    /* warm earth tone */
 
-  /* Popover Colors */
-  --color-popover: #FFFFFF;
-  /* pure white */
-  --color-popover-foreground: #2D2A26;
-  /* near-black with warm undertones */
+    /* Card Colors */
+    --color-card: #FFFFFF;
+    /* pure white */
+    --color-card-foreground: #2D2A26;
+    /* near-black with warm undertones */
 
-  /* Muted Colors */
-  --color-muted: #EDE7D3;
-  /* lighter complement */
-  --color-muted-foreground: #5A5550;
-  /* muted brown */
+    /* Popover Colors */
+    --color-popover: #FFFFFF;
+    /* pure white */
+    --color-popover-foreground: #2D2A26;
+    /* near-black with warm undertones */
 
-  /* Primary Colors */
-  --color-primary: #8B7D6B;
-  /* warm earth tone */
-  --color-primary-foreground: #FFFFFF;
-  /* white */
+    /* Muted Colors */
+    --color-muted: #EDE7D3;
+    /* lighter complement */
+    --color-muted-foreground: #5A5550;
+    /* muted brown */
 
-  /* Secondary Colors */
-  --color-secondary: #A0926B;
-  /* lighter complement */
-  --color-secondary-foreground: #2D2A26;
-  /* near-black with warm undertones */
+    /* Primary Colors */
+    --color-primary: #8B7D6B;
+    /* warm earth tone */
+    --color-primary-foreground: #FFFFFF;
+    /* white */
 
-  /* Accent Colors */
-  --color-accent: #6B4E3D;
-  /* rich brown */
-  --color-accent-foreground: #FFFFFF;
-  /* white */
+    /* Secondary Colors */
+    --color-secondary: #A0926B;
+    /* lighter complement */
+    --color-secondary-foreground: #2D2A26;
+    /* near-black with warm undertones */
 
-  /* Success Colors */
-  --color-success: #4A6741;
-  /* muted sage green */
-  --color-success-foreground: #FFFFFF;
-  /* white */
+    /* Accent Colors */
+    --color-accent: #6B4E3D;
+    /* rich brown */
+    --color-accent-foreground: #FFFFFF;
+    /* white */
 
-  /* Warning Colors */
-  --color-warning: #A67C52;
-  /* warm amber */
-  --color-warning-foreground: #FFFFFF;
-  /* white */
+    /* Success Colors */
+    --color-success: #4A6741;
+    /* muted sage green */
+    --color-success-foreground: #FFFFFF;
+    /* white */
 
-  /* Error/Destructive Colors */
-  --color-error: #8B4A42;
-  /* subdued terracotta */
-  --color-error-foreground: #FFFFFF;
-  /* white */
-  --color-destructive: #8B4A42;
-  /* subdued terracotta */
-  --color-destructive-foreground: #FFFFFF;
-  /* white */
+    /* Warning Colors */
+    --color-warning: #A67C52;
+    /* warm amber */
+    --color-warning-foreground: #FFFFFF;
+    /* white */
 
-  /* Legacy variable mapping for compatibility */
-  --background: var(--color-background);
-  --foreground: var(--color-foreground);
-  --border: var(--color-border);
-  --input: var(--color-input);
-  --ring: var(--color-ring);
-  --primary: var(--color-primary);
-  --primary-foreground: var(--color-primary-foreground);
-  --secondary: var(--color-secondary);
-  --secondary-foreground: var(--color-secondary-foreground);
-  --accent: var(--color-accent);
-  --accent-foreground: var(--color-accent-foreground);
-  --success: var(--color-success);
-  --success-foreground: var(--color-success-foreground);
-  --warning: var(--color-warning);
-  --warning-foreground: var(--color-warning-foreground);
-  --destructive: var(--color-destructive);
-  --destructive-foreground: var(--color-destructive-foreground);
-  --muted: var(--color-muted);
-  --muted-foreground: var(--color-muted-foreground);
-  --card: var(--color-card);
-  --card-foreground: var(--color-card-foreground);
-  --popover: var(--color-popover);
-  --popover-foreground: var(--color-popover-foreground);
+    /* Error/Destructive Colors */
+    --color-error: #8B4A42;
+    /* subdued terracotta */
+    --color-error-foreground: #FFFFFF;
+    /* white */
+    --color-destructive: #8B4A42;
+    /* subdued terracotta */
+    --color-destructive-foreground: #FFFFFF;
+    /* white */
+
+    /* Legacy variable mapping for compatibility */
+    --background: var(--color-background);
+    --foreground: var(--color-foreground);
+    --border: var(--color-border);
+    --input: var(--color-input);
+    --ring: var(--color-ring);
+    --primary: var(--color-primary);
+    --primary-foreground: var(--color-primary-foreground);
+    --secondary: var(--color-secondary);
+    --secondary-foreground: var(--color-secondary-foreground);
+    --accent: var(--color-accent);
+    --accent-foreground: var(--color-accent-foreground);
+    --success: var(--color-success);
+    --success-foreground: var(--color-success-foreground);
+    --warning: var(--color-warning);
+    --warning-foreground: var(--color-warning-foreground);
+    --destructive: var(--color-destructive);
+    --destructive-foreground: var(--color-destructive-foreground);
+    --muted: var(--color-muted);
+    --muted-foreground: var(--color-muted-foreground);
+    --card: var(--color-card);
+    --card-foreground: var(--color-card-foreground);
+    --popover: var(--color-popover);
+    --popover-foreground: var(--color-popover-foreground);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .sacred-shadow {
+    box-shadow: 0 2px 8px rgba(139, 125, 107, 0.15);
+  }
+
+  .sacred-shadow-sm {
+    box-shadow: 0 2px 4px rgba(139, 125, 107, 0.15);
+  }
+
+  .sacred-shadow-lg {
+    box-shadow: 0 4px 12px rgba(139, 125, 107, 0.15);
+  }
+
+  .sacred-gradient {
+    background: linear-gradient(135deg, #F5F1E8 0%, #EDE7D3 100%);
+  }
+
+  .circular-frame {
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .reverent-transition {
+    transition: all 200ms ease-out;
+  }
+
+  .reverent-hover:hover {
+    transform: scale(1.02);
+  }
 }
 
 /* Sacred Typography System */
@@ -121,76 +166,6 @@
 
 .font-mono {
   font-family: 'JetBrains Mono', monospace !important;
-}
-
-/* Sacred Design Utilities */
-.sacred-shadow {
-  box-shadow: 0 2px 8px rgba(139, 125, 107, 0.15) !important;
-}
-
-.sacred-shadow-sm {
-  box-shadow: 0 2px 4px rgba(139, 125, 107, 0.15) !important;
-}
-
-.sacred-shadow-lg {
-  box-shadow: 0 4px 12px rgba(139, 125, 107, 0.15) !important;
-}
-
-.sacred-gradient {
-  background: linear-gradient(135deg, #F5F1E8 0%, #EDE7D3 100%) !important;
-}
-
-.circular-frame {
-  border-radius: 50% !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-}
-
-.reverent-transition {
-  transition: all 200ms ease-out !important;
-}
-
-.reverent-hover:hover {
-  transform: scale(1.02) !important;
-}
-
-/* Sacred Spacing */
-.space-sacred>*+* {
-  margin-top: 2rem !important;
-}
-
-/* Sacred Border Radius */
-.rounded-sacred {
-  border-radius: 8px !important;
-}
-
-/* Responsive Typography */
-.text-responsive-body {
-  font-size: 1rem !important;
-  line-height: 1.6 !important;
-}
-
-@media (min-width: 640px) {
-  .text-responsive-body {
-    font-size: 1.125rem !important;
-  }
-}
-
-@media (min-width: 1024px) {
-  .text-responsive-body {
-    font-size: 1.25rem !important;
-  }
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 /* Sacred Layout System */

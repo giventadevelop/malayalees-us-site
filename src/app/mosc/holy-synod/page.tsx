@@ -336,3 +336,6 @@ const HolySynodPage = () => {
 
 export default HolySynodPage;
 
+
+
+

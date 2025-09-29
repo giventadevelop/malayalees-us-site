@@ -96,3 +96,6 @@ const PrayerTimesSection = () => {
 };
 
 export default PrayerTimesSection;
+
+
+
