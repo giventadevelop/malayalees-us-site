@@ -148,30 +148,30 @@ const CatholicatePage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
             {catholicosHistory.map((catholicos) => (
               <Link
                 key={catholicos.name}
                 href={catholicos.href}
-                className="bg-card rounded-lg sacred-shadow p-6 hover:sacred-shadow-lg reverent-transition group"
+                className="bg-card rounded-lg sacred-shadow p-4 hover:sacred-shadow-lg reverent-transition group w-full max-w-xs"
               >
                 <div className="text-center">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-lg overflow-hidden sacred-shadow-sm group-hover:sacred-shadow reverent-transition">
+                  <div className="w-full h-48 mx-auto mb-4 rounded-lg overflow-hidden sacred-shadow-sm group-hover:sacred-shadow reverent-transition">
                     <Image
                       src={catholicos.image}
                       alt={catholicos.name}
-                      width={80}
-                      height={80}
+                      width={300}
+                      height={192}
                       className="w-full h-full object-cover group-hover:scale-105 reverent-transition"
                     />
                   </div>
-                  <h3 className="font-heading font-semibold text-lg text-foreground mb-2 group-hover:text-primary reverent-transition">
+                  <h3 className="font-heading font-semibold text-base text-foreground mb-2 group-hover:text-primary reverent-transition">
                     {catholicos.name}
                   </h3>
-                  <p className="font-body text-sm text-primary mb-2 font-medium">
+                  <p className="font-body text-xs text-primary mb-2 font-medium">
                     {catholicos.period}
                   </p>
-                  <p className="font-body text-muted-foreground text-sm leading-relaxed">
+                  <p className="font-body text-muted-foreground text-xs leading-relaxed">
                     {catholicos.description}
                   </p>
                 </div>
