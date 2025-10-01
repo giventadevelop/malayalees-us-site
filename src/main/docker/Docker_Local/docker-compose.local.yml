@@ -1,0 +1,82 @@
+# Docker Compose configuration for local development
+# This configuration is intended for development purpose, it's **your** responsibility to harden it for production
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgresql:
+    image: postgres:16.0
+    container_name: malayalees_postgres
+    environment:
+      POSTGRES_USER: malayalees_user
+      POSTGRES_PASSWORD: malayalees_password
+      POSTGRES_DB: malayalees_db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      - malayalees_network
+
+  # Backend API Service (Rust/Spring Boot)
+  backend-api:
+    build:
+      context: ../../../
+      dockerfile: src/main/docker/Docker_Local/Dockerfile
+    container_name: malayalees_backend
+    environment:
+      # Database Configuration
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/malayalees_db
+      SPRING_DATASOURCE_USERNAME: malayalees_user
+      SPRING_DATASOURCE_PASSWORD: malayalees_password
+      
+      # JWT API Authentication Variables
+      JWT_API_AUTH_USERNAME: ${JWT_API_AUTH_USERNAME:-admin}
+      JWT_API_AUTH_PASSWORD: ${JWT_API_AUTH_PASSWORD:-admin123}
+      
+      # Application Configuration
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+      
+      # Optional: Additional environment variables
+      LOGGING_LEVEL_ROOT: INFO
+      LOGGING_LEVEL_COM_MALAYALEES: DEBUG
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    networks:
+      - malayalees_network
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # Optional: Redis for caching (if needed)
+  redis:
+    image: redis:7-alpine
+    container_name: malayalees_redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - malayalees_network
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  malayalees_network:
+    driver: bridge
