@@ -35,11 +35,11 @@ services:
   #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/malayalees_db
   #     SPRING_DATASOURCE_USERNAME: malayalees_user
   #     SPRING_DATASOURCE_PASSWORD: malayalees_password
-  #     
+  #
   #     # JWT API Authentication Variables
   #     JWT_API_AUTH_USERNAME: ${JWT_API_AUTH_USERNAME:-admin}
   #     JWT_API_AUTH_PASSWORD: ${JWT_API_AUTH_PASSWORD:-admin123}
-  #     
+  #
   #     # Application Configuration
   #     SPRING_PROFILES_ACTIVE: dev
   #     SERVER_PORT: 8080

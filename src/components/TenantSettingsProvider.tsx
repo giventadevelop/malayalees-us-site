@@ -104,7 +104,7 @@ export const TenantSettingsProvider: React.FC<TenantSettingsProviderProps> = ({ 
           } else {
             console.warn(`⚠️ Failed to fetch tenant settings (${response.status})`);
           }
-          
+
           // Retry logic for server errors
           if ((response.status >= 500 || response.status === 0) && retryCount < MAX_RETRIES) {
             console.log(`🔄 Retrying tenant settings fetch (attempt ${retryCount + 1}/${MAX_RETRIES})`);
@@ -113,7 +113,7 @@ export const TenantSettingsProvider: React.FC<TenantSettingsProviderProps> = ({ 
             }, RETRY_DELAY);
             return; // Don't set loading to false yet
           }
-          
+
           setSettings(null);
         }
       } catch (error) {
@@ -123,7 +123,7 @@ export const TenantSettingsProvider: React.FC<TenantSettingsProviderProps> = ({ 
         } else {
           console.warn('⚠️ Error fetching tenant settings:', error);
         }
-        
+
         // Retry logic for network errors
         if (retryCount < MAX_RETRIES) {
           console.log(`🔄 Retrying tenant settings fetch after network error (attempt ${retryCount + 1}/${MAX_RETRIES})`);
@@ -132,7 +132,7 @@ export const TenantSettingsProvider: React.FC<TenantSettingsProviderProps> = ({ 
           }, RETRY_DELAY);
           return; // Don't set loading to false yet
         }
-        
+
         setSettings(null);
       } finally {
         // Only set loading to false if we're not retrying

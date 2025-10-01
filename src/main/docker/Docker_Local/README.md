@@ -57,9 +57,9 @@ docker-compose -f docker-compose.local.yml ps
 
 Expected output:
 ```
-NAME                  IMAGE            COMMAND                  SERVICE      CREATED         STATUS                   PORTS                                     
-malayalees_postgres   postgres:16.0    "docker-entrypoint.s…"   postgresql   8 seconds ago   Up 7 seconds (healthy)   127.0.0.1:5432->5432/tcp                  
-malayalees_redis      redis:7-alpine   "docker-entrypoint.s…"   redis        8 seconds ago   Up 8 seconds             127.0.0.1:6379->6379/tcp                  
+NAME                  IMAGE            COMMAND                  SERVICE      CREATED         STATUS                   PORTS
+malayalees_postgres   postgres:16.0    "docker-entrypoint.s…"   postgresql   8 seconds ago   Up 7 seconds (healthy)   127.0.0.1:5432->5432/tcp
+malayalees_redis      redis:7-alpine   "docker-entrypoint.s…"   redis        8 seconds ago   Up 8 seconds             127.0.0.1:6379->6379/tcp
 ```
 
 ## Service Details
