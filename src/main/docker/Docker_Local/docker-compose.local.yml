@@ -1,7 +1,7 @@
 # Docker Compose configuration for local development
 # This configuration is intended for development purpose, it's **your** responsibility to harden it for production
 
-version: '3.8'
+name: malayalees-local-dev
 
 services:
   # PostgreSQL Database
@@ -23,41 +23,34 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
     networks:
-      - malayalees_network
+      - malayalees_local_network
 
-  # Backend API Service (Rust/Spring Boot)
-  backend-api:
-    build:
-      context: ../../../
-      dockerfile: src/main/docker/Docker_Local/Dockerfile
-    container_name: malayalees_backend
-    environment:
-      # Database Configuration
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/malayalees_db
-      SPRING_DATASOURCE_USERNAME: malayalees_user
-      SPRING_DATASOURCE_PASSWORD: malayalees_password
-      
-      # JWT API Authentication Variables
-      JWT_API_AUTH_USERNAME: ${JWT_API_AUTH_USERNAME:-admin}
-      JWT_API_AUTH_PASSWORD: ${JWT_API_AUTH_PASSWORD:-admin123}
-      
-      # Application Configuration
-      SPRING_PROFILES_ACTIVE: dev
-      SERVER_PORT: 8080
-      
-      # Optional: Additional environment variables
-      LOGGING_LEVEL_ROOT: INFO
-      LOGGING_LEVEL_COM_MALAYALEES: DEBUG
-    ports:
-      - "127.0.0.1:8080:8080"
-    depends_on:
-      postgresql:
-        condition: service_healthy
-    networks:
-      - malayalees_network
-    volumes:
-      - ./logs:/app/logs
-    restart: unless-stopped
+  # Backend API Service (External - Update with your actual backend service)
+  # Uncomment and modify this section when you have your backend service ready
+  # backend-api:
+  #   image: your-backend-image:latest  # Replace with your actual backend image
+  #   container_name: malayalees_backend
+  #   environment:
+  #     # Database Configuration
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/malayalees_db
+  #     SPRING_DATASOURCE_USERNAME: malayalees_user
+  #     SPRING_DATASOURCE_PASSWORD: malayalees_password
+  #     
+  #     # JWT API Authentication Variables
+  #     JWT_API_AUTH_USERNAME: ${JWT_API_AUTH_USERNAME:-admin}
+  #     JWT_API_AUTH_PASSWORD: ${JWT_API_AUTH_PASSWORD:-admin123}
+  #     
+  #     # Application Configuration
+  #     SPRING_PROFILES_ACTIVE: dev
+  #     SERVER_PORT: 8080
+  #   ports:
+  #     - "127.0.0.1:8080:8080"
+  #   depends_on:
+  #     postgresql:
+  #       condition: service_healthy
+  #   networks:
+  #     - malayalees_local_network
+  #   restart: unless-stopped
 
   # Optional: Redis for caching (if needed)
   redis:
@@ -68,7 +61,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - malayalees_network
+      - malayalees_local_network
     restart: unless-stopped
 
 volumes:
@@ -78,5 +71,9 @@ volumes:
     driver: local
 
 networks:
-  malayalees_network:
+  malayalees_local_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+          gateway: 172.25.0.1

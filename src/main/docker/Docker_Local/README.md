@@ -11,23 +11,23 @@ This guide explains how to run the Malayalees US Site backend services locally u
 
 ## Quick Start
 
-### 1. Environment Setup
+### 1. Environment Setup (Optional)
 
-Copy the environment example file and customize it:
+Copy the environment example file and customize it if you want to override defaults:
 
 ```bash
 cd src/main/docker/Docker_Local
 cp env.example .env
 ```
 
-Edit the `.env` file with your preferred values:
+Edit the `.env` file with your preferred values (optional - defaults work fine):
 
 ```bash
-# JWT API Authentication Variables
+# JWT API Authentication Variables (for when you add backend service)
 JWT_API_AUTH_USERNAME=your_admin_username
 JWT_API_AUTH_PASSWORD=your_secure_password
 
-# Database Configuration
+# Database Configuration (optional - defaults are set)
 POSTGRES_USER=malayalees_user
 POSTGRES_PASSWORD=your_db_password
 POSTGRES_DB=malayalees_db
@@ -57,10 +57,9 @@ docker-compose -f docker-compose.local.yml ps
 
 Expected output:
 ```
-NAME                    IMAGE               COMMAND                  SERVICE             CREATED             STATUS                    PORTS
-malayalees_backend      malayalees_backend  "java -jar app.jar"     backend-api         2 minutes ago      Up 2 minutes (healthy)   127.0.0.1:8080->8080/tcp
-malayalees_postgres     postgres:16.0       "docker-entrypoint.s…"  postgresql          2 minutes ago      Up 2 minutes (healthy)   127.0.0.1:5432->5432/tcp
-malayalees_redis        redis:7-alpine      "docker-entrypoint.s…"   redis               2 minutes ago      Up 2 minutes             127.0.0.1:6379->6379/tcp
+NAME                  IMAGE            COMMAND                  SERVICE      CREATED         STATUS                   PORTS                                     
+malayalees_postgres   postgres:16.0    "docker-entrypoint.s…"   postgresql   8 seconds ago   Up 7 seconds (healthy)   127.0.0.1:5432->5432/tcp                  
+malayalees_redis      redis:7-alpine   "docker-entrypoint.s…"   redis        8 seconds ago   Up 8 seconds             127.0.0.1:6379->6379/tcp                  
 ```
 
 ## Service Details
@@ -71,18 +70,19 @@ malayalees_redis        redis:7-alpine      "docker-entrypoint.s…"   redis    
 - **Username**: malayalees_user
 - **Password**: malayalees_password (or from .env)
 - **Health Check**: Automatic with 5-second intervals
+- **Connection String**: `postgresql://malayalees_user:malayalees_password@localhost:5432/malayalees_db`
 
-### Backend API Service
-- **Port**: 8080
-- **JWT Username**: From JWT_API_AUTH_USERNAME env var
-- **JWT Password**: From JWT_API_AUTH_PASSWORD env var
-- **Dependencies**: Waits for PostgreSQL to be healthy
-- **Logs**: Available in ./logs directory
-
-### Redis Cache (Optional)
+### Redis Cache
 - **Port**: 6379
 - **Purpose**: Caching and session storage
 - **Data Persistence**: Volume-mounted storage
+- **Connection String**: `redis://localhost:6379`
+
+### Backend API Service (Commented Out)
+- **Status**: Currently commented out in docker-compose.local.yml
+- **Reason**: This is a Next.js frontend project - backend service should be added separately
+- **JWT Variables**: Available in env.example for when you add your backend service
+- **To Enable**: Uncomment the backend-api section in docker-compose.local.yml and provide your backend image
 
 ## Common Commands
 
@@ -164,7 +164,7 @@ docker-compose -f docker-compose.local.yml exec -T postgresql psql -U malayalees
    ```bash
    # Check what's using the port
    netstat -tulpn | grep :8080
-   
+
    # Kill the process or change the port in docker-compose.local.yml
    ```
 
@@ -172,7 +172,7 @@ docker-compose -f docker-compose.local.yml exec -T postgresql psql -U malayalees
    ```bash
    # Check PostgreSQL logs
    docker-compose -f docker-compose.local.yml logs postgresql
-   
+
    # Verify database is healthy
    docker-compose -f docker-compose.local.yml exec postgresql pg_isready -U malayalees_user
    ```
@@ -181,7 +181,7 @@ docker-compose -f docker-compose.local.yml exec -T postgresql psql -U malayalees
    ```bash
    # Check backend logs
    docker-compose -f docker-compose.local.yml logs backend-api
-   
+
    # Verify JWT credentials are set
    docker-compose -f docker-compose.local.yml exec backend-api env | grep JWT
    ```
