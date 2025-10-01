@@ -29,10 +29,13 @@ interface TenantSettingsProviderProps {
 export const TenantSettingsProvider: React.FC<TenantSettingsProviderProps> = ({ children }) => {
   const [settings, setSettings] = useState<TenantSettingsDTO | null>(null);
   const [loading, setLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Cache key for sessionStorage
   const CACHE_KEY = 'homepage_tenant_settings_cache';
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  const MAX_RETRIES = 2;
+  const RETRY_DELAY = 2000; // 2 seconds
 
   useEffect(() => {
     async function fetchTenantSettings() {
@@ -93,21 +96,57 @@ export const TenantSettingsProvider: React.FC<TenantSettingsProviderProps> = ({ 
             setSettings(null);
           }
         } else {
-          console.error('❌ Failed to fetch tenant settings:', response.status);
+          // Handle different error status codes gracefully
+          if (response.status === 500) {
+            console.warn('⚠️ Tenant settings service temporarily unavailable');
+          } else if (response.status === 404) {
+            console.warn('⚠️ Tenant settings endpoint not found');
+          } else {
+            console.warn(`⚠️ Failed to fetch tenant settings (${response.status})`);
+          }
+          
+          // Retry logic for server errors
+          if ((response.status >= 500 || response.status === 0) && retryCount < MAX_RETRIES) {
+            console.log(`🔄 Retrying tenant settings fetch (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+            setTimeout(() => {
+              setRetryCount(prev => prev + 1);
+            }, RETRY_DELAY);
+            return; // Don't set loading to false yet
+          }
+          
           setSettings(null);
         }
       } catch (error) {
-        console.error('❌ Error fetching tenant settings:', error);
+        // Handle network errors and other exceptions gracefully
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+          console.warn('⚠️ Network error fetching tenant settings');
+        } else {
+          console.warn('⚠️ Error fetching tenant settings:', error);
+        }
+        
+        // Retry logic for network errors
+        if (retryCount < MAX_RETRIES) {
+          console.log(`🔄 Retrying tenant settings fetch after network error (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1);
+          }, RETRY_DELAY);
+          return; // Don't set loading to false yet
+        }
+        
         setSettings(null);
       } finally {
-        setLoading(false);
+        // Only set loading to false if we're not retrying
+        if (retryCount >= MAX_RETRIES || settings !== null) {
+          setLoading(false);
+        }
       }
     }
 
     fetchTenantSettings();
-  }, [CACHE_KEY, CACHE_DURATION]);
+  }, [CACHE_KEY, CACHE_DURATION, retryCount]);
 
   // Determine section visibility with fallback to true (show by default)
+  // This ensures the app continues to work even if tenant settings fail
   const showEventsSection = settings?.showEventsSectionInHomePage ?? true;
   const showTeamSection = settings?.showTeamMembersSectionInHomePage ?? true;
   const showSponsorsSection = settings?.showSponsorsSectionInHomePage ?? true;
