@@ -20,12 +20,12 @@ const MOSCHeader = () => {
   ];
 
   const quickLinks = [
-    { name: 'Spiritual Organisations', href: '/mosc/spiritual' },
+    { name: 'Spiritual Organisations', href: '/mosc/spiritual-organizations' },
     { name: 'Publications', href: '/mosc/publications' },
     { name: 'Institutions', href: '/mosc/institutions' },
     { name: 'Directory', href: 'http://directory.mosc.in/', external: true },
     { name: 'Training', href: '/mosc/training' },
-    { name: 'Theological Seminaries', href: '/mosc/theological' },
+    { name: 'Theological Seminaries', href: '/mosc/theological-seminaries' },
     { name: 'Lectionary', href: '/mosc/lectionary' },
     { name: 'Downloads', href: '/mosc/downloads' },
     { name: 'Calendar', href: 'http://calendar.mosc.in/', external: true },

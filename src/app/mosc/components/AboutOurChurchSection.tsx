@@ -19,15 +19,15 @@ const AboutOurChurchSection = () => {
 
   const quickLinks = [
     { label: 'Spiritual Organisations', href: '/mosc/spiritual-organizations', icon: 'Cross', isInternal: true },
-    { label: 'Theological Seminaries', href: '/mosc/theological-seminaries', icon: 'GraduationCap' },
-    { label: 'Publications', href: '/mosc/publications', icon: 'BookOpen' },
-    { label: 'Lectionary', href: '/mosc/lectionary', icon: 'BookOpen' },
-    { label: 'Institutions', href: '/mosc/institutions', icon: 'Building' },
-    { label: 'Downloads', href: '/mosc/downloads', icon: 'Download' },
-    { label: 'Directory', href: '/mosc/directory', icon: 'Users' },
-    { label: 'Calendar', href: '/mosc/calendar', icon: 'Calendar' },
-    { label: 'Training', href: '/mosc/training', icon: 'GraduationCap' },
-    { label: 'Gallery', href: '/mosc/gallery', icon: 'Image' }
+    { label: 'Theological Seminaries', href: '/mosc/theological-seminaries', icon: 'GraduationCap', isInternal: true },
+    { label: 'Publications', href: '/mosc/publications', icon: 'BookOpen', isInternal: true },
+    { label: 'Lectionary', href: '/mosc/lectionary', icon: 'BookOpen', isInternal: true },
+    { label: 'Institutions', href: '/mosc/institutions', icon: 'Building', isInternal: true },
+    { label: 'Downloads', href: '/mosc/downloads', icon: 'Download', isInternal: true },
+    { label: 'Directory', href: '/mosc/directory', icon: 'Users', isInternal: true },
+    { label: 'Calendar', href: '/mosc/calendar', icon: 'Calendar', isInternal: true },
+    { label: 'Training', href: '/mosc/training', icon: 'GraduationCap', isInternal: true },
+    { label: 'Gallery', href: '/mosc/gallery', icon: 'Image', isInternal: true }
   ];
 
   const specialLinks = [
@@ -159,7 +159,7 @@ const AboutOurChurchSection = () => {
                     PILGRIM CENTRES
                   </button>
                   <button
-                    onClick={() => handleLinkClick({ href: '/mosc/malankara-sabha-magazine', label: 'MALANKARA SABHA MAGAZINE' })}
+                    onClick={() => handleLinkClick({ href: '/mosc/publications/malankara-sabha-magazine-masika', label: 'MALANKARA SABHA MAGAZINE', isInternal: true })}
                     className="w-full bg-warning text-warning-foreground rounded-md py-2 px-4 text-sm font-body font-medium hover:bg-warning/90 reverent-transition"
                   >
                     MALANKARA SABHA MAGAZINE
