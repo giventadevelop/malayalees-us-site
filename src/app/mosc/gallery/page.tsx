@@ -342,9 +342,10 @@ export default function GalleryPage() {
               const gradient = gradients[index % gradients.length];
               
               return (
-              <div
+              <Link
                 key={album.id}
-                className="group bg-card rounded-lg sacred-shadow hover:sacred-shadow-lg reverent-transition overflow-hidden"
+                href={`/mosc/gallery/${album.id}`}
+                className="group bg-card rounded-lg sacred-shadow hover:sacred-shadow-lg reverent-transition overflow-hidden block"
               >
                 <div className="relative w-full h-48 overflow-hidden">
                   {/* Album Image */}
@@ -393,7 +394,7 @@ export default function GalleryPage() {
                     </svg>
                   </div>
                 </div>
-              </div>
+              </Link>
             );
             })}
           </div>
