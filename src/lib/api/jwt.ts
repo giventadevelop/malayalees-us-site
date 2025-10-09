@@ -9,25 +9,32 @@ export async function generateApiJwt() {
   // Use helper functions which prioritize AMPLIFY_ prefix
   const userHelper = getApiJwtUser();
   const passHelper = getApiJwtPass();
-  
+
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-  
+
   // Debug logging to see what we're getting
   console.log('[JWT DEBUG] Helper getApiJwtUser():', userHelper ? 'SET' : 'UNDEFINED');
   console.log('[JWT DEBUG] Helper getApiJwtPass():', passHelper ? 'SET' : 'UNDEFINED');
   console.log('[JWT DEBUG] API_BASE_URL:', API_BASE_URL ? 'SET' : 'UNDEFINED');
   console.log('[JWT DEBUG] NODE_ENV:', process.env.NODE_ENV);
-  
+
   // Debug: Show all environment variables that contain 'JWT' or 'AMPLIFY'
   console.log('[JWT DEBUG] All JWT/AMPLIFY-related env vars:');
   Object.keys(process.env).filter(key => key.includes('JWT') || key.includes('AMPLIFY')).forEach(key => {
     console.log(`[JWT DEBUG] ${key}:`, process.env[key] ? 'SET' : 'UNDEFINED');
   });
-  
+
   // Use helper functions which have proper priority order
   const finalUser = userHelper;
   const finalPass = passHelper;
-  
+
+  // Debug: Show raw environment variable values
+  console.log('[JWT DEBUG] Raw env values:', {
+    user: process.env.NEXT_PUBLIC_API_JWT_USER,
+    pass: process.env.NEXT_PUBLIC_API_JWT_PASS ? 'SET' : 'UNDEFINED',
+    passLength: process.env.NEXT_PUBLIC_API_JWT_PASS?.length || 0
+  });
+
   if (!finalUser || !finalPass || !API_BASE_URL) {
     console.log('[JWT DEBUG] Missing values - user:', finalUser, 'pass:', finalPass, 'URL:', API_BASE_URL);
     throw new Error('API JWT credentials or API base URL missing');
@@ -39,6 +46,13 @@ export async function generateApiJwt() {
     password: finalPass,
     rememberMe: true,
   };
+
+  // Debug: Log request details before sending
+  console.log('[JWT DEBUG] Request URL:', apiUrl);
+  console.log('[JWT DEBUG] Request body being sent:', JSON.stringify(body));
+  console.log('[JWT DEBUG] Username field:', body.username ? `SET (${body.username})` : 'UNDEFINED/EMPTY');
+  console.log('[JWT DEBUG] Password field:', body.password ? `SET (length: ${body.password.length})` : 'UNDEFINED/EMPTY');
+  console.log('[JWT DEBUG] RememberMe field:', body.rememberMe);
 
   try {
     const res = await fetch(apiUrl, {

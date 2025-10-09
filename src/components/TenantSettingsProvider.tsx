@@ -134,12 +134,11 @@ export const TenantSettingsProvider: React.FC<TenantSettingsProviderProps> = ({ 
         }
 
         setSettings(null);
-      } finally {
-        // Only set loading to false if we're not retrying
-        if (retryCount >= MAX_RETRIES || settings !== null) {
-          setLoading(false);
-        }
+        setLoading(false); // Always stop loading after max retries
       }
+
+      // Always set loading to false after successful fetch or after all retries exhausted
+      setLoading(false);
     }
 
     fetchTenantSettings();
