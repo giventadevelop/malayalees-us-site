@@ -1,102 +1,89 @@
 {
-  "timestamp": "2025-10-08T18:33:36.084Z",
+  "timestamp": "2025-10-12T10:51:49.015Z",
   "summary": {
     "total": 13,
-    "passed": 0,
-    "failed": 13,
-    "successRate": "0.0%"
+    "passed": 13,
+    "failed": 0,
+    "successRate": "100.0%"
   },
   "results": [
     {
       "url": "http://localhost:3000/admin/events",
       "name": "Admin Events Analytics Dashboard",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     },
     {
       "url": "http://localhost:3000/admin/events/1",
       "name": "Event Overview Page",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     },
     {
       "url": "http://localhost:3000/admin/events/1/edit",
       "name": "Event Edit Page",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     },
     {
       "url": "http://localhost:3000/admin/events/1/ticket-types/list",
       "name": "Ticket Types Management",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     },
     {
       "url": "http://localhost:3000/admin/events/1/performers",
       "name": "Performers Management",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     },
     {
       "url": "http://localhost:3000/admin/events/1/sponsors",
       "name": "Sponsors Management",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     },
     {
       "url": "http://localhost:3000/admin/events/1/contacts",
       "name": "Contacts Management (AE007)",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     },
     {
       "url": "http://localhost:3000/admin/events/1/media",
       "name": "Media Management",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     },
     {
       "url": "http://localhost:3000/admin/events/registrations",
       "name": "Registration Management",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     },
     {
       "url": "http://localhost:3000/admin/events/dashboard",
       "name": "Event Dashboard Analytics",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     },
     {
       "url": "http://localhost:3000/admin/events/new",
       "name": "New Event Creation",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     },
     {
       "url": "http://localhost:3000/admin/events/settings",
       "name": "Event Settings",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     },
     {
       "url": "http://localhost:3000/admin/events/reports",
       "name": "Event Reports",
-      "passed": false,
-      "status": 0,
-      "error": "fetch failed"
+      "passed": true,
+      "status": 200
     }
   ]
 }
