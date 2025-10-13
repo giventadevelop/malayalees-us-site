@@ -9,12 +9,11 @@ export const metadata: Metadata = {
 
 export default function DharmaDhammaConferencePage() {
   const photos = [
-    { src: '/images/mosc/gallery/dharma-dhamma-conference/logodesktop.jpg', alt: '3rd International Dharma-Dhamma Conference' },
-    { src: '/images/mosc/gallery/dharma-dhamma-conference/12038151_10206956334419958_7469993072484946131_n.jpg', alt: '3rd International Dharma-Dhamma Conference' },
-    { src: '/images/mosc/gallery/dharma-dhamma-conference/dharama.jpg', alt: '3rd International Dharma-Dhamma Conference' },
-    { src: '/images/mosc/gallery/dharma-dhamma-conference/IMG_7504.jpg', alt: '3rd International Dharma-Dhamma Conference' },
-    { src: '/images/mosc/gallery/dharma-dhamma-conference/dharma-dhama.jpg', alt: '3rd International Dharma-Dhamma Conference' },
-    { src: '/images/mosc/gallery/dharma-dhamma-conference/IMG_7490.jpg', alt: '3rd International Dharma-Dhamma Conference' },
+    { src: '/images/mosc/gallery/dharma-dhamma-conference/12038151_10206956334419958_7469993072484946131_n.jpg', alt: 'Meeting with Madhya Pradesh Chief Minister Shivraj Singh Chouhan at 3rd International Dharma-Dhamma Conference' },
+    { src: '/images/mosc/gallery/dharma-dhamma-conference/dharama.jpg', alt: '3rd International Dharma-Dhamma Conference, Indore, October 24-26, 2015' },
+    { src: '/images/mosc/gallery/dharma-dhamma-conference/IMG_7504.jpg', alt: '3rd International Dharma-Dhamma Conference, Indore, October 24-26, 2015' },
+    { src: '/images/mosc/gallery/dharma-dhamma-conference/dharma-dhama.jpg', alt: '3rd International Dharma-Dhamma Conference, Indore, October 24-26, 2015' },
+    { src: '/images/mosc/gallery/dharma-dhamma-conference/IMG_7490.jpg', alt: '3rd International Dharma-Dhamma Conference, Indore, October 24-26, 2015' },
   ];
 
   return (

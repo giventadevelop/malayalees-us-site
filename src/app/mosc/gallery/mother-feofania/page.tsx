@@ -9,8 +9,7 @@ export const metadata: Metadata = {
 
 export default function MotherFeofaniaPage() {
   const photos = [
-    { src: '/images/mosc/gallery/mother-feofania/logodesktop.jpg', alt: 'Mother Feofania and the Little Flowers of the Convent' },
-    { src: '/images/mosc/gallery/mother-feofania/IMG-20190916-WA0020.jpg', alt: 'Mother Feofania and the Little Flowers of the Convent' },
+    { src: '/images/mosc/gallery/mother-feofania/IMG-20190916-WA0020.jpg', alt: 'Mother Feofania and the Little Flowers of the Convent where St. Matrona is interred, welcomed His Holiness with the songs of their heart' },
   ];
 
   return (

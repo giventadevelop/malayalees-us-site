@@ -184,10 +184,12 @@ const AboutOurChurchSection = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {quickLinks.map((link, index) => (
-                <button
+                <a
                   key={index}
-                  onClick={() => handleLinkClick(link)}
-                  className="flex flex-col items-center space-y-2 p-4 rounded-lg border border-border hover:border-primary hover:bg-muted/20 reverent-transition group"
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center space-y-2 p-4 rounded-lg border border-border hover:border-primary hover:bg-muted/20 reverent-transition group cursor-pointer"
                 >
                   <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center group-hover:bg-primary/20 reverent-transition">
                     <AppIcon name={link.icon} size={20} className="text-primary" />
@@ -195,7 +197,7 @@ const AboutOurChurchSection = () => {
                   <span className="font-body text-xs font-medium text-foreground group-hover:text-primary reverent-transition text-center leading-tight">
                     {link.label}
                   </span>
-                </button>
+                </a>
               ))}
             </div>
           </div>
