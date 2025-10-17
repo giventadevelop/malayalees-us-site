@@ -43,9 +43,9 @@ export default async function PollPage({ params }: PollPageProps) {
     }
 
     options = await fetchEventPollOptionsServer({
-      'pollId.equals': pollId,
-      'isActive.equals': true
+      'pollId.equals': pollId
     });
+    console.log('[Poll Voting Page] Fetched', options.length, 'poll options for poll ID:', pollId);
   } catch (error) {
     console.error('Error fetching poll data:', error);
     notFound();

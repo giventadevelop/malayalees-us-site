@@ -18,7 +18,7 @@ interface PollOption {
 }
 
 interface PollCreationFormProps {
-  onSubmit: (pollData: Omit<EventPollDTO, 'id' | 'createdAt' | 'updatedAt'>, options: (Omit<EventPollOptionDTO, 'id' | 'createdAt' | 'updatedAt' | 'pollId'> & { id?: number })[]) => Promise<void>;
+  onSubmit: (pollData: Omit<EventPollDTO, 'id' | 'createdAt' | 'updatedAt'>, options: (Omit<EventPollOptionDTO, 'id' | 'createdAt' | 'updatedAt' | 'poll'> & { id?: number })[]) => Promise<void>;
   onCancel: () => void;
   initialData?: EventPollDTO;
   initialOptions?: EventPollOptionDTO[];
@@ -96,11 +96,15 @@ export function PollCreationForm({
       return;
     }
 
-    const validOptions = options.filter(opt => opt.optionText.trim()).map(opt => ({
-      ...opt,
-      // Preserve the ID if it exists (for updates)
-      ...(opt.id && { id: opt.id })
-    }));
+    const validOptions = options.filter(opt => opt.optionText.trim()).map(opt => {
+      // Extract only backend-supported fields
+      const { displayOrder, isActive, ...backendOption } = opt;
+      return {
+        optionText: backendOption.optionText,
+        // Preserve the ID if it exists (for updates)
+        ...(opt.id && { id: opt.id })
+      };
+    });
     
     // Convert datetime-local format to proper ISO format for backend
     const formattedFormData = {

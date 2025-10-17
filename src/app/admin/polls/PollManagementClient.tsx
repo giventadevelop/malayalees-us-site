@@ -37,7 +37,7 @@ export function PollManagementClient({ initialPolls }: PollManagementClientProps
 
   const handleCreatePoll = async (
     pollData: Omit<EventPollDTO, 'id' | 'createdAt' | 'updatedAt'>,
-    options: Omit<EventPollOptionDTO, 'id' | 'createdAt' | 'updatedAt' | 'pollId'>[]
+    options: Omit<EventPollOptionDTO, 'id' | 'createdAt' | 'updatedAt' | 'poll'>[]
   ) => {
     try {
       setIsLoading(true);
@@ -45,15 +45,19 @@ export function PollManagementClient({ initialPolls }: PollManagementClientProps
       // Create the poll first
       const createdPoll = await createEventPollServer(pollData);
       
-      // Create poll options
+      // Create poll options with poll reference
+      console.log('[Poll Creation] Creating poll options with poll ID:', createdPoll.id);
       const createdOptions = await Promise.all(
-        options.map(option => 
-          createEventPollOptionServer({
+        options.map(option => {
+          const payload = {
             ...option,
-            pollId: createdPoll.id,
-          })
-        )
+            poll: { id: createdPoll.id },
+          };
+          console.log('[Poll Creation] Creating poll option:', payload);
+          return createEventPollOptionServer(payload);
+        })
       );
+      console.log('[Poll Creation] Successfully created', createdOptions.length, 'poll options');
       
       // Update local state
       setPolls(prev => [createdPoll, ...prev]);
@@ -71,7 +75,7 @@ export function PollManagementClient({ initialPolls }: PollManagementClientProps
 
   const handleUpdatePoll = async (
     pollData: Omit<EventPollDTO, 'id' | 'createdAt' | 'updatedAt'>,
-    options: (Omit<EventPollOptionDTO, 'id' | 'createdAt' | 'updatedAt' | 'pollId'> & { id?: number })[]
+    options: (Omit<EventPollOptionDTO, 'id' | 'createdAt' | 'updatedAt' | 'poll'> & { id?: number })[]
   ) => {
     if (!editingPoll?.id) return;
 
@@ -108,7 +112,7 @@ export function PollManagementClient({ initialPolls }: PollManagementClientProps
           const { id, ...optionData } = option;
           return updateEventPollOptionServer(id!, {
             ...optionData,
-            pollId: editingPoll.id,
+            poll: { id: editingPoll.id },
           });
         });
       
@@ -116,7 +120,7 @@ export function PollManagementClient({ initialPolls }: PollManagementClientProps
       const createPromises = newOptions.map(option => 
         createEventPollOptionServer({
           ...option,
-          pollId: editingPoll.id,
+          poll: { id: editingPoll.id },
         })
       );
       

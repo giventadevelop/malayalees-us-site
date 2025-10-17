@@ -316,6 +316,7 @@ export interface EventPollOptionDTO {
   createdAt: string;
   updatedAt: string;
   poll?: EventPollDTO;
+  // Note: displayOrder and isActive are not supported by the backend API
 }
 
 export interface BulkOperationLogDTO {
