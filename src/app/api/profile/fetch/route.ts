@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { fetchUserProfileServer } from '@/app/profile/ApiServerActions';
+import { fetchWithJwtRetry } from '@/lib/proxyHandler';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,27 +36,43 @@ export async function POST(request: NextRequest) {
 
       // Call backend sync endpoint to create user
       const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-      const syncResponse = await fetch(`${backendUrl}/api/clerk/sync-user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Tenant-Id': tenantId,
-        },
-        body: JSON.stringify({
-          clerkUserId: user.id,
-          email: user.primaryEmailAddress?.emailAddress || user.emailAddresses[0]?.emailAddress,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          tenantId: tenantId,
-        }),
-      });
 
-      if (syncResponse.ok) {
-        console.log('[PROFILE-FETCH-API] ✅ User created successfully, fetching again...');
-        // Fetch the newly created profile
-        profile = await fetchUserProfileServer(clerkUserId);
-      } else {
-        console.error('[PROFILE-FETCH-API] ❌ Failed to create user:', await syncResponse.text());
+      const syncPayload = {
+        clerkUserId: user.id,
+        email: user.primaryEmailAddress?.emailAddress || user.emailAddresses[0]?.emailAddress,
+        firstName: user.firstName || 'User',
+        lastName: user.lastName || 'User',
+        tenantId: tenantId,
+      };
+
+      console.log('[PROFILE-FETCH-API] Sending sync request:', JSON.stringify(syncPayload));
+
+      try {
+        // Use centralized JWT retry helper (complies with .cursor/rules/nextjs_api_routes.mdc)
+        const syncResponse = await fetchWithJwtRetry(`${backendUrl}/api/clerk/sync-user`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Tenant-Id': tenantId,
+          },
+          body: JSON.stringify(syncPayload),
+        }, '[PROFILE-FETCH-API] sync-user');
+
+        const syncResponseText = await syncResponse.text();
+        console.log('[PROFILE-FETCH-API] Sync response status:', syncResponse.status);
+        console.log('[PROFILE-FETCH-API] Sync response body:', syncResponseText);
+
+        if (syncResponse.ok) {
+          console.log('[PROFILE-FETCH-API] ✅ User created successfully, fetching again...');
+          // Wait a bit for database to commit
+          await new Promise(resolve => setTimeout(resolve, 500));
+          // Fetch the newly created profile
+          profile = await fetchUserProfileServer(clerkUserId);
+        } else {
+          console.error('[PROFILE-FETCH-API] ❌ Failed to create user:', syncResponse.status, syncResponseText);
+        }
+      } catch (syncError) {
+        console.error('[PROFILE-FETCH-API] ❌ Error calling sync-user endpoint:', syncError);
       }
     }
 

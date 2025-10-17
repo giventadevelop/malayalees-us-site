@@ -149,7 +149,7 @@ async function validateRequest(request: Request) {
     throw new Error('Please add CLERK_WEBHOOK_SECRET from Clerk Dashboard to .env');
   }
 
-  // Get the headers
+  // Get the headers (await required in Next.js 15)
   const headersList = await headers();
   const svix_id = headersList.get("svix-id");
   const svix_timestamp = headersList.get("svix-timestamp");

@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { UserProfileDTO } from '@/types';
 import { getTenantId, getAppUrl } from '@/lib/env';
 import { getCachedApiJwt, generateApiJwt } from '@/lib/api/jwt';
+import { fetchWithJwtRetry } from '@/lib/proxyHandler';
 
 export async function fetchUserProfileServer(userId: string): Promise<UserProfileDTO | null> {
   const baseUrl = getAppUrl();
@@ -95,8 +96,109 @@ export async function fetchUserProfileServer(userId: string): Promise<UserProfil
       }
     }
 
-    // Step 3: Return null if no profile found
+    // Step 3: Create profile if not found
     console.log('[Profile Server] ❌ No profile found for userId:', userId);
+    console.log('[Profile Server] 🔨 Attempting to create profile automatically...');
+
+    try {
+      // Get user details from Clerk if we don't have email yet
+      if (!email) {
+        const { userId: authUserId } = await auth();
+        if (authUserId) {
+          const clerkApiKey = process.env.CLERK_SECRET_KEY;
+          if (clerkApiKey) {
+            const clerkRes = await fetch(`https://api.clerk.dev/v1/users/${authUserId}`, {
+              headers: {
+                'Authorization': `Bearer ${clerkApiKey}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            if (clerkRes.ok) {
+              const clerkUser = await clerkRes.json();
+              email = clerkUser.email_addresses?.[0]?.email_address || "";
+            }
+          }
+        }
+      }
+
+      // Call backend sync endpoint to create user
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+      const tenantId = getTenantId();
+
+      // Get Clerk user details for profile creation
+      const clerkApiKey = process.env.CLERK_SECRET_KEY;
+      let firstName = 'User';
+      let lastName = 'User';
+
+      if (clerkApiKey) {
+        try {
+          const clerkRes = await fetch(`https://api.clerk.dev/v1/users/${userId}`, {
+            headers: {
+              'Authorization': `Bearer ${clerkApiKey}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (clerkRes.ok) {
+            const clerkUser = await clerkRes.json();
+            firstName = clerkUser.first_name || 'User';
+            lastName = clerkUser.last_name || 'User';
+            if (!email) {
+              email = clerkUser.email_addresses?.[0]?.email_address || "";
+            }
+          }
+        } catch (clerkError) {
+          console.log('[Profile Server] Warning: Could not fetch Clerk user details:', clerkError);
+        }
+      }
+
+      const syncPayload = {
+        clerkUserId: userId,
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        tenantId: tenantId,
+      };
+
+      console.log('[Profile Server] Calling sync-user endpoint:', JSON.stringify(syncPayload));
+
+      // Use centralized JWT retry helper (complies with .cursor/rules/nextjs_api_routes.mdc)
+      const syncResponse = await fetchWithJwtRetry(`${apiBaseUrl}/api/clerk/sync-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-Id': tenantId,
+        },
+        body: JSON.stringify(syncPayload),
+      }, '[Profile Server] sync-user');
+
+      console.log('[Profile Server] Sync response status:', syncResponse.status);
+      const syncResponseText = await syncResponse.text();
+      console.log('[Profile Server] Sync response body:', syncResponseText);
+
+      if (syncResponse.ok) {
+        console.log('[Profile Server] ✅ User created successfully, fetching again...');
+        // Wait a bit for database to commit
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Retry fetching the profile
+        const retryUrl = `${baseUrl}/api/proxy/user-profiles/by-user/${userId}`;
+        const retryResponse = await fetch(retryUrl, {
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store'
+        });
+
+        if (retryResponse.ok) {
+          const data = await retryResponse.json();
+          console.log('[Profile Server] ✅ Profile created and retrieved successfully');
+          return Array.isArray(data) ? data[0] : data;
+        }
+      } else {
+        console.error('[Profile Server] ❌ Failed to create profile:', syncResponse.status, syncResponseText);
+      }
+    } catch (createError) {
+      console.error('[Profile Server] ❌ Error creating profile:', createError);
+    }
+
     return null;
 
   } catch (error) {
@@ -105,30 +207,19 @@ export async function fetchUserProfileServer(userId: string): Promise<UserProfil
   }
 }
 
+/**
+ * Update user profile - uses centralized fetchWithJwtRetry helper
+ * Complies with .cursor/rules/nextjs_api_routes.mdc standards
+ * CRITICAL: Always includes tenantId to comply with multi-tenant architecture
+ */
 export async function updateUserProfileServer(profileId: number, payload: Partial<UserProfileDTO>): Promise<UserProfileDTO | null> {
   try {
     console.log('[Profile Server] Updating profile:', profileId, 'with payload:', payload);
 
-    // Get JWT token for direct backend authentication
-    let token: string;
-    try {
-      const cachedToken = await getCachedApiJwt();
-      if (!cachedToken) {
-        throw new Error('No cached token available');
-      }
-      token = cachedToken;
-    } catch (jwtError) {
-      console.log('[Profile Server] Cached JWT failed, trying generateApiJwt:', jwtError);
-      const generatedToken = await generateApiJwt();
-      if (!generatedToken) {
-        throw new Error('Failed to generate JWT token');
-      }
-      token = generatedToken;
-    }
-
-    // Add id field to payload as required by backend conventions
+    // Add id field and tenantId as required by backend conventions
     const patchPayload = {
       id: profileId,
+      tenantId: getTenantId(), // CRITICAL: Always include tenantId for multi-tenant support
       ...payload
     };
 
@@ -138,14 +229,14 @@ export async function updateUserProfileServer(profileId: number, payload: Partia
       throw new Error('NEXT_PUBLIC_API_BASE_URL is not configured');
     }
 
-    const response = await fetch(`${apiBaseUrl}/api/user-profiles/${profileId}`, {
+    // Use centralized JWT retry helper (complies with .cursor/rules/nextjs_api_routes.mdc)
+    const response = await fetchWithJwtRetry(`${apiBaseUrl}/api/user-profiles/${profileId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/merge-patch+json',
-        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(patchPayload),
-    });
+    }, '[Profile Server] update-profile');
 
     if (response.ok) {
       const updatedProfile = await response.json();
@@ -261,7 +352,7 @@ export async function fetchUserProfileByEmailServer(email: string): Promise<User
 
 /**
  * Generate a new email subscription token for a user profile
- * Uses direct backend API call with JWT authentication
+ * Uses centralized fetchWithJwtRetry helper - complies with .cursor/rules/nextjs_api_routes.mdc
  */
 export async function generateEmailSubscriptionTokenServer(profileId: number): Promise<{ success: boolean; token?: string; error?: string }> {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -270,30 +361,12 @@ export async function generateEmailSubscriptionTokenServer(profileId: number): P
     // Generate a new token (UUID-like string)
     const newToken = `sub_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 
-    // Get JWT token for backend authentication
-    let token: string;
-    try {
-      const cachedToken = await getCachedApiJwt();
-      if (!cachedToken) {
-        throw new Error('No cached token available');
-      }
-      token = cachedToken;
-    } catch (jwtError) {
-      console.log('[generateEmailSubscriptionTokenServer] Cached JWT failed, trying generateApiJwt:', jwtError);
-      const generatedToken = await generateApiJwt();
-      if (!generatedToken) {
-        throw new Error('Failed to generate JWT token');
-      }
-      token = generatedToken;
-    }
-
-    // Update the user profile with the new token using direct backend API call
+    // Update the user profile with the new token using centralized JWT retry helper
     const url = `${API_BASE_URL}/api/user-profiles/${profileId}`;
-    const response = await fetch(url, {
+    const response = await fetchWithJwtRetry(url, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/merge-patch+json',
-        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
         id: profileId, // Include ID for PATCH operations
@@ -302,7 +375,7 @@ export async function generateEmailSubscriptionTokenServer(profileId: number): P
         isEmailSubscribed: true,
         updatedAt: new Date().toISOString()
       }),
-    });
+    }, '[generateEmailSubscriptionTokenServer]');
 
     if (response.ok) {
       console.log('[generateEmailSubscriptionTokenServer] Successfully generated token:', newToken);

@@ -4,6 +4,7 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import { getAppUrl, getTenantId } from '@/lib/env';
 import { getCachedApiJwt, generateApiJwt } from '@/lib/api/jwt';
 import type { UserProfileDTO } from '@/types';
+import { updateUserProfileServer, createUserProfileServer } from './ApiServerActions';
 
 /**
  * Server action to trigger profile reconciliation after authentication
@@ -147,6 +148,7 @@ export async function triggerProfileReconciliationServer() {
     const updatePayload: Partial<UserProfileDTO> = {
       id: existingProfile.id,
       userId: userId, // Always update to current Clerk user ID
+      tenantId: getTenantId(), // CRITICAL: Always include tenantId for multi-tenant support
       updatedAt: new Date().toISOString()
     };
 
@@ -206,49 +208,21 @@ export async function triggerProfileReconciliationServer() {
   }
 }
 
+/**
+ * Update user profile action - delegates to ApiServerActions
+ * Uses centralized updateUserProfileServer which handles JWT authentication
+ */
 export async function updateUserProfileAction(profileId: number, payload: Partial<UserProfileDTO>): Promise<UserProfileDTO | null> {
-  try {
-    console.log('[Profile Action] Updating profile:', profileId, 'with payload:', payload);
-    const response = await fetch(`/api/profile/update`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: profileId, ...payload })
-    });
-    if (!response.ok) {
-      const t = await response.text();
-      console.error('[Profile Action] ❌ Update failed via API route:', response.status, t);
-      return null;
-    }
-    return await response.json();
-  } catch (error) {
-    console.error('[Profile Action] ❌ Error updating profile:', error);
-    return null;
-  }
+  console.log('[Profile Action] Updating profile:', profileId, 'with payload:', payload);
+  return updateUserProfileServer(profileId, payload);
 }
 
+/**
+ * Create user profile action - delegates to ApiServerActions
+ * Uses centralized createUserProfileServer
+ */
 export async function createUserProfileAction(payload: Omit<UserProfileDTO, 'id' | 'createdAt' | 'updatedAt'>): Promise<UserProfileDTO | null> {
-  const baseUrl = getAppUrl();
-
-  try {
-    const response = await fetch(`${baseUrl}/api/proxy/user-profiles`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...payload,
-        tenantId: getTenantId(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }),
-    });
-
-    if (response.ok) {
-      return await response.json();
-    }
-    return null;
-  } catch (error) {
-    console.error('Error creating user profile:', error);
-    return null;
-  }
+  return createUserProfileServer(payload);
 }
 
 export async function resubscribeEmailAction(email: string, token: string): Promise<{ success: boolean; message: string }> {
