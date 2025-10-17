@@ -3,10 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, ChevronDown, X, Menu } from 'lucide-react';
-import { useAuth } from "@clerk/nextjs";
-import { UserButton } from "@clerk/nextjs";
-import { useUser } from "@clerk/nextjs";
+import { Search, ChevronDown, X, Menu, LogOut } from 'lucide-react';
+import { useAuth, useClerk, useUser } from '@clerk/nextjs';
 
 const navItems = [
   {
@@ -96,33 +94,24 @@ const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string
 
 export default function Header({ hideMenuItems = false, variant = 'charity' }: HeaderProps) {
   const pathname = usePathname();
-  const { userId } = useAuth();
-  const { user, isLoaded: userLoaded } = useUser();
+  const { userId, isLoaded } = useAuth();
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
-  // Check admin status
+  // Check if user has admin role from Clerk metadata
   useEffect(() => {
-    async function checkAdminInOrg() {
-      if (!userLoaded || !user) {
-        setIsAdmin(false);
-        return;
-      }
-      try {
-        const memberships = await user.getOrganizationMemberships();
-        const targetOrgMembership = memberships.find(
-          (membership: any) => membership.organization.name === ORG_NAME
-        );
-        setIsAdmin(
-          targetOrgMembership?.role === 'org:admin' ||
-          targetOrgMembership?.role === 'admin'
-        );
-      } catch {
-        setIsAdmin(false);
-      }
+    if (isLoaded && user) {
+      // Check publicMetadata for role
+      const role = user.publicMetadata?.role as string;
+      const isAdminUser = role === 'admin' || role === 'administrator';
+      setIsAdmin(isAdminUser);
+    } else {
+      setIsAdmin(false);
     }
-    checkAdminInOrg();
-  }, [user, userLoaded]);
+  }, [isLoaded, user]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -130,6 +119,18 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      setIsSigningOut(true);
+      await signOut();
+      // Redirect to home page after sign out
+      window.location.href = '/';
+    } catch (error) {
+      console.error('[Header] Error signing out:', error);
+      setIsSigningOut(false);
+    }
   };
 
   useEffect(() => {
@@ -263,6 +264,28 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                       <span className="tracking-[0.025em]">Profile</span>
                     </Link>
 
+                    <button
+                      onClick={handleSignOut}
+                      disabled={isSigningOut}
+                      className={`
+                        relative flex items-center space-x-1 font-inter
+                        text-base font-medium tracking-wide
+                        px-3 py-2 mx-1
+                        transition-all duration-300 ease-in-out
+                        focus:outline-none
+                        ${isSigningOut
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : 'text-blue-400 font-medium hover:text-blue-500 hover:font-semibold border-b-2 border-transparent hover:border-blue-400'
+                        }
+                      `}
+                      aria-label="Sign out"
+                    >
+                      <LogOut size={16} aria-hidden="true" />
+                      <span className="tracking-[0.025em]">
+                        {isSigningOut ? 'Signing Out...' : 'Sign Out'}
+                      </span>
+                    </button>
+
                     {/* Admin Menu with Submenu */}
                     {isAdmin && (
                       <div className="relative group">
@@ -313,7 +336,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                       </div>
                     )}
 
-                    <UserButton afterSignOutUrl="/" />
+                    {/* UserButton removed with Clerk; consider adding profile avatar here */}
                   </>
                 )}
               </div>
@@ -520,6 +543,31 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                     Profile
                   </Link>
 
+                  <button
+                    onClick={() => {
+                      closeMobileMenu();
+                      handleSignOut();
+                    }}
+                    disabled={isSigningOut}
+                    className={`
+                      flex items-center justify-center space-x-2
+                      w-full py-4 px-6 min-h-[44px] rounded-xl
+                      font-inter font-medium text-base tracking-[0.025em]
+                      border-2
+                      focus:outline-none
+                      transition-all duration-300 ease-in-out
+                      active:scale-98
+                      ${isSigningOut
+                        ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'border-red-200 text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300 hover:font-semibold'
+                      }
+                    `}
+                    aria-label="Sign out"
+                  >
+                    <LogOut size={18} aria-hidden="true" />
+                    <span>{isSigningOut ? 'Signing Out...' : 'Sign Out'}</span>
+                  </button>
+
                   {/* Mobile Admin Menu */}
                   {isAdmin && (
                     <>
@@ -549,9 +597,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
                     </>
                   )}
 
-                  <div className="flex justify-center pt-4">
-                    <UserButton afterSignOutUrl="/" />
-                  </div>
+                  {/* UserButton removed with Clerk; consider adding profile avatar here */}
                 </>
               )}
             </div>

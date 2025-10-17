@@ -65,3 +65,62 @@ export function getEmailHostUrlPrefix(): string {
   // In development, use localhost with dynamic port detection
   return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 }
+
+/**
+ * Get Clerk Backend API URL
+ * Returns the Clerk API endpoint for backend authentication
+ */
+export function getClerkBackendUrl(): string {
+  const raw = process.env.CLERK_BACKEND_API_URL || 'https://api.clerk.com';
+  // Safety: only allow Clerk host and normalize to origin without path
+  try {
+    const u = new URL(raw);
+    if (!/clerk\.com$/i.test(u.hostname)) return 'https://api.clerk.com';
+    // Always force api.clerk.com origin, strip any path (/v1 etc.)
+    return 'https://api.clerk.com';
+  } catch {
+    return 'https://api.clerk.com';
+  }
+}
+
+/**
+ * Get Clerk Secret Key for backend API authentication
+ * Throws an error if not set as this is required for backend Clerk integration
+ */
+export function getClerkSecretKey(): string {
+  const secretKey = process.env.CLERK_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error('CLERK_SECRET_KEY is not set in environment variables');
+  }
+  return secretKey;
+}
+
+/**
+ * Get Clerk Publishable Key for frontend (if needed for hybrid approach)
+ */
+export function getClerkPublishableKey(): string | undefined {
+  return process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+}
+
+/**
+ * Get Auth JWT Secret for signing access/refresh tokens
+ * Prioritize Amplify prefixed vars in production
+ */
+export function getAuthJwtSecret(): string {
+  const secret =
+    process.env.AMPLIFY_JWT_SECRET ||
+    process.env.JWT_SECRET ||
+    process.env.AUTH_JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT secret not set. Configure AMPLIFY_JWT_SECRET or JWT_SECRET');
+  }
+  return secret;
+}
+
+/**
+ * Get Backend API Base URL for OAuth and API calls
+ * Returns the backend server URL (e.g., "http://localhost:8080" or "https://api.yourdomain.com")
+ */
+export function getBackendApiUrl(): string {
+  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+}

@@ -20,6 +20,8 @@ out/
 .env.production
 .env.production.*
 .env.local*
+.task-master/.env
+.task-master/.env.local
 
 # Editor directories and files
 .idea

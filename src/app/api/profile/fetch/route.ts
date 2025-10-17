@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { fetchUserProfileServer } from '@/app/profile/ApiServerActions';
 
 export const dynamic = 'force-dynamic';
@@ -7,53 +7,63 @@ export const dynamic = 'force-dynamic';
 /**
  * API endpoint to fetch user profile data
  * Used by client components that need loading states
+ * Auto-creates user profile if it doesn't exist
  */
 export async function POST(request: NextRequest) {
   try {
     console.log('[PROFILE-FETCH-API] 🚀 Profile fetch endpoint called');
 
-    // Verify authentication using Clerk
-    const { userId } = await auth();
-    console.log('[PROFILE-FETCH-API] 🔐 Auth check result:', { userId: userId || 'null' });
+    // Get authenticated user from Clerk
+    const { userId: clerkUserId } = await auth();
+    const user = await currentUser();
 
-    if (!userId) {
-      console.log('[PROFILE-FETCH-API] ❌ No userId from auth(), returning 401');
-      return NextResponse.json({
-        error: 'Authentication required',
-        message: 'Please sign in to access your profile'
-      }, { status: 401 });
+    if (!clerkUserId || !user) {
+      console.log('[PROFILE-FETCH-API] ❌ Not authenticated');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get userId from request body (for verification)
-    let requestedUserId: string;
-    try {
-      const body = await request.json();
-      requestedUserId = body.userId;
-      console.log('[PROFILE-FETCH-API] 📝 Request body userId:', requestedUserId);
-    } catch (parseError) {
-      console.error('[PROFILE-FETCH-API] ❌ Failed to parse request body:', parseError);
-      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
-    }
+    console.log('[PROFILE-FETCH-API] ✅ Authenticated user:', clerkUserId);
 
-    // Ensure user can only fetch their own profile
-    if (userId !== requestedUserId) {
-      console.log('[PROFILE-FETCH-API] ❌ User ID mismatch:', {
-        authUserId: userId,
-        requestedUserId: requestedUserId
+    // Try to fetch existing profile
+    let profile = await fetchUserProfileServer(clerkUserId);
+
+    // If profile doesn't exist, create it automatically
+    if (!profile) {
+      console.log('[PROFILE-FETCH-API] ℹ️ Profile not found, creating automatically...');
+
+      const tenantId = process.env.NEXT_PUBLIC_TENANT_ID || 'tenant_demo_001';
+
+      // Call backend sync endpoint to create user
+      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+      const syncResponse = await fetch(`${backendUrl}/api/clerk/sync-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-Id': tenantId,
+        },
+        body: JSON.stringify({
+          clerkUserId: user.id,
+          email: user.primaryEmailAddress?.emailAddress || user.emailAddresses[0]?.emailAddress,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          tenantId: tenantId,
+        }),
       });
-      return NextResponse.json({ error: 'Forbidden - User ID mismatch' }, { status: 403 });
+
+      if (syncResponse.ok) {
+        console.log('[PROFILE-FETCH-API] ✅ User created successfully, fetching again...');
+        // Fetch the newly created profile
+        profile = await fetchUserProfileServer(clerkUserId);
+      } else {
+        console.error('[PROFILE-FETCH-API] ❌ Failed to create user:', await syncResponse.text());
+      }
     }
-
-    console.log('[PROFILE-FETCH-API] ✅ Authentication verified, fetching profile for userId:', userId);
-
-    // Fetch profile using existing server action
-    const profile = await fetchUserProfileServer(userId);
 
     if (profile) {
       console.log('[PROFILE-FETCH-API] ✅ Profile fetched successfully');
       return NextResponse.json(profile);
     } else {
-      console.log('[PROFILE-FETCH-API] ℹ️ No profile found, returning null');
+      console.log('[PROFILE-FETCH-API] ℹ️ No profile found after creation attempt');
       return NextResponse.json(null);
     }
   } catch (error) {

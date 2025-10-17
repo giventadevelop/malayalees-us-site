@@ -1,13 +1,23 @@
-import { SignInWithReconciliation } from "@/components/SignInWithReconciliation";
+// Using Clerk SDK for authentication
+'use client';
+
+import { SignIn } from '@clerk/nextjs';
 
 export default function SignInPage() {
   return (
-    <main className="flex flex-col items-center justify-center flex-1 py-2">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-center text-gray-900">Welcome Back</h1>
-        <p className="mt-2 text-center text-gray-600">Sign in to continue</p>
-      </div>
-      <SignInWithReconciliation />
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <SignIn
+        appearance={{
+          elements: {
+            rootBox: "mx-auto",
+            card: "shadow-lg"
+          }
+        }}
+        routing="path"
+        path="/sign-in"
+        signUpUrl="/sign-up"
+        afterSignInUrl="/"
+      />
     </main>
   );
 }

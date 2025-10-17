@@ -1,6 +1,8 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+// NOTE: Using Clerk SDK for OAuth (works with custom Google credentials)
+// Backend webhook syncs users to multi-tenant system
 import TrpcProvider from "@/lib/trpc/Provider";
 import Script from "next/script";
 import Header from "../components/Header";
@@ -15,49 +17,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link href="https://fonts.googleapis.com/css?family=Epilogue:300,400,500,600,700|Sora:400,500,600,700&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-      </head>
-      <body className={inter.className + " flex flex-col min-h-screen"} suppressHydrationWarning>
-        <ClerkProvider
-          localization={{
-            signUp: {
-              start: {
-                subtitle: ""
-              }
-            },
-            signIn: {
-              start: {
-                subtitle: ""
-              }
-            }
-          }}
-          appearance={{
-            layout: {
-              socialButtonsPlacement: "bottom",
-              socialButtonsVariant: "iconButton",
-              shimmer: true,
-            },
-            elements: {
-              formButtonPrimary: "bg-[#39E079] hover:bg-[#32c96d]",
-              card: "bg-white dark:bg-gray-800",
-              navbar: "bg-white dark:bg-gray-800",
-              userButtonBox: "hover:bg-gray-100 dark:hover:bg-gray-700",
-              userButtonTrigger: "rounded-full",
-              userButtonAvatarBox: "rounded-full",
-              avatarBox: "h-10 w-10",
-              userButtonPopoverCard: "shadow-lg border dark:border-gray-700",
-              userPreviewMainIdentifier: "font-semibold",
-              userPreviewSecondaryIdentifier: "text-gray-500 dark:text-gray-400",
-            },
-            variables: {
-              borderRadius: "0.5rem",
-              colorPrimary: "#39E079",
-            },
-          }}
-        >
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <link href="https://fonts.googleapis.com/css?family=Epilogue:300,400,500,600,700|Sora:400,500,600,700&display=swap" rel="stylesheet" />
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+        </head>
+        <body className={inter.className + " flex flex-col min-h-screen"} suppressHydrationWarning>
           <TrpcProvider>
             <ConditionalLayout
               header={<Header hideMenuItems={false} />}
@@ -66,20 +32,20 @@ export default function RootLayout({
               {children}
             </ConditionalLayout>
           </TrpcProvider>
-        </ClerkProvider>
-        <Script
-          id="hcaptcha-config"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.hcaptchaConfig = {
-                passive: true,
-                usePassiveEventListeners: true
-              };
-            `,
-          }}
-        />
-      </body>
-    </html>
+          <Script
+            id="hcaptcha-config"
+            strategy="beforeInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.hcaptchaConfig = {
+                  passive: true,
+                  usePassiveEventListeners: true
+                };
+              `,
+            }}
+          />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { UserProfileDTO } from "@/types";
 import { getTenantId } from '@/lib/env';
 import { resubscribeEmailAction, unsubscribeEmailAction } from '@/app/profile/actions';
@@ -120,7 +120,6 @@ const EmailDialogBox = ({ message, onClose }: { message: string; onClose: () => 
 export default function ProfileForm({ initialProfile }: ProfileFormProps) {
   const router = useRouter();
   const { userId } = useAuth();
-  const { user } = useUser();
 
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(!initialProfile);

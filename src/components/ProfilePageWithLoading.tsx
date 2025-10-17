@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { UserProfileDTO } from '@/types';
 import ProfileForm from '@/components/ProfileForm';
 import { ProfileReconciliationTrigger } from '@/components/ProfileReconciliationTrigger';
@@ -13,7 +13,8 @@ import Image from 'next/image';
  * while fetching profile data from the server
  */
 export default function ProfilePageWithLoading() {
-  const { user, isLoaded } = useUser();
+  const { userId, isLoaded } = useAuth();
+  const { user } = useUser();
   const [profile, setProfile] = useState<UserProfileDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,13 +23,13 @@ export default function ProfilePageWithLoading() {
   const [lastResponseStatus, setLastResponseStatus] = useState<number | null>(null);
 
   useEffect(() => {
-    if (isLoaded && user) {
+    if (isLoaded && userId) {
       fetchProfile();
     }
-  }, [isLoaded, user]);
+  }, [isLoaded, userId]);
 
   const fetchProfile = async () => {
-    if (!user) return;
+    if (!userId) return;
 
     try {
       setLoading(true);
@@ -42,7 +43,7 @@ export default function ProfilePageWithLoading() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId: user.id }),
+        body: JSON.stringify({ userId: userId }),
       });
 
       // Store the response status for later use
@@ -62,8 +63,8 @@ export default function ProfilePageWithLoading() {
           // Try to retry once after a short delay
           console.log('[ProfilePageWithLoading] 🔄 Retrying profile fetch after 401 error...');
           setTimeout(() => {
-            if (user) {
-              console.log('[ProfilePageWithLoading] 🔄 Retry attempt for user:', user.id);
+            if (userId) {
+              console.log('[ProfilePageWithLoading] 🔄 Retry attempt for user:', userId);
               fetchProfile();
             }
           }, 1000); // Wait 1 second before retry
