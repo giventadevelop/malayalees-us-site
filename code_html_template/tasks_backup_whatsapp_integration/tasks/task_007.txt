@@ -1,15 +1,16 @@
 # Task ID: 7
-# Title: Implement encryption for sensitive credentials
-# Status: pending
-# Dependencies: 1 ⏱️
-# Priority: high
-# Description: Create utility for encrypting and decrypting sensitive WhatsApp credentials
+# Title: Create Message Templates Manager Component
+# Status: done
+# Dependencies: 1 ✅, 5 ✅
+# Priority: medium
+# Description: Implement the template library management interface for WhatsApp message templates.
 # Details:
-Implement encryption utilities for:
-- Twilio auth tokens
-- Webhook tokens
-
-Use AES-256 encryption with tenant-specific keys. Implement secure key storage and retrieval.
+Implement `MessageTemplatesManager.tsx` with:
+- Template list display with filtering/sorting
+- Template status indicators (pending, approved, rejected)
+- Template details view
+- Template usage statistics
+- Integration with Twilio template API
 
 # Test Strategy:
-Test encryption and decryption with various inputs. Verify encrypted values can be decrypted correctly.
+Test template listing, filtering, and detail viewing functionality.

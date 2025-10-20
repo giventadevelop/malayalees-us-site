@@ -1,16 +1,15 @@
 # Task ID: 13
-# Title: Create Sending Progress Component
+# Title: Implement multi-tenant support
 # Status: done
-# Dependencies: 9 ✅
+# Dependencies: 2 ✅, 4 ✅
 # Priority: medium
-# Description: Build the real-time progress tracking interface for bulk message sending.
+# Description: Add functionality to determine tenant ID from domain or configuration.
 # Details:
-Implement `SendingProgress.tsx` with:
-- Progress bar showing completion percentage
-- Success/failure counters
-- Estimated time remaining
-- Cancel option for in-progress sending
-- Live status updates using React Query
+- Create tenant utility functions
+- Implement subdomain-based tenant detection
+- Add domain mapping configuration
+- Update auth service to use tenant information
+- Test multi-tenant support
 
 # Test Strategy:
-Test progress tracking with simulated bulk sending operations.
+Test tenant detection with different domains and subdomains to verify correct tenant ID is used.

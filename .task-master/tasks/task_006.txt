@@ -1,16 +1,15 @@
 # Task ID: 6
-# Title: Implement WhatsApp Settings Form State Management
+# Title: Implement sign-in form component
 # Status: done
-# Dependencies: 2 ✅, 3 ✅, 4 ✅
-# Priority: high
-# Description: Set up form state management using React Hook Form with zod validation.
+# Dependencies: 5 ✅
+# Priority: medium
+# Description: Create a form component for email/password authentication.
 # Details:
-Implement form state management with:
-- React Hook Form setup with zod resolver
-- Form validation schema according to PRD requirements
-- Form submission handling with loading states
-- Form reset functionality
-- Success/error notifications
+- Create form with email and password inputs
+- Add form validation
+- Integrate with auth context for sign-in
+- Add loading state and error handling
+- Implement redirect after successful sign-in
 
 # Test Strategy:
-Test form submission, validation, and error handling. Verify that form state is properly managed.
+Test form submission, validation, error states, and successful authentication flow.

@@ -1,16 +1,15 @@
 # Task ID: 12
-# Title: Implement Message Preview Component
+# Title: Create error handling utilities and components
 # Status: done
-# Dependencies: 10 ✅, 11 ✅
+# Dependencies: 5 ✅
 # Priority: medium
-# Description: Create the preview interface for reviewing messages before sending.
+# Description: Implement utilities and components for user-friendly error handling.
 # Details:
-Implement `MessagePreview.tsx` with:
-- WhatsApp message preview in mobile device frame
-- Template variable preview with actual values
-- Sample recipient preview
-- Message validation warnings
-- Estimated sending cost/credits
+- Create error message mapping
+- Implement ErrorMessage component
+- Add error handling in forms
+- Create error utilities for API errors
+- Implement user-friendly error messages
 
 # Test Strategy:
-Test the preview rendering with various message types and template variables.
+Test error handling with various error scenarios to verify correct display of error messages.

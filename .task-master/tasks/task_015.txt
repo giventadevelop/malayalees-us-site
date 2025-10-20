@@ -1,16 +1,15 @@
 # Task ID: 15
-# Title: Implement Bulk Messaging Server Actions
+# Title: Write unit tests for authentication services
 # Status: done
-# Dependencies: 9 ✅
-# Priority: high
-# Description: Create server actions for WhatsApp bulk messaging following the nextjs_api_routes pattern.
+# Dependencies: 2 ✅, 3 ✅, 4 ✅
+# Priority: medium
+# Description: Create unit tests for API client, token service, and authentication service.
 # Details:
-Create bulk messaging server actions with:
-- `sendWhatsAppMessageServer` for single messages
-- `sendBulkWhatsAppMessagesServer` for batch sending
-- Progress tracking functionality
-- Error handling and retry logic
-- Scheduled message support
+- Write tests for API client
+- Create tests for token service
+- Implement tests for auth service
+- Add mock responses for API calls
+- Test error handling
 
 # Test Strategy:
-Test API calls with various message payloads. Verify error handling and response processing.
+Run unit tests to verify each service functions correctly in isolation.

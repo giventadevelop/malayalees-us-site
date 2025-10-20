@@ -1,15 +1,15 @@
 # Task ID: 5
-# Title: Implement message template management endpoints
-# Status: pending
-# Dependencies: 3 ⏱️
-# Priority: medium
-# Description: Create API endpoints for WhatsApp message templates
+# Title: Implement WhatsApp Settings Server Actions
+# Status: done
+# Dependencies: 1 ✅
+# Priority: high
+# Description: Create server actions for WhatsApp settings management following the nextjs_api_routes pattern.
 # Details:
-Implement REST endpoints for template management:
-- GET /api/whatsapp/templates
-- POST /api/whatsapp/templates
-
-Ensure templates are stored with proper validation and tenant isolation.
+Create `ApiServerActions.ts` with the following functions:
+- `updateWhatsAppSettingsServer` for saving settings
+- `testWhatsAppConnectionServer` for testing Twilio connection
+- `getWhatsAppTemplatesServer` for retrieving message templates
+- Implement proper error handling and response parsing
 
 # Test Strategy:
-Test template creation and retrieval. Verify templates are properly associated with tenants.
+Test API calls with valid and invalid data. Verify error handling and response processing.

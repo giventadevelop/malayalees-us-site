@@ -1,16 +1,15 @@
 # Task ID: 10
-# Title: Implement Message Composer Component
+# Title: Create protected route wrapper
 # Status: done
-# Dependencies: 9 ✅
+# Dependencies: 5 ✅
 # Priority: high
-# Description: Create the rich text editor for WhatsApp message composition with template support.
+# Description: Implement a component to protect routes that require authentication.
 # Details:
-Implement `BulkMessageComposer.tsx` with:
-- Rich text editor for message content
-- Character counter with WhatsApp limits
-- Template variable placeholder support
-- Template selection dropdown
-- Message type selection (Transactional/Marketing)
+- Create ProtectedRoute component
+- Check authentication state
+- Implement redirect to sign-in for unauthenticated users
+- Add loading state while checking authentication
+- Handle role-based access control (if needed)
 
 # Test Strategy:
-Test message composition, template selection, and character counting functionality.
+Test protected routes with authenticated and unauthenticated states to verify correct behavior.

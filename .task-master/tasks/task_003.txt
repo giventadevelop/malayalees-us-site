@@ -1,16 +1,15 @@
 # Task ID: 3
-# Title: Implement Webhook Configuration Component
+# Title: Create token management service
 # Status: done
 # Dependencies: 1 ✅
-# Priority: medium
-# Description: Create the webhook setup and validation interface for WhatsApp integration.
+# Priority: high
+# Description: Implement a service to handle JWT token storage, retrieval, and validation.
 # Details:
-Implement `WebhookConfiguration.tsx` with:
-- URL input field with HTTPS validation
-- Webhook token generation/input
-- Copy to clipboard functionality
-- Webhook verification status indicator
-- Help text explaining webhook purpose
+- Implement setTokens method for storing tokens
+- Implement getAccessToken and getRefreshToken methods
+- Add token expiration checking
+- Implement clearTokens method for logout
+- Add isAuthenticated helper method
 
 # Test Strategy:
-Test URL validation, token generation, and clipboard functionality.
+Test token storage, retrieval, and expiration checking with mock tokens.

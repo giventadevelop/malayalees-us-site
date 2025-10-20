@@ -1,15 +1,15 @@
 # Task ID: 9
-# Title: Create Bulk Messaging Page Structure
+# Title: Implement other social login providers
 # Status: done
-# Dependencies: None
-# Priority: high
-# Description: Set up the basic structure for the WhatsApp bulk messaging interface.
+# Dependencies: 5 ✅
+# Priority: low
+# Description: Add support for additional social login providers (Facebook, GitHub, etc.).
 # Details:
-Create the following components:
-- Create page route at `/admin/whatsapp/bulk-messaging`
-- Implement step-based UI flow according to BulkMessagingFlow
-- Create stepper component for navigation
-- Set up page layout with responsive design
+- Create social login button components
+- Implement SDK initialization for each provider
+- Add OAuth token retrieval
+- Integrate with auth context socialSignIn
+- Handle success and error states
 
 # Test Strategy:
-Verify that the page loads correctly and the step navigation works as expected.
+Test each social login provider with mock responses to verify token handling and integration with backend.

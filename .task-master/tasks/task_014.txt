@@ -1,17 +1,15 @@
 # Task ID: 14
-# Title: Implement Delivery Report Component
+# Title: Create user profile component
 # Status: done
-# Dependencies: 13 ✅
+# Dependencies: 5 ✅
 # Priority: medium
-# Description: Create the results and analytics dashboard for sent messages.
+# Description: Implement a component to display and manage user profile information.
 # Details:
-Implement `DeliveryReport.tsx` with:
-- Success/failure statistics
-- Delivery status breakdown
-- Error categorization
-- Message cost summary
-- Export results option
-- Retry failed messages option
+- Create user profile display component
+- Add profile image handling
+- Implement user information display
+- Add loading and error states
+- Create sign-out functionality
 
 # Test Strategy:
-Test report generation with various success/failure scenarios.
+Test user profile display with mock user data and verify sign-out functionality.

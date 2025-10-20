@@ -1,17 +1,15 @@
 # Task ID: 11
-# Title: Create Recipient Selector Component
+# Title: Implement token refresh mechanism
 # Status: done
-# Dependencies: 9 ✅
+# Dependencies: 3 ✅, 4 ✅
 # Priority: high
-# Description: Build the interface for selecting and filtering message recipients.
+# Description: Create functionality to refresh expired tokens automatically.
 # Details:
-Implement `RecipientSelector.tsx` with:
-- Contact list display with search/filter
-- CSV upload functionality
-- Recipient group selection
-- Custom filtering options
-- Selected recipients count and summary
-- Validation for phone number format
+- Add token expiration checking
+- Implement automatic token refresh
+- Handle refresh token expiration
+- Prevent refresh token loops
+- Redirect to login on refresh failure
 
 # Test Strategy:
-Test recipient selection, CSV import, and filtering functionality.
+Test token refresh with expired tokens and verify successful API calls after refresh.

@@ -1,16 +1,15 @@
 # Task ID: 8
-# Title: Enhance Tenant Settings Form with WhatsApp Section
+# Title: Implement Google OAuth integration
 # Status: done
-# Dependencies: 5 ✅, 6 ✅
+# Dependencies: 5 ✅
 # Priority: medium
-# Description: Update the existing TenantSettingsForm to include WhatsApp integration options.
+# Description: Create components and utilities for Google social login.
 # Details:
-Enhance `TenantSettingsForm.tsx` with:
-- WhatsApp integration toggle switch
-- Condensed credentials input section
-- Quick test connection option
-- Navigation links to full WhatsApp settings and bulk messaging
-- Integration with existing form submission logic
+- Create Google login button component
+- Implement Google SDK initialization
+- Add OAuth token retrieval
+- Integrate with auth context socialSignIn
+- Handle success and error states
 
 # Test Strategy:
-Test the enhanced form with the new WhatsApp section. Verify that it integrates properly with the existing form.
+Test Google OAuth flow with mock responses to verify token handling and integration with backend.

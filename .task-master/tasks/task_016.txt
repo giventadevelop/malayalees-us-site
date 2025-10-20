@@ -1,16 +1,15 @@
 # Task ID: 16
-# Title: Implement Bulk Messaging Form State Management
+# Title: Write integration tests for authentication flow
 # Status: done
-# Dependencies: 10 ✅, 11 ✅, 12 ✅
-# Priority: high
-# Description: Set up form state management for the multi-step bulk messaging process.
+# Dependencies: 6 ✅, 7 ✅, 8 ✅, 10 ✅
+# Priority: medium
+# Description: Create tests to verify the complete authentication flow works correctly.
 # Details:
-Implement state management with:
-- Multi-step form state preservation
-- Step validation before progression
-- Form data consolidation for submission
-- React Query for server state management
-- Error handling across steps
+- Test sign-in flow end-to-end
+- Test sign-up flow end-to-end
+- Test social login flow
+- Verify protected routes
+- Test token refresh flow
 
 # Test Strategy:
-Test the complete form flow from composition to sending. Verify state preservation between steps.
+Run integration tests with mock backend to verify complete authentication flows.

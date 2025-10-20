@@ -1,16 +1,15 @@
 # Task ID: 2
-# Title: Implement Twilio Credentials Section
+# Title: Implement API client with interceptors
 # Status: done
 # Dependencies: 1 ✅
 # Priority: high
-# Description: Create the Twilio credentials input section with proper validation and security indicators.
+# Description: Create the API client with request and response interceptors for handling authentication tokens.
 # Details:
-Implement `TwilioCredentialsSection.tsx` with:
-- Form fields for Account SID, Auth Token, and WhatsApp From number
-- Input validation according to the specified regex patterns
-- Visual security indicators for credential encryption
-- Show/hide password toggle for sensitive fields
-- Proper error messages for invalid inputs
+- Create base API client with axios/fetch
+- Implement request interceptor for adding auth tokens
+- Implement response interceptor for token refresh
+- Add error handling for authentication errors
+- Configure tenant ID header
 
 # Test Strategy:
-Test form validation with both valid and invalid inputs. Verify that proper error messages are displayed.
+Test API client with mock requests to verify interceptors are working correctly.

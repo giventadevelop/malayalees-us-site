@@ -1,16 +1,16 @@
 # Task ID: 4
-# Title: Create WhatsApp message endpoints
-# Status: pending
-# Dependencies: 3 ⏱️
+# Title: Create Test Connection Component
+# Status: done
+# Dependencies: 2 ✅, 3 ✅
 # Priority: high
-# Description: Implement REST endpoints for sending WhatsApp messages
+# Description: Build the real-time connection testing functionality for Twilio credentials.
 # Details:
-Create REST controllers for the following endpoints:
-- POST /api/whatsapp/send-message
-- POST /api/whatsapp/send-bulk
-- GET /api/whatsapp/delivery-status/{messageId}
-
-Ensure proper request validation, error handling, and tenant isolation.
+Implement `TestConnection.tsx` with:
+- Test connection button
+- Loading state during testing
+- Success/failure status display
+- Detailed error messages for different failure scenarios
+- Connection details display (account status, WhatsApp status, webhook status)
 
 # Test Strategy:
-Test each endpoint with valid and invalid requests. Verify tenant isolation works correctly.
+Test the component with both valid and invalid credentials. Verify proper error handling and status display.

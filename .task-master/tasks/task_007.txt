@@ -1,16 +1,15 @@
 # Task ID: 7
-# Title: Create Message Templates Manager Component
+# Title: Implement sign-up form component
 # Status: done
-# Dependencies: 1 ✅, 5 ✅
+# Dependencies: 5 ✅
 # Priority: medium
-# Description: Implement the template library management interface for WhatsApp message templates.
+# Description: Create a form component for user registration.
 # Details:
-Implement `MessageTemplatesManager.tsx` with:
-- Template list display with filtering/sorting
-- Template status indicators (pending, approved, rejected)
-- Template details view
-- Template usage statistics
-- Integration with Twilio template API
+- Create form with email, password, and name inputs
+- Add form validation
+- Integrate with auth context for sign-up
+- Add loading state and error handling
+- Implement redirect after successful registration
 
 # Test Strategy:
-Test template listing, filtering, and detail viewing functionality.
+Test form submission, validation, error states, and successful registration flow.
