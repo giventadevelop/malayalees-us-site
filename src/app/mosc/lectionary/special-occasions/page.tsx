@@ -135,7 +135,7 @@ export default function SpecialOccasionsPage() {
 
   const ordinations = [
     {
-      title: 'M\'samrono (Reader)',
+      title: `M'samrono (Reader)`,
       readings: ['Psalms 50', 'St. Luke 10:17-24'],
     },
     {
@@ -147,7 +147,7 @@ export default function SpecialOccasionsPage() {
       readings: ['Isaiah 44:1-4, 61:1-4', 'I Timothy 3:8-13', 'St. Luke 10:1-16'],
     },
     {
-      title: 'M\'Shamshono (The Full Deacon)',
+      title: `M'Shamshono (The Full Deacon)`,
       readings: ['Acts 6:1-8', 'I Timothy 3:8-13, 1-7', 'St. John 12:24-26, 13:1-15'],
     },
     {
