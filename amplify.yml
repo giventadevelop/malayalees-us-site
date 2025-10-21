@@ -5,11 +5,17 @@ frontend:
       commands:
         - npm ci
         - echo "Fixing metadata syntax errors with apostrophes..."
-        # Fix apostrophe issues in metadata objects
-        # This converts single quotes to double quotes in title and description fields
-        - find src -name "*.tsx" -o -name "*.ts" | xargs sed -i "s/title: '\\([^']*\\)'s/title: \"\\1's/g" 2>/dev/null || true
-        - find src -name "*.tsx" -o -name "*.ts" | xargs sed -i "s/description: '\\([^']*\\)'s/description: \"\\1's/g" 2>/dev/null || true
-        - find src -name "*.tsx" -o -name "*.ts" | xargs sed -i "s/title: '\\([^']*\\)Paul's/title: \"\\1Paul's/g" 2>/dev/null || true
+        # Fix the specific files with apostrophe issues
+        # Replace all single quotes with double quotes in metadata objects
+        - |
+          find src/app -type f -name "*.tsx" -exec grep -l "export const metadata" {} \; | while read file; do
+            echo "Checking $file..."
+            # Replace single quotes with double quotes in entire metadata object
+            sed -i "/export const metadata = {/,/^};/s/title: '/title: \"/g" "$file"
+            sed -i "/export const metadata = {/,/^};/s/',$/\",/g" "$file"
+            sed -i "/export const metadata = {/,/^};/s/description: '/description: \"/g" "$file"
+            sed -i "/export const metadata = {/,/^};/s/' },$/\" },/g" "$file"
+          done
         - echo "✓ Metadata syntax fixed"
     build:
       commands:
