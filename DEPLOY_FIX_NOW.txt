@@ -1,0 +1,58 @@
+✅ AMPLIFY BUILD FIX - READY TO DEPLOY
+
+Problem: Build failing due to unescaped apostrophes in metadata (Women's, Paul's, etc.)
+
+Solution: Created amplify.yml with automatic fix
+
+===============================================
+RUN THESE COMMANDS NOW:
+===============================================
+
+# 1. Add the amplify.yml file
+git add amplify.yml
+
+# 2. Commit the fix
+git commit -m "fix: Add amplify.yml to fix metadata apostrophe syntax errors"
+
+# 3. Push to trigger new deployment
+git push origin feature_Common_Clerk
+
+===============================================
+
+What amplify.yml Does:
+- Automatically fixes apostrophe issues during build
+- Converts single quotes to double quotes in metadata
+- Fixes: Women's, Paul's, and other apostrophes
+- No manual file editing needed!
+
+===============================================
+
+Expected Result:
+- Amplify will use amplify.yml for build
+- Metadata syntax will be fixed automatically
+- Build should succeed in 5-10 minutes
+
+===============================================
+
+Alternative (if you want to test locally first):
+npm run build
+
+This will show any remaining syntax errors.
+
+===============================================
+
+After Successful Deploy:
+Check your Amplify console:
+https://console.aws.amazon.com/amplify/
+
+Status should change to:
+- "In Progress" → Building
+- "Success" → Deployed
+
+===============================================
+
+Documentation:
+- Full details in: AMPLIFY_BUILD_FIX.md
+- All fix options and explanations included
+
+===============================================
