@@ -81,7 +81,7 @@ export default function SpecialOccasionsPage() {
       ],
     },
     {
-      title: 'During God\'s Wrath and Punishment',
+      title: `During God's Wrath and Punishment`,
       sections: [
         { time: 'Evening', verses: ['St. Luke 13:6-17'] },
         { time: 'Morning', verses: ['St. Matthew 7:7-11'] },
@@ -311,7 +311,7 @@ export default function SpecialOccasionsPage() {
               The Church celebrates numerous feast days throughout the year, honoring the memory of saints, martyrs, apostles, and the blessed Mother of God. Each of these occasions has its own appointed scripture readings that reflect the life and witness of those being commemorated.
             </p>
             <p className="font-body text-lg text-muted-foreground leading-relaxed">
-              The readings for the sacraments and ordinations highlight the sacred nature of these holy mysteries through which God\'s grace is bestowed upon the faithful.
+              The readings for the sacraments and ordinations highlight the sacred nature of these holy mysteries through which God's grace is bestowed upon the faithful.
             </p>
           </div>
         </div>
