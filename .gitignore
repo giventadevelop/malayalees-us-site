@@ -22,6 +22,10 @@ out/
 .env.local*
 .task-master/.env
 .task-master/.env.local
+.env.amplify
+.env.amplify.example
+env-vars.json
+current-env.json
 
 # Editor directories and files
 .idea
