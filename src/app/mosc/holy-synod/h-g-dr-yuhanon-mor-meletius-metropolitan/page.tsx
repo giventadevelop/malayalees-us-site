@@ -54,16 +54,16 @@ const hgdryuhanonmormeletiusmetropolitanPage = () => {
 
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
                       His Grace was born at Elakkaranadu, a typical village in the Ernakulam District of Kerala, to a social worker Mr Markose and Mrs Saramma, Murimakkil.
-He had his primary education from the Government School at Maneed. After his schooling, His Grace studied at St Peter’s College, Kolencherry, and passed out with his bachelors in Malayalam.
+He had his primary education from the Government School at Maneed. After his schooling, His Grace studied at St Peter's College, Kolencherry, and passed out with his bachelors in Malayalam.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                      Coming to the theological studies, he did his BD and MTh degrees from the United Theological College, Bangalore. Thereupon, he took ThM and PhD qualify (old testament theology) from Lutheran School of Theology, Chicago. His Grace has submitted his PhD paper to Dharmaram Vidyashektram, Bangalore. Meanwhile, he studied syriac at St Aphrem’s Seminary, Damascus.
+                      Coming to the theological studies, he did his BD and MTh degrees from the United Theological College, Bangalore. Thereupon, he took ThM and PhD qualify (old testament theology) from Lutheran School of Theology, Chicago. His Grace has submitted his PhD paper to Dharmaram Vidyashektram, Bangalore. Meanwhile, he studied syriac at St Aphrem's Seminary, Damascus.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
                       Mar Meletius got into the services of Our Lord being ordained a deacon in 1973 by His Grace Paulose Mar Phelexinos, the then metropolitan of Kandanad Diocese. He was ordained a priest in 1986 by His Beatitude Catholicos Baselios Paulose II. HH Patriarc Ignatius Zakka I, ordained him as Ramban on 22 December 1990 and as Bishop on 23 December 1990 in Damascus. Since then, he is serving the Trissur Diocese as its Metropolitan.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                      As a priest, he was teaching at MSOT Seminary, Udaigiri. He was also serving as the vicar of St Mary’s Church, Valampur, for about four years.  His Grace is also served as the president of Orthodox Christian Youth Movement.
+                      As a priest, he was teaching at MSOT Seminary, Udaigiri. He was also serving as the vicar of St Mary's Church, Valampur, for about four years.  His Grace is also served as the president of Orthodox Christian Youth Movement.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
                       A scholar, His Grace is a visiting professor to the Orthodox seminaries at Nagpur and Kottayam. An accomplished writer, Mar Meletius has few books—Verukal Thedi, Manavikathayude Kazhchapadukal, Swatantravum Swayam Paryapthathayum—to his credit.

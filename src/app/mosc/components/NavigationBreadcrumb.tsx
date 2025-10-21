@@ -50,7 +50,7 @@ const NavigationBreadcrumb = () => {
             <li key={breadcrumb.href} className="flex items-center" role="listitem">
               {index > 0 && (
                 <span className="text-muted-foreground/50 mx-2" role="img" aria-label="Separator">
-                  ›
+                  '
                 </span>
               )}
               {index === breadcrumbs.length - 1 ? (

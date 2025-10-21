@@ -59,7 +59,7 @@ const dioceseofbrahamavarPage = () => {
                       The Metropolitan.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                      Metropolitan H G Yakob Mar Elias was appointed as the Metropolitan of this newly constituted Diocese, with it’s head quarters at Mangalore, by His Holiness Baselios Marthoma Didymus I through the Kalpana No.396/2010 dated 4-8-2010.
+                      Metropolitan H G Yakob Mar Elias was appointed as the Metropolitan of this newly constituted Diocese, with it's head quarters at Mangalore, by His Holiness Baselios Marthoma Didymus I through the Kalpana No.396/2010 dated 4-8-2010.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
                       Features of the Diocese
@@ -71,25 +71,25 @@ const dioceseofbrahamavarPage = () => {
                       Parishes, Chapels, Congregations, Students Centres.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                      Parishes. Brahmavar Diocese is blessed with 35 parishes: 16 in Kerala; 16 in Karnataka; 2 in Goa; 1 in UAE. Only 11 Parishes have more than 50 families. Total number of families is 2800 of these parishes special mention should be made about: St. Mary’s Orthodox Church, Panaji, Goa, where Blessed Metropolitan St. Alvares Mar Julius I is entombed; St. George Orthodox Church, Georgian Pilgrim Centre Ichilampady; Brahmavar Orthodox Cathedral; St. George Orthodox Cathedral, Abu Dhabi;
+                      Parishes. Brahmavar Diocese is blessed with 35 parishes: 16 in Kerala; 16 in Karnataka; 2 in Goa; 1 in UAE. Only 11 Parishes have more than 50 families. Total number of families is 2800 of these parishes special mention should be made about: St. Mary's Orthodox Church, Panaji, Goa, where Blessed Metropolitan St. Alvares Mar Julius I is entombed; St. George Orthodox Church, Georgian Pilgrim Centre Ichilampady; Brahmavar Orthodox Cathedral; St. George Orthodox Cathedral, Abu Dhabi;
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
                       Of the 9 Chapels 6 belong to Konkani Community and 3 to Malayali Community. We have 5 very active Konkani congregations at Mandya, Bangalore, Mumbai, Kuwait and UAE.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                      This Diocese is blessed with a good number of professional students. Students’ ministry is progressing and developing at different centres including, Mangalore, Manipal, Moodubidri, Shimoga, Kasarsgod,and Sullia.
+                      This Diocese is blessed with a good number of professional students. Students' ministry is progressing and developing at different centres including, Mangalore, Manipal, Moodubidri, Shimoga, Kasarsgod,and Sullia.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
                       Priests, Deacons and Seminarians
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                      Priests. 29 Priests are in the Diocese including one Cor- Episcopa and one Ramban. Two Deacons have finished Seminary training and education. Three students are in the Seminary. The Diocese is in need of the services of 15 more priests for it’s efficient and full fledged ministry. Priests are taking special interest in the Spiritual Organizations and charitable services.
+                      Priests. 29 Priests are in the Diocese including one Cor- Episcopa and one Ramban. Two Deacons have finished Seminary training and education. Three students are in the Seminary. The Diocese is in need of the services of 15 more priests for it's efficient and full fledged ministry. Priests are taking special interest in the Spiritual Organizations and charitable services.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
                       Teaching Ministry.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                      The Diocese is very keen in keeping it as a very Oriental orthodox Christian Green Zone in it’s understanding and practice of the Holy Church, Ministry and Mysteries or Sacraments. The Metropolitan is taking special interest in teaching and spreading the Orthodox Christian Way of Life, understanding of Holy Tradition including H. Bible and H. Faith. It is available and accessible in You Tube with the caption; Learning Orthodoxy with Mar Elias, both Malayalam and English.
+                      The Diocese is very keen in keeping it as a very Oriental orthodox Christian Green Zone in it's understanding and practice of the Holy Church, Ministry and Mysteries or Sacraments. The Metropolitan is taking special interest in teaching and spreading the Orthodox Christian Way of Life, understanding of Holy Tradition including H. Bible and H. Faith. It is available and accessible in You Tube with the caption; Learning Orthodoxy with Mar Elias, both Malayalam and English.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
                       Vision

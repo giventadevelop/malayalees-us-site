@@ -50,8 +50,8 @@ const Icon: React.FC<IconProps> = ({ name, size = 16, className = '', color }) =
     'arrow-left': '←',
     'arrow-up': '↑',
     'arrow-down': '↓',
-    'chevron-right': '›',
-    'chevron-left': '‹',
+    'chevron-right': '>',
+    'chevron-left': '<',
     'chevron-up': '^',
     'chevron-down': 'v',
 

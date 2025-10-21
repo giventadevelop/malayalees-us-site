@@ -59,16 +59,16 @@ const dioceseofahmedabadPage = () => {
                       His Holiness assumed the charge as the Metropolitan of the new Diocese and His Grace Geevarghese Mar Coorilos, Metropolitan of Bombay Diocese was appointed as the Assistant Metropolitan of the Diocese.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                      The first General Body meeting of the new Diocese of Ahmedabad was held on June 19,.2009 under the Presidentship of HG Geevarghese Mar Coorilose at St Mary’s Orthodox Syrian Church, Ahmedabad. The meeting was attended by priests and lay representatives representing various parishes in the Diocese. The meeting was also attended by existing members of the Malankara Orthodox Church Managing Committee and the Diocesan Council from the Parishes which have been included in the New Diocese and also by the Parish Office Bearers as special invitees. Rev Fr Joji George, Vicar, St Mary’s Orthodox Syrian Church, Ahmedabad was elected as the Diocesan Secretary by the General Assembly.
+                      The first General Body meeting of the new Diocese of Ahmedabad was held on June 19,.2009 under the Presidentship of HG Geevarghese Mar Coorilose at St Mary's Orthodox Syrian Church, Ahmedabad. The meeting was attended by priests and lay representatives representing various parishes in the Diocese. The meeting was also attended by existing members of the Malankara Orthodox Church Managing Committee and the Diocesan Council from the Parishes which have been included in the New Diocese and also by the Parish Office Bearers as special invitees. Rev Fr Joji George, Vicar, St Mary's Orthodox Syrian Church, Ahmedabad was elected as the Diocesan Secretary by the General Assembly.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
                       The Diocese of Ahmedabad was formally inaugurated on October 3, 2009 by His Grace Dr Mathews Mar Severios Metropolitan, Secretary to the Holy Episcopal Synod and the Metropolitan of Kandanad Diocese in the presence of priests, faithful and invited guests.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                      The Diocese of Ahmedabad is presently functioning from the premises of St Mary’s School, Naroda, provided by the St Mary’s Orthodox Syrian Church, Ahmedabad.
+                      The Diocese of Ahmedabad is presently functioning from the premises of St Mary's School, Naroda, provided by the St Mary's Orthodox Syrian Church, Ahmedabad.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                      Address:  St Mary’s Higher Secondary School Campus,
+                      Address:  St Mary's Higher Secondary School Campus,
 Naroda, Ahmedabad, Gujarat
 India 382 330
                     </p>

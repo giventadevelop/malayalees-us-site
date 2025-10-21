@@ -15,6 +15,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "fix:quotes": "tsx scripts/fix-quotes.ts",
     "task": "node .task-master/dev.mjs",
     "task:list": "node .task-master/dev.mjs list",
     "task:generate": "node .task-master/dev.mjs generate",
@@ -88,6 +89,8 @@
     "tailwind-merge": "^3.2.0",
     "tailwindcss": "^3.4.1",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5.3.3"
+    "tsx": "^4.19.2",
+    "typescript": "^5.3.3",
+    "glob": "^11.0.0"
   }
 }

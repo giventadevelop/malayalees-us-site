@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export const metadata = {
-  title: 'St. Paul's & St.Thomas Suvishesha Sangam National Association for Mission Studies | MOSC',
-  description: 'President H.G. Dr. Yuhanon Mar Thevodoros Metropolitan Office Address St.Paul's M.T.C , Mavelikara Ph- 0479 2302473, 2342709 Email- stpaulsmtc@yahoo.com...',
+  title: "St. Paul's & St.Thomas Suvishesha Sangam National Association for Mission Studies | MOSC",
+  description: "President H.G. Dr. Yuhanon Mar Thevodoros Metropolitan Office Address St.Paul's M.T.C , Mavelikara Ph- 0479 2302473, 2342709 Email- stpaulsmtc@yahoo.com...",
 };
 
 const StPaulsStThomasSuvisheshaSangamNationalAssociationForMissionStudiesPage = () => {

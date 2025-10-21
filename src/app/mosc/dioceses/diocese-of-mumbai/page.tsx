@@ -56,7 +56,7 @@ const dioceseofmumbaiPage = () => {
                       The Diocese of Bombay was carved out of the outside Kerala diocese of the Malankara Orthodox Syrian Church in the year 1976.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                      His grace Dr. Thomas Mar Makarios was the first Metropolitan with the headquarters as St.Mary’s Church, Dadar. The diocese made rapid strides during the tenure if His grace Late Lamented Dr. Philipose Mar Theophilus who took over from Mar Makarios who moved to then newly formed Diocese in the year 1979. Mar Theophilus initially established his headquarters near St. Gregorios Church ,Chembur before moving out in the year 1988 to the present headquarters at the orthodox church centre, Vashi, Navi Mumbai.
+                      His grace Dr. Thomas Mar Makarios was the first Metropolitan with the headquarters as St.Mary's Church, Dadar. The diocese made rapid strides during the tenure if His grace Late Lamented Dr. Philipose Mar Theophilus who took over from Mar Makarios who moved to then newly formed Diocese in the year 1979. Mar Theophilus initially established his headquarters near St. Gregorios Church ,Chembur before moving out in the year 1988 to the present headquarters at the orthodox church centre, Vashi, Navi Mumbai.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
                       Today the Diocese had grown to be a giant among the rest of the dioceses in many ways and more than 70 churches, schools, clinics, hostels etc are efficiently managed by about 50 sincere and dedicated priests along with the lay representatives opportunely

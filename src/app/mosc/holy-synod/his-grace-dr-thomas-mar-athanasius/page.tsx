@@ -54,7 +54,7 @@ const hisgracedrthomasmarathanasiusPage = () => {
 
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
                       His Grace was born on 28 June 1952 at Arikuzha, Thodupuzha, to Rev. Fr Yohannan Puttanil and Mrs Mariam.
-He did his schooling at Government UPS School Arikuzha and NSS High School, Manakad. Thereupon he joined New Man College, Thodupuzha and passed out his Pre-degree and Degree from there. He did his MA from St John’s College, Agra.
+He did his schooling at Government UPS School Arikuzha and NSS High School, Manakad. Thereupon he joined New Man College, Thodupuzha and passed out his Pre-degree and Degree from there. He did his MA from St John's College, Agra.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
                       In the theological front, he took his BD degree from Serampore College and United Theological College, Bangalore. And went for his DTh from Protestant Faculty, University of Munich.
@@ -70,7 +70,7 @@ He was a teacher at Syrian Orthodox Theological Seminary at Vettickal during 199
                       His Grace is an author of few well-known books. A Comparative Study of Theological Methodologies of Irenaeus and Sri Sankara (1990); Church and Society (1992); Neethi Samooham; and Anthyokya Malankara Bandham: Oru Punarchintanam are the main titles.
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
-                      Address: Bishop’s House, Cathedral Road, Moovattupuzha,Kerala – 686 661
+                      Address: Bishop's House, Cathedral Road, Moovattupuzha,Kerala – 686 661
 ph : 0485 2833401 Cell: 9447083340
                     </p>
                   <p className="font-body text-muted-foreground leading-relaxed mb-6">
