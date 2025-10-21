@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export const metadata = {
-  title: 'Marth Mariam Vanitha Samajam (Women's Wing of Orthodox Church of India) | MOSC',
-  description: 'A Brief History Marth Mariam Vanitha Samajam is the Women's wing of the Malankara Orthodox Church of India. It is one of the major spiritual organization of the...',
+  title: `Marth Mariam Vanitha Samajam (Women's Wing of Orthodox Church of India) | MOSC`,
+  description: `A Brief History Marth Mariam Vanitha Samajam is the Women's wing of the Malankara Orthodox Church of India. It is one of the major spiritual organization of the...`,
 };
 
 const MarthMariamVanithaSamajamWomensWingOfOrthodoxChurchOfIndiaPage = () => {
@@ -72,8 +72,8 @@ const MarthMariamVanithaSamajamWomensWingOfOrthodoxChurchOfIndiaPage = () => {
                   Related Organizations
                 </h3>
                 <div className="space-y-3">
-                  <Link 
-                    href="/mosc/spiritual-organizations" 
+                  <Link
+                    href="/mosc/spiritual-organizations"
                     className="block text-primary hover:text-primary/80 font-medium reverent-transition"
                   >
                     ← All Spiritual Organizations

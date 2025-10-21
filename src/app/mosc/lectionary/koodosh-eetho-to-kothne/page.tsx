@@ -31,8 +31,8 @@ export default function KoodoshEethoToKothnePage() {
       ],
     },
     {
-      title: 'Annunciation to Zachariah (Parents\' Day)',
-      description: 'This Sunday is commemorated as the day when John the Baptist\'s birth was announced to Zachariah by Angel Gabriel.',
+      title: `Annunciation to Zachariah (Parents' Day)`,
+      description: `This Sunday is commemorated as the day when John the Baptist's birth was announced to Zachariah by Angel Gabriel.`,
       sections: [
         { time: 'Evening', verses: ['St. Matthew 19:3-12'] },
         { time: 'Morning', verses: ['St. Luke 10:38-42'] },
@@ -50,7 +50,7 @@ export default function KoodoshEethoToKothnePage() {
       ],
     },
     {
-      title: 'St. Mary\'s Visit to Elizabeth (Women\'s Day)',
+      title: `St. Mary's Visit to Elizabeth (Women's Day)`,
       sections: [
         { time: 'Evening', verses: ['St. Luke 8:1-3'] },
         { time: 'Morning', verses: ['St. Luke 10:38-42'] },
@@ -59,7 +59,7 @@ export default function KoodoshEethoToKothnePage() {
       ],
     },
     {
-      title: 'Birth of John the Baptist (Children\'s Day)',
+      title: `Birth of John the Baptist (Children's Day)`,
       sections: [
         { time: 'Evening', verses: ['St. Mark 10:13-16'] },
         { time: 'Morning', verses: ['St. Matthew 11:11-19'] },
@@ -142,7 +142,7 @@ export default function KoodoshEethoToKothnePage() {
     },
     {
       title: 'Baptism of Our Lord Jesus Christ (6th January)',
-      description: 'This festival is called Danaha in Syriac meaning \'Dawn\'. Also called Epiphany or Theophany.',
+      description: `This festival is called Danaha in Syriac meaning 'Dawn'. Also called Epiphany or Theophany.`,
       sections: [
         { time: 'Evening', verses: ['St. Mark 1:1-11'] },
         { time: 'Morning', verses: ['St. Matthew 3:1-17'] },
