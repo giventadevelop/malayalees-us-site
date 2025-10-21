@@ -1,0 +1,29 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+        - echo "Fixing metadata apostrophe syntax errors..."
+        # Fix apostrophes in all metadata exports by converting single quotes to double quotes
+        - |
+          find src/app -type f -name "*.tsx" | while read file; do
+            if grep -q "export const metadata" "$file"; then
+              echo "Processing $file..."
+              # Use perl for more reliable in-place editing
+              perl -i -pe 's/^(\s*title:\s*)'\''([^'\'']*)'\''/\1"\2"/g' "$file"
+              perl -i -pe 's/^(\s*description:\s*)'\''([^'\'']*)'\''/\1"\2"/g' "$file"
+            fi
+          done
+        - echo "✓ Metadata syntax fixed"
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
