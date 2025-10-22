@@ -8,6 +8,7 @@ import Script from "next/script";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ConditionalLayout from "../components/ConditionalLayout";
+import { headers } from "next/headers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,8 +17,23 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Detect if running on Amplify satellite domain
+  const headersList = headers();
+  const host = headersList.get('host') || '';
+
+  // Check if this is an Amplify domain (satellite) or primary domain
+  const isAmplifyDomain = host.includes('amplifyapp.com');
+
+  // Configure Clerk for satellite domain
+  const satelliteDomain = isAmplifyDomain ? host : undefined;
+  const isSatellite = isAmplifyDomain;
+
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      domain={satelliteDomain}
+      isSatellite={isSatellite}
+      proxyUrl={isSatellite ? "/__clerk" : undefined}
+    >
       <html lang="en" suppressHydrationWarning>
         <head>
           <link href="https://fonts.googleapis.com/css?family=Epilogue:300,400,500,600,700|Sora:400,500,600,700&display=swap" rel="stylesheet" />
