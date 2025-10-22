@@ -30,17 +30,21 @@ export default function RootLayout({
   const satelliteDomain = isAmplifyDomain ? host : undefined;
   const isSatellite = isAmplifyDomain;
 
+  // Primary domain for authentication (Account Portal pattern)
+  // Auth pages must be on primary domain when using satellite domains
+  const primaryDomain = 'https://www.adwiise.com';
+
   return (
     <ClerkProvider
       domain={satelliteDomain}
       isSatellite={isSatellite}
       proxyUrl={isSatellite ? "/__clerk" : undefined}
-      signInUrl={isSatellite ? `${baseUrl}/sign-in` : "/sign-in"}
-      signUpUrl={isSatellite ? `${baseUrl}/sign-up` : "/sign-up"}
-      signInFallbackRedirectUrl={baseUrl}
-      signUpFallbackRedirectUrl={baseUrl}
-      afterSignInUrl={isSatellite ? `${baseUrl}/` : "/"}
-      afterSignUpUrl={isSatellite ? `${baseUrl}/` : "/"}
+      signInUrl={isSatellite ? `${primaryDomain}/sign-in` : "/sign-in"}
+      signUpUrl={isSatellite ? `${primaryDomain}/sign-up` : "/sign-up"}
+      signInFallbackRedirectUrl={isSatellite ? baseUrl : undefined}
+      signUpFallbackRedirectUrl={isSatellite ? baseUrl : undefined}
+      afterSignInUrl={isSatellite ? baseUrl : "/"}
+      afterSignUpUrl={isSatellite ? baseUrl : "/"}
     >
       <html lang="en" suppressHydrationWarning>
         <head>
