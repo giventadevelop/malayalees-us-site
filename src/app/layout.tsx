@@ -20,6 +20,8 @@ export default function RootLayout({
   // Detect if running on Amplify satellite domain
   const headersList = headers();
   const host = headersList.get('host') || '';
+  const protocol = host.includes('localhost') ? 'http' : 'https';
+  const baseUrl = `${protocol}://${host}`;
 
   // Check if this is an Amplify domain (satellite) or primary domain
   const isAmplifyDomain = host.includes('amplifyapp.com');
@@ -33,6 +35,10 @@ export default function RootLayout({
       domain={satelliteDomain}
       isSatellite={isSatellite}
       proxyUrl={isSatellite ? "/__clerk" : undefined}
+      signInUrl={isSatellite ? `${baseUrl}/sign-in` : "/sign-in"}
+      signUpUrl={isSatellite ? `${baseUrl}/sign-up` : "/sign-up"}
+      afterSignInUrl={isSatellite ? `${baseUrl}/` : "/"}
+      afterSignUpUrl={isSatellite ? `${baseUrl}/` : "/"}
     >
       <html lang="en" suppressHydrationWarning>
         <head>
