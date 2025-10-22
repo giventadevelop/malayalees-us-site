@@ -35,12 +35,12 @@ export default function RootLayout({
       domain={satelliteDomain}
       isSatellite={isSatellite}
       proxyUrl={isSatellite ? "/__clerk" : undefined}
-      signInUrl="/sign-in"
-      signUpUrl="/sign-up"
+      signInUrl={isSatellite ? `${baseUrl}/sign-in` : "/sign-in"}
+      signUpUrl={isSatellite ? `${baseUrl}/sign-up` : "/sign-up"}
       signInFallbackRedirectUrl={baseUrl}
       signUpFallbackRedirectUrl={baseUrl}
-      afterSignInUrl="/"
-      afterSignUpUrl="/"
+      afterSignInUrl={isSatellite ? `${baseUrl}/` : "/"}
+      afterSignUpUrl={isSatellite ? `${baseUrl}/` : "/"}
     >
       <html lang="en" suppressHydrationWarning>
         <head>
