@@ -59,7 +59,20 @@ export async function OPTIONS(
   request: NextRequest,
   { params }: { params: { path: string[] } }
 ) {
-  return proxyToClerk(request, params.path);
+  // Handle OPTIONS (CORS preflight) directly without proxying
+  // This is required for Clerk's verification system to work
+  const origin = request.headers.get('origin') || '*';
+
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Max-Age': '86400', // 24 hours
+    },
+  });
 }
 
 /**
