@@ -26,6 +26,12 @@ export default authMiddleware({
     '/contact(.*)',
   ],
 
+  // Satellite domain configuration for multi-domain support
+  // For Amplify domains, point to primary domain for sign-in
+  signInUrl: process.env.NEXT_PUBLIC_APP_URL?.includes('amplifyapp.com')
+    ? 'https://www.adwiise.com/sign-in'
+    : '/sign-in',
+
   // Custom logic to add pathname header
   afterAuth(auth, req) {
     // Add pathname header for layout detection (used by ConditionalLayout)
