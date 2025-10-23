@@ -41,6 +41,8 @@ export default function RootLayout({
       proxyUrl={isSatellite ? "/__clerk" : undefined}
       signInUrl={isSatellite ? `${primaryDomain}/sign-in` : "/sign-in"}
       signUpUrl={isSatellite ? `${primaryDomain}/sign-up` : "/sign-up"}
+      signInForceRedirectUrl={isSatellite ? `${primaryDomain}/sign-in` : undefined}
+      signUpForceRedirectUrl={isSatellite ? `${primaryDomain}/sign-up` : undefined}
       signInFallbackRedirectUrl={isSatellite ? baseUrl : undefined}
       signUpFallbackRedirectUrl={isSatellite ? baseUrl : undefined}
       afterSignInUrl={isSatellite ? baseUrl : "/"}
