@@ -23,30 +23,14 @@ export default function RootLayout({
   const protocol = host.includes('localhost') ? 'http' : 'https';
   const baseUrl = `${protocol}://${host}`;
 
-  // Check if this is an Amplify domain (satellite) or primary domain
+  // For now, disable satellite mode for Amplify until domain is verified in Clerk
+  // Just use standard Clerk configuration for all domains
   const isAmplifyDomain = host.includes('amplifyapp.com');
-
-  // Configure Clerk for satellite domain
-  const satelliteDomain = isAmplifyDomain ? host : undefined;
-  const isSatellite = isAmplifyDomain;
-
-  // Primary domain for authentication (Account Portal pattern)
-  // Auth pages must be on primary domain when using satellite domains
-  const primaryDomain = 'https://www.adwiise.com';
 
   return (
     <ClerkProvider
-      domain={satelliteDomain}
-      isSatellite={isSatellite}
-      proxyUrl={isSatellite ? "/__clerk" : undefined}
-      signInUrl={isSatellite ? `${primaryDomain}/sign-in` : "/sign-in"}
-      signUpUrl={isSatellite ? `${primaryDomain}/sign-up` : "/sign-up"}
-      signInForceRedirectUrl={isSatellite ? `${primaryDomain}/sign-in` : undefined}
-      signUpForceRedirectUrl={isSatellite ? `${primaryDomain}/sign-up` : undefined}
-      signInFallbackRedirectUrl={isSatellite ? baseUrl : undefined}
-      signUpFallbackRedirectUrl={isSatellite ? baseUrl : undefined}
-      afterSignInUrl={isSatellite ? baseUrl : "/"}
-      afterSignUpUrl={isSatellite ? baseUrl : "/"}
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      telemetry={false}
     >
       <html lang="en" suppressHydrationWarning>
         <head>
