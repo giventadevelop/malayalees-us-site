@@ -19,25 +19,25 @@ export default async function RootLayout({
 }) {
   // Satellite domain configuration for multi-domain support
   // Primary domain: www.adwiise.com
-  // Satellite domains: preview.adwiise.com (and future tenant domains)
+  // Satellite domains: www.mosc-temp.com (and future tenant domains)
 
   const headersList = await headers();
   const hostname = headersList.get('host') || '';
 
   // Detect if this is a satellite domain
-  const isSatellite = hostname.includes('preview.adwiise.com');
+  const isSatellite = hostname.includes('mosc-temp.com');
 
   // Satellite domains must redirect to primary domain for authentication
   const clerkProps = isSatellite
     ? {
         isSatellite: true,
-        domain: 'preview.adwiise.com',
+        domain: 'www.mosc-temp.com',
         signInUrl: 'https://www.adwiise.com/sign-in',
         signUpUrl: 'https://www.adwiise.com/sign-up',
       }
     : {
         // Primary domain allows redirects from satellites
-        allowedRedirectOrigins: ['https://preview.adwiise.com'],
+        allowedRedirectOrigins: ['https://www.mosc-temp.com'],
       };
 
   return (
