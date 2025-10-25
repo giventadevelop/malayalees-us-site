@@ -32,7 +32,6 @@ export default async function RootLayout({
     ? {
         isSatellite: true,
         domain: 'www.mosc-temp.com',
-        proxyUrl: 'https://www.adwiise.com/__clerk',
         signInUrl: 'https://www.adwiise.com/sign-in',
         signUpUrl: 'https://www.adwiise.com/sign-up',
       }
