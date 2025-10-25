@@ -115,10 +115,25 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
   useEffect(() => {
     if (isLoaded && user) {
       // Check publicMetadata for role
-      const role = user.publicMetadata?.role as string;
-      const isAdminUser = role === 'admin' || role === 'administrator';
+      const publicRole = user.publicMetadata?.role as string;
+
+      // Check organization memberships for admin role
+      const orgRole = user.organizationMemberships?.[0]?.role;
+
+      // Check both locations
+      const isAdminUser =
+        publicRole === 'admin' ||
+        publicRole === 'administrator' ||
+        orgRole === 'admin' ||
+        orgRole === 'org:admin';
+
       setIsAdmin(isAdminUser);
-      console.log('[Header] User role check:', { role, isAdminUser });
+      console.log('[Header] User role check:', {
+        publicRole,
+        orgRole,
+        hasOrgMemberships: user.organizationMemberships?.length || 0,
+        isAdminUser
+      });
     } else {
       setIsAdmin(false);
     }
