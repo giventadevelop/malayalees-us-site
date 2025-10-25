@@ -27,8 +27,12 @@ export default authMiddleware({
   ],
 
   // Satellite domain configuration for multi-domain support
+  // Detect if running on satellite domain
+  isSatellite: process.env.NEXT_PUBLIC_APP_URL?.includes('mosc-temp.com') || false,
+  domain: process.env.NEXT_PUBLIC_APP_URL?.includes('mosc-temp.com') ? 'www.mosc-temp.com' : undefined,
+
   // For Amplify domains, point to primary domain for sign-in
-  signInUrl: process.env.NEXT_PUBLIC_APP_URL?.includes('amplifyapp.com')
+  signInUrl: process.env.NEXT_PUBLIC_APP_URL?.includes('amplifyapp.com') || process.env.NEXT_PUBLIC_APP_URL?.includes('mosc-temp.com')
     ? 'https://www.adwiise.com/sign-in'
     : '/sign-in',
 
