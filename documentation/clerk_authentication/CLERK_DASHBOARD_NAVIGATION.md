@@ -87,8 +87,8 @@ The fastest way to test if this is a Frontend API URL issue:
    ```
 3. Keep only:
    ```
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_YOUR_CLERK_PUBLISHABLE_KEY
-   CLERK_SECRET_KEY=sk_live_YOUR_CLERK_SECRET_KEY_HERE
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_***_CLERK_PUBLISHABLE_KEY
+   CLERK_SECRET_KEY=sk_live_***_CLERK_SECRET_KEY_HERE
    ```
 4. **Redeploy**
 
@@ -96,7 +96,7 @@ This lets Clerk SDK auto-detect the correct Frontend API from your publishable k
 
 ## Decode Your Publishable Key
 
-Your key `pk_live_YOUR_CLERK_PUBLISHABLE_KEY` is base64 encoded.
+Your key `pk_live_***_CLERK_PUBLISHABLE_KEY` is base64 encoded.
 
 To see what domain it points to:
 

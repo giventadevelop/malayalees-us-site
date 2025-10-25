@@ -190,19 +190,19 @@ But treats this as a **different satellite domain**:
 2. **Update .env.production**:
    ```bash
    # TEMPORARILY switch to TEST instance for Amplify testing
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
-   CLERK_SECRET_KEY=sk_test_your_test_secret_key_here
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_***
+   CLERK_SECRET_KEY=sk_test_***_test_secret_key_here
 
    # Google OAuth Client ID (same as before)
-   NEXT_PUBLIC_GOOGLE_CLIENT_ID=303554160954-0nkuttb13bjlfkpsu02sbm5dr3r5bp1m.apps.googleusercontent.com
+   NEXT_PUBLIC_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
    ```
 
 3. **Update AWS Amplify Environment Variables**:
    - Go to: AWS Amplify Console > Environment Variables
    - Update:
      ```
-     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
-     CLERK_SECRET_KEY = sk_test_your_test_secret_key_here
+     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = pk_test_***
+     CLERK_SECRET_KEY = sk_test_***_test_secret_key_here
      ```
    - Click **"Save"**
    - Redeploy the app

@@ -5,12 +5,12 @@
 The error `GET https://clerk.adwiise.com/v1/client?_clerk_js_version=4.73.14 400 (Bad Request)` is happening because:
 
 1. **Your frontend is using the wrong Clerk Frontend API URL**
-2. The publishable key `pk_live_YOUR_CLERK_PUBLISHABLE_KEY` is associated with a specific Clerk instance domain
+2. The publishable key `pk_live_***_CLERK_PUBLISHABLE_KEY` is associated with a specific Clerk instance domain
 3. The domain configuration in Clerk needs to be updated
 
 ## Key Issue
 
-When you decode your publishable key `pk_live_YOUR_CLERK_PUBLISHABLE_KEY`, it contains `clerk.adwiise.com`. However:
+When you decode your publishable key `pk_live_***_CLERK_PUBLISHABLE_KEY`, it contains `clerk.adwiise.com`. However:
 
 - Your **Account Portal** is at: `accounts.adwiise.com`
 - Your **Frontend API** should likely be: Your Clerk instance URL (NOT a custom domain)
@@ -73,8 +73,8 @@ NEXT_PUBLIC_CLERK_FRONTEND_API=https://accounts.adwiise.com
 
 You've already updated this, but verify in your Fargate task:
 ```properties
-CLERK_PUBLISHABLE_KEY=pk_live_YOUR_CLERK_PUBLISHABLE_KEY
-CLERK_SECRET_KEY=sk_live_YOUR_CLERK_SECRET_KEY_HERE
+CLERK_PUBLISHABLE_KEY=pk_live_***_CLERK_PUBLISHABLE_KEY
+CLERK_SECRET_KEY=sk_live_***_CLERK_SECRET_KEY_HERE
 ```
 
 ### Step 5: Check Clerk Instance Configuration
@@ -139,11 +139,11 @@ To test if domain is the issue, try accessing your Clerk endpoints directly:
 ```bash
 # Check if the publishable key works
 curl https://clerk.adwiise.com/v1/client?_clerk_js_version=4.73.14 \
-  -H "Authorization: Bearer pk_live_YOUR_CLERK_PUBLISHABLE_KEY"
+  -H "Authorization: Bearer pk_live_***_CLERK_PUBLISHABLE_KEY"
 
 # Or try with accounts subdomain
 curl https://accounts.adwiise.com/v1/client?_clerk_js_version=4.73.14 \
-  -H "Authorization: Bearer pk_live_YOUR_CLERK_PUBLISHABLE_KEY"
+  -H "Authorization: Bearer pk_live_***_CLERK_PUBLISHABLE_KEY"
 ```
 
 ## Check Clerk Dashboard for Actual Frontend API
@@ -160,7 +160,7 @@ If the above doesn't work, you may need to:
 1. Go to Clerk Dashboard → **Support** (bottom left)
 2. Ask: "How do I whitelist my custom domain `feature-common-clerk.d1508w3f27cyps.amplifyapp.com` for my Clerk instance?"
 3. Provide:
-   - Your publishable key: `pk_live_YOUR_CLERK_PUBLISHABLE_KEY`
+   - Your publishable key: `pk_live_***_CLERK_PUBLISHABLE_KEY`
    - The domain causing 400 errors
    - Screenshot of the error
 

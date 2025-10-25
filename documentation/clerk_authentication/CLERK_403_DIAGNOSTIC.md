@@ -94,9 +94,9 @@ You might be accidentally using TEST keys in Amplify but LIVE keys locally.
 1. Go to: AWS Amplify Console > Your App > **Environment variables**
 2. Verify these match your `.env.production`:
    ```
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_YOUR_CLERK_PUBLISHABLE_KEY
-   CLERK_SECRET_KEY=sk_live_YOUR_CLERK_SECRET_KEY_HERE
-   NEXT_PUBLIC_GOOGLE_CLIENT_ID=303554160954-0nkuttb13bjlfkpsu02sbm5dr3r5bp1m.apps.googleusercontent.com
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_***_CLERK_PUBLISHABLE_KEY
+   CLERK_SECRET_KEY=sk_live_***_CLERK_SECRET_KEY_HERE
+   NEXT_PUBLIC_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
    ```
 3. **CRITICAL**: Ensure these are **exactly** the same, no typos
 

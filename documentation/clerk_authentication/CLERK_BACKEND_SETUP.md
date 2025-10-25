@@ -38,7 +38,7 @@ Add these to your `.env.local` file:
 ### Clerk Configuration (REQUIRED)
 ```bash
 # Clerk Secret Key (Server-side only - REQUIRED for backend integration)
-CLERK_SECRET_KEY=sk_test_your_clerk_secret_key_here
+CLERK_SECRET_KEY=sk_test_***_clerk_secret_key_here
 
 # Clerk Backend API URL - Points to CLERK's authentication service (NOT your Spring Boot backend)
 # This is OPTIONAL and defaults to https://api.clerk.com if not set
@@ -57,7 +57,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8080  # Local development
 ### Clerk Optional Configuration
 ```bash
 # Clerk Publishable Key (Optional - for hybrid client/server approach)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_publishable_key_here
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_***_clerk_publishable_key_here
 
 # Clerk Sign-in/Sign-up URLs (if using Clerk hosted pages)
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in

@@ -11,7 +11,7 @@ This guide covers deployment configuration for the Clerk backend authentication 
 
 ```bash
 # Clerk Backend Integration (REQUIRED)
-CLERK_SECRET_KEY=sk_live_your_production_clerk_secret_key
+CLERK_SECRET_KEY=sk_live_***_production_clerk_secret_key
 
 # Clerk API (OPTIONAL - defaults to https://api.clerk.com)
 CLERK_BACKEND_API_URL=https://api.clerk.com

@@ -42,7 +42,7 @@ The problem is that your **LIVE Clerk instance** (`clerk.adwiise.com`) doesn't h
 
 4. **Enter Your Google OAuth Credentials**:
    ```
-   Client ID: 303554160954-0nkuttb13bjlfkpsu02sbm5dr3r5bp1m.apps.googleusercontent.com
+   Client ID: YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
    Client Secret: [Your Client Secret from Google Cloud Console]
    ```
 
@@ -83,7 +83,7 @@ After saving, verify that Google OAuth is enabled:
 ```
 Your App (.env.production)
   ↓ Uses LIVE Clerk keys
-  ↓ pk_live_YOUR_CLERK_PUBLISHABLE_KEY
+  ↓ pk_live_***_CLERK_PUBLISHABLE_KEY
   ↓
 LIVE Clerk Instance (clerk.adwiise.com)
   ↓ Has NO Google OAuth configured ❌
@@ -100,7 +100,7 @@ Clerk says: "I don't have Google OAuth credentials!"
 ```
 Your App (.env.production)
   ↓ Uses LIVE Clerk keys
-  ↓ pk_live_YOUR_CLERK_PUBLISHABLE_KEY
+  ↓ pk_live_***_CLERK_PUBLISHABLE_KEY
   ↓
 LIVE Clerk Instance (clerk.adwiise.com)
   ↓ Has Google OAuth configured ✓
@@ -127,7 +127,7 @@ User logged in successfully ✓
 - [ ] **Switch to LIVE/Production instance** (check top-left)
 - [ ] Navigate to: User & Authentication > Social Connections
 - [ ] Click Google > Settings (gear icon)
-- [ ] Enter Client ID: `303554160954-0nkuttb13bjlfkpsu02sbm5dr3r5bp1m.apps.googleusercontent.com`
+- [ ] Enter Client ID: `YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com`
 - [ ] Enter Client Secret: [paste from Google Cloud Console]
 - [ ] Click Save
 - [ ] Test on: `https://feature-common-clerk.d1508w3f27cyps.amplifyapp.com/sign-in`

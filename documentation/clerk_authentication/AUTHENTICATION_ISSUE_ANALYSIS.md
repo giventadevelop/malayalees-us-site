@@ -416,7 +416,7 @@ CLERK_SECRET_KEY=sk_test_...
 
 # API Configuration (for profile data)
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
-NEXT_PUBLIC_API_JWT_USER=jwtadmin
+NEXT_PUBLIC_API_JWT_USER=YOUR_JWT_USER
 NEXT_PUBLIC_API_JWT_PASS=<your-api-password>
 
 # Tenant Configuration

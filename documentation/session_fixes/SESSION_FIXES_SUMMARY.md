@@ -128,11 +128,11 @@ Site B (Tenant: kerala_events)
    ```bash
    # Tenant A (.env)
    NEXT_PUBLIC_TENANT_ID=malayalees_us
-   CLERK_SECRET_KEY=sk_test_malayalees_us_xxx
+   CLERK_SECRET_KEY=sk_test_***_us_xxx
 
    # Tenant B (.env)
    NEXT_PUBLIC_TENANT_ID=kerala_events
-   CLERK_SECRET_KEY=sk_test_kerala_events_xxx
+   CLERK_SECRET_KEY=sk_test_***_events_xxx
    ```
 
 3. **Deploy Separately** or use dynamic config
@@ -216,12 +216,12 @@ Site B (Tenant: kerala_events)
    ```bash
    # Terminal 1
    NEXT_PUBLIC_TENANT_ID=tenant_A \
-   CLERK_SECRET_KEY=sk_test_A_xxx \
+   CLERK_SECRET_KEY=sk_test_***_xxx \
    npm run dev
 
    # Terminal 2
    NEXT_PUBLIC_TENANT_ID=tenant_B \
-   CLERK_SECRET_KEY=sk_test_B_xxx \
+   CLERK_SECRET_KEY=sk_test_***_xxx \
    npm run dev -- -p 3001
    ```
 3. Sign up john@example.com on localhost:3000

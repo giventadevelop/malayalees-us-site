@@ -96,8 +96,8 @@ In AWS Amplify (and all environments), set:
 
 ```bash
 # Core authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_YOUR_CLERK_PUBLISHABLE_KEY
-CLERK_SECRET_KEY=sk_live_YOUR_CLERK_SECRET_KEY_HERE
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_***_CLERK_PUBLISHABLE_KEY
+CLERK_SECRET_KEY=sk_live_***_CLERK_SECRET_KEY_HERE
 
 # Use RELATIVE paths (no domain)
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
@@ -227,8 +227,8 @@ When this is removed, Clerk will auto-detect the correct API endpoint from your 
 ### In AWS Amplify Environment Variables:
 ```bash
 # Required
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_YOUR_CLERK_PUBLISHABLE_KEY
-CLERK_SECRET_KEY=sk_live_YOUR_CLERK_SECRET_KEY_HERE
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_***_CLERK_PUBLISHABLE_KEY
+CLERK_SECRET_KEY=sk_live_***_CLERK_SECRET_KEY_HERE
 
 # Paths (relative for domain agnostic)
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in

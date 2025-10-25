@@ -12,9 +12,15 @@ export default function SignUpPage() {
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname;
 
-      // If on satellite domain, redirect to primary domain
+      // If on satellite domain, redirect to primary domain with return URL
       if (hostname.includes('mosc-temp.com')) {
-        window.location.href = 'https://www.adwiise.com/sign-up';
+        // Get the current URL to return to after authentication
+        const currentUrl = window.location.origin;
+
+        // Redirect to primary domain with redirect_url parameter
+        // Clerk will redirect back to this URL after successful authentication
+        const redirectUrl = `https://www.adwiise.com/sign-up?redirect_url=${encodeURIComponent(currentUrl)}`;
+        window.location.href = redirectUrl;
       }
     }
   }, []);

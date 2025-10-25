@@ -7,12 +7,12 @@ You have **TWO different Clerk instances**, and your Google OAuth Client ID is r
 ### Current Situation:
 
 1. **Your Application (.env.production)**: Using LIVE/Production Clerk
-   - Publishable Key: `pk_live_YOUR_CLERK_PUBLISHABLE_KEY`
+   - Publishable Key: `pk_live_***_CLERK_PUBLISHABLE_KEY`
    - Frontend API: `clerk.adwiise.com`
-   - Secret Key: `sk_live_YOUR_CLERK_SECRET_KEY_HERE`
+   - Secret Key: `sk_live_***_CLERK_SECRET_KEY_HERE`
 
 2. **Your Google OAuth (Cloud Console)**: Registered for TEST/Development Clerk
-   - Client ID: `303554160954-0nkuttb13bjlfkpsu02sbm5dr3r5bp1m.apps.googleusercontent.com`
+   - Client ID: `YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com`
    - Redirect URIs include: `https://humble-monkey-3.clerk.accounts.dev/v1/auth_callback`
 
 ### Why OAuth Fails:
@@ -110,18 +110,18 @@ You need to find your TEST Clerk instance keys. Based on the redirect URI, your 
 
 ```bash
 # Change from LIVE to TEST
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
-CLERK_SECRET_KEY=sk_test_your_test_secret_key_here
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_***
+CLERK_SECRET_KEY=sk_test_***_test_secret_key_here
 
 # Keep existing Google Client ID (it's already configured for TEST)
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=303554160954-0nkuttb13bjlfkpsu02sbm5dr3r5bp1m.apps.googleusercontent.com
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com
 ```
 
 #### Step 3: Update AWS Amplify Environment Variables
 
 1. Go to: AWS Amplify Console > Your App > Environment Variables
 2. Update:
-   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` = `pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ`
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` = `pk_test_***`
    - `CLERK_SECRET_KEY` = Your TEST secret key
 3. Redeploy
 
@@ -202,10 +202,10 @@ Clerk's default email provider (Clerk's own service) may have delivery issues or
 
 ```bash
 # LIVE instance (clerk.adwiise.com):
-pk_live_YOUR_CLERK_PUBLISHABLE_KEY
+pk_live_***_CLERK_PUBLISHABLE_KEY
 
 # TEST instance (humble-monkey-3.clerk.accounts.dev):
-pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
+pk_test_***
 ```
 
 Decode online: https://www.base64decode.org/
@@ -217,10 +217,10 @@ Decode online: https://www.base64decode.org/
 ### Check Current Clerk Instance
 ```bash
 # Decode publishable key
-echo "pk_live_YOUR_CLERK_PUBLISHABLE_KEY" | base64 -d
+echo "pk_live_***_CLERK_PUBLISHABLE_KEY" | base64 -d
 # Output: clerk.adwiise.com$
 
-echo "pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ" | base64 -d
+echo "pk_test_***" | base64 -d
 # Output: humble-monkey-3.clerk.accounts.dev$
 ```
 

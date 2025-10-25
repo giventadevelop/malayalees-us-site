@@ -4,7 +4,7 @@
 
 The error `clerk.adwiise.com/v1/environment 400` means that **`clerk.adwiise.com` is not a valid Clerk API endpoint**.
 
-Your publishable key `pk_live_YOUR_CLERK_PUBLISHABLE_KEY` decodes to `clerk.adwiise.com`, but this domain is either:
+Your publishable key `pk_live_***_CLERK_PUBLISHABLE_KEY` decodes to `clerk.adwiise.com`, but this domain is either:
 1. Not configured as a Clerk Frontend API
 2. Not the actual endpoint your Clerk instance uses
 3. A custom domain that's not properly set up
@@ -31,16 +31,16 @@ It should show something like:
 
 Your `.env.production` has **LIVE keys**:
 ```bash
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_YOUR_CLERK_PUBLISHABLE_KEY
-CLERK_SECRET_KEY=sk_live_YOUR_CLERK_SECRET_KEY_HERE
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_***_CLERK_PUBLISHABLE_KEY
+CLERK_SECRET_KEY=sk_live_***_CLERK_SECRET_KEY_HERE
 ```
 
 But maybe these keys are from a DIFFERENT Clerk instance or are invalid.
 
 Your backend has **TEST keys**:
 ```bash
-CLERK_PUBLISHABLE_KEY=pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
-CLERK_SECRET_KEY=sk_test_bwU0mdDuLPxADbkm6jje3jPr0v4NDUJFEXKM5ocpzq
+CLERK_PUBLISHABLE_KEY=pk_test_***
+CLERK_SECRET_KEY=sk_test_***
 ```
 
 The test key decodes to: `humble-monkey-3.clerk.accounts.dev`
@@ -49,9 +49,9 @@ The test key decodes to: `humble-monkey-3.clerk.accounts.dev`
 
 In AWS Amplify, **REPLACE**:
 ```bash
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
-CLERK_SECRET_KEY=sk_test_bwU0mdDuLPxADbkm6jje3jPr0v4NDUJFEXKM5ocpzq
-CLERK_WEBHOOK_SECRET=whsec_O4lDgeWJHaO8WWiTjpwyXdbEwmCWmskX
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_***
+CLERK_SECRET_KEY=sk_test_***
+CLERK_WEBHOOK_SECRET=whsec_***
 ```
 
 This will connect to the `humble-monkey-3.clerk.accounts.dev` instance which should work.
@@ -72,9 +72,9 @@ But this is advanced configuration and likely not set up.
 
 ```bash
 # Use TEST keys (matching backend)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
-CLERK_SECRET_KEY=sk_test_bwU0mdDuLPxADbkm6jje3jPr0v4NDUJFEXKM5ocpzq
-CLERK_WEBHOOK_SECRET=whsec_O4lDgeWJHaO8WWiTjpwyXdbEwmCWmskX
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_***
+CLERK_SECRET_KEY=sk_test_***
+CLERK_WEBHOOK_SECRET=whsec_***
 
 # Keep these
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
@@ -108,14 +108,14 @@ The one that returns a valid response (not 400) is the correct endpoint.
 
 ### LIVE Keys (Currently Not Working):
 ```
-pk_live_YOUR_CLERK_PUBLISHABLE_KEY
+pk_live_***_CLERK_PUBLISHABLE_KEY
       └─ decodes to: clerk.adwiise.com
 ```
 This suggests a production Clerk instance with custom domain `clerk.adwiise.com`, but it's returning 400, meaning it's not properly configured or doesn't exist.
 
 ### TEST Keys (Should Work):
 ```
-pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
+pk_test_***
       └─ decodes to: humble-monkey-3.clerk.accounts.dev
 ```
 This is a standard Clerk test instance that should work out of the box.
@@ -128,14 +128,14 @@ This is a standard Clerk test instance that should work out of the box.
 
 **Change FROM**:
 ```bash
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_YOUR_CLERK_PUBLISHABLE_KEY
-CLERK_SECRET_KEY=sk_live_YOUR_CLERK_SECRET_KEY_HERE
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_***_CLERK_PUBLISHABLE_KEY
+CLERK_SECRET_KEY=sk_live_***_CLERK_SECRET_KEY_HERE
 ```
 
 **Change TO**:
 ```bash
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
-CLERK_SECRET_KEY=sk_test_bwU0mdDuLPxADbkm6jje3jPr0v4NDUJFEXKM5ocpzq
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_***
+CLERK_SECRET_KEY=sk_test_***
 ```
 
 **Redeploy** and test again.

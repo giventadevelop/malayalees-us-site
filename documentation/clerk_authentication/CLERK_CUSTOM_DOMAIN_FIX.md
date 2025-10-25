@@ -95,9 +95,9 @@ While figuring out the domain whitelisting, let's get your app working NOW with 
 
 ```bash
 # Temporarily use TEST keys (these work without domain restrictions)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_aHVtYmxlLW1vbmtleS0zLmNsZXJrLmFjY291bnRzLmRldiQ
-CLERK_SECRET_KEY=sk_test_bwU0mdDuLPxADbkm6jje3jPr0v4NDUJFEXKM5ocpzq
-CLERK_WEBHOOK_SECRET=whsec_O4lDgeWJHaO8WWiTjpwyXdbEwmCWmskX
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_***
+CLERK_SECRET_KEY=sk_test_***
+CLERK_WEBHOOK_SECRET=whsec_***
 
 # Keep these
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
@@ -151,8 +151,8 @@ Allowed domains:
 
 ### 3. Environment Variables (Already Correct ✅)
 ```bash
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_YOUR_CLERK_PUBLISHABLE_KEY
-CLERK_SECRET_KEY=sk_live_YOUR_CLERK_SECRET_KEY_HERE
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_***_CLERK_PUBLISHABLE_KEY
+CLERK_SECRET_KEY=sk_live_***_CLERK_SECRET_KEY_HERE
 ```
 
 Once you add the Amplify domain to Clerk's allowed origins, the 400 errors will stop.

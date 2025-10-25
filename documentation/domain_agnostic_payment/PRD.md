@@ -481,8 +481,8 @@ CREATE INDEX idx_ppc_active ON payment_provider_config(is_active);
   "is_active": true,
   "is_primary": true,
   "priority": 1,
-  "config_data": "{\"secret_key\":\"sk_live_xxx\",\"webhook_secret\":\"whsec_xxx\"}",
-  "public_key": "pk_live_xxx",
+  "config_data": "{\"secret_key\":\"sk_live_***\",\"webhook_secret\":\"whsec_***\"}",
+  "public_key": "pk_live_***",
   "supports_wallets": true,
   "supports_subscriptions": true
 }
@@ -1833,11 +1833,11 @@ export default createProxyHandler({
 {
   "provider_type": "STRIPE",
   "config_data": {
-    "secret_key": "sk_live_xxxxxxxxxxxxx",
-    "webhook_secret": "whsec_xxxxxxxxxxxxx",
+    "secret_key": "sk_live_***",
+    "webhook_secret": "whsec_***",
     "connect_account_id": "acct_xxxxxxxxxxxxx"
   },
-  "public_key": "pk_live_xxxxxxxxxxxxx",
+  "public_key": "pk_live_***",
   "supports_wallets": true,
   "supports_subscriptions": true,
   "webhook_url": "https://api.example.com/api/webhooks/stripe"

@@ -28,8 +28,8 @@ A pre-push security audit was performed to detect any credentials or secrets tha
 **Credentials Found:**
 ```json
 {
-  "publishableKey": "pk_test_Y29oZXJlbnQtc3RhcmxpbmctMTUuY2xlcmsuYWNjb3VudHMuZGV2JA",
-  "secretKey": "sk_test_SCkexm04GFUCs3Ap1n1ZT3JcLrf6t6LzPPYAoyMeQj",
+  "publishableKey": "pk_test_***",
+  "secretKey": "sk_test_***",
   "claimUrl": "https://dashboard.clerk.com/apps/claim?token=orc912sjabj0f86b2xgsjh2zv73do0buaazy5ke7"
 }
 ```
@@ -41,7 +41,7 @@ A pre-push security audit was performed to detect any credentials or secrets tha
 
 **Recommendation:**
 ⚠️ **IMPORTANT:** Rotate these Clerk API keys in your Clerk dashboard since they were exposed in git history:
-- Go to: https://dashboard.clerk.com/apps/app_2vBdZIlTLqaEDdb54M0ISIbNJT9/instances/ins_2vBdZGENJr9f7PP17WT8OjSofdT/api-keys
+- Go to: https://dashboard.clerk.com/apps/app_2vBdZIlTLqaEDdb54M0ISIbNJT9/instances/ins_***/api-keys
 - Generate new test keys
 - Update your local `.env.local` file
 
@@ -126,7 +126,7 @@ Updated `.gitignore` to include:
 
 ### ✅ 3. Documentation Safety
 - All documentation uses example credentials
-- Format: `sk_test_...`, `pk_live_xxx`, `whsec_xxx`
+- Format: `sk_test_...`, `pk_live_***`, `whsec_***`
 - Safe to commit without exposing real keys
 
 ---

@@ -66,7 +66,7 @@ You will be prompted for:
 ### Example 3: Provide Both Secret Key and Origins
 
 ```powershell
-$secretKey = "sk_live_your_actual_secret_key_here"
+$secretKey = "sk_live_***_actual_secret_key_here"
 $origins = @(
     "https://app.example.com",
     "https://www.example.com"
@@ -95,7 +95,7 @@ Both scripts can automatically read the Clerk secret key from your .env.producti
 
 ```bash
 # Clerk Configuration
-CLERK_SECRET_KEY=sk_live_your_actual_secret_key_here
+CLERK_SECRET_KEY=sk_live_***_actual_secret_key_here
 ```
 
 ### Custom Environment File Path

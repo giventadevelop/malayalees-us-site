@@ -172,7 +172,7 @@ Technology: Spring Boot + JHipster
 #### Frontend Environment Variables
 ```bash
 # Authentication
-REACT_APP_CLERK_PUBLISHABLE_KEY=pk_live_xxxxx
+REACT_APP_CLERK_PUBLISHABLE_KEY=pk_live_***
 REACT_APP_TENANT_ID=tenant_xxxxx
 
 # API Configuration
@@ -180,7 +180,7 @@ REACT_APP_API_BASE_URL=https://api.yourplatform.com
 REACT_APP_ENVIRONMENT=production
 
 # Payment
-REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_live_xxxxx
+REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_live_***
 
 # AWS Amplify
 REACT_APP_AWS_REGION=us-east-1
@@ -202,13 +202,13 @@ DB_USERNAME=your_username
 DB_PASSWORD=your_password
 
 # Authentication
-CLERK_SECRET_KEY=sk_live_xxxxx
-CLERK_PUBLISHABLE_KEY=pk_live_xxxxx
+CLERK_SECRET_KEY=sk_live_***
+CLERK_PUBLISHABLE_KEY=pk_live_***
 JWT_SECRET=your-jwt-secret
 
 # Payment Processing
-STRIPE_SECRET_KEY=sk_live_xxxxx
-STRIPE_WEBHOOK_SECRET=whsec_xxxxx
+STRIPE_SECRET_KEY=sk_live_***
+STRIPE_WEBHOOK_SECRET=whsec_***
 
 # AWS Services
 AWS_ACCESS_KEY_ID=AKIAXXXXX

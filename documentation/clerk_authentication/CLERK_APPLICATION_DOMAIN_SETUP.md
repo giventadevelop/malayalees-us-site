@@ -182,8 +182,8 @@ export default function SignUpPage() {
 - [ ] Verify `middleware.ts` has public routes configured
 
 ### ✅ In AWS Amplify Environment Variables:
-- [ ] Keep: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_YOUR_CLERK_PUBLISHABLE_KEY`
-- [ ] Keep: `CLERK_SECRET_KEY=sk_live_YOUR_CLERK_SECRET_KEY_HERE`
+- [ ] Keep: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_***_CLERK_PUBLISHABLE_KEY`
+- [ ] Keep: `CLERK_SECRET_KEY=sk_live_***_CLERK_SECRET_KEY_HERE`
 - [ ] Keep: `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`
 - [ ] Keep: `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`
 - [ ] Keep: `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/`

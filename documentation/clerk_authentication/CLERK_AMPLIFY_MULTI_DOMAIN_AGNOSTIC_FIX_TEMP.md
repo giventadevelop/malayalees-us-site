@@ -84,8 +84,8 @@ Verify these environment variables are set in AWS Amplify Console:
 
 ```bash
 # Backend API JWT Credentials (CRITICAL)
-API_JWT_USER=jwtadmin
-API_JWT_PASS=jwt@dev123!
+API_JWT_USER=YOUR_JWT_USER
+API_JWT_PASS=YOUR_JWT_PASSWORD
 
 # Backend API URL
 NEXT_PUBLIC_API_BASE_URL=https://event-site-manager-dev.com
@@ -161,8 +161,8 @@ If `API_JWT_USER` or `API_JWT_PASS` are not set in Amplify:
 1. Go to: AWS Amplify Console
 2. Your App > Environment Variables
 3. Add:
-   - `API_JWT_USER` = `jwtadmin`
-   - `API_JWT_PASS` = `jwt@dev123!`
+   - `API_JWT_USER` = `YOUR_JWT_USER`
+   - `API_JWT_PASS` = `YOUR_JWT_PASSWORD`
 4. Redeploy the app
 
 #### Solution B: JWT Token Caching Issue
@@ -243,7 +243,7 @@ If still getting 401:
 1. Check backend server logs for JWT validation errors
 2. Use `scripts/test-jwt.ts` to verify token generation locally
 3. Compare local JWT token with Amplify JWT token (Network tab)
-4. Verify backend is using same JWT credentials (`jwtadmin` / `jwt@dev123!`)
+4. Verify backend is using same JWT credentials (`YOUR_JWT_USER` / `YOUR_JWT_PASSWORD`)
 
 ---
 
