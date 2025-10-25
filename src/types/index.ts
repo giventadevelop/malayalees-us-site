@@ -303,6 +303,9 @@ export interface EventPollDTO {
   isActive?: boolean;
   startDate: string;
   endDate?: string;
+  maxResponsesPerUser?: number; // Maximum number of responses allowed per user
+  allowMultipleChoices?: boolean; // Whether multiple poll options can be selected
+  isAnonymous?: boolean; // Whether responses are anonymous by default
   createdAt: string;
   updatedAt: string;
   event?: EventDetailsDTO;

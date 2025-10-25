@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, BarChart3, Users, Clock, MessageSquare, ExternalLink } from 'lucide-react';
+import { Search, BarChart3, Users, Clock, MessageSquare, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { EventPollDTO, EventPollOptionDTO } from '@/types';
 import { fetchEventPollsServer, fetchEventPollOptionsServer } from '@/app/admin/polls/ApiServerActions';
 
@@ -22,34 +22,48 @@ export function PollList({ eventId, userId, onPollSelect }: PollListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPoll, setSelectedPoll] = useState<EventPollDTO | null>(null);
   const [pollOptions, setPollOptions] = useState<EventPollOptionDTO[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 10;
 
   useEffect(() => {
     const loadPolls = async () => {
+      setIsLoading(true);
       try {
         const filters: Record<string, any> = {
           'isActive.equals': true,
+          page: currentPage,
+          size: pageSize,
+          sort: 'createdAt,desc' // Latest polls first (descending order)
         };
         
         if (eventId) {
           filters['eventId.equals'] = eventId;
         }
+        
+        if (searchTerm) {
+          filters['title.contains'] = searchTerm;
+        }
 
-        const pollsData = await fetchEventPollsServer(filters);
-        setPolls(pollsData);
+        const result = await fetchEventPollsServer(filters);
+        setPolls(result.data);
+        setTotalCount(result.totalCount);
       } catch (error) {
         console.error('Error loading polls:', error);
+        setPolls([]);
+        setTotalCount(0);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadPolls();
-  }, [eventId]);
+  }, [eventId, currentPage, searchTerm]);
 
-  const filteredPolls = polls.filter(poll =>
-    poll.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (poll.description && poll.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(0); // Reset to first page on search
+  };
 
   const handlePollClick = async (poll: EventPollDTO) => {
     try {
@@ -182,9 +196,9 @@ export function PollList({ eventId, userId, onPollSelect }: PollListProps) {
         <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Available Polls
         </h2>
-        {polls.length > 0 && (
+        {totalCount > 0 && (
           <Badge className="bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0 px-4 py-2">
-            {polls.length} poll{polls.length !== 1 ? 's' : ''} available
+            {totalCount} poll{totalCount !== 1 ? 's' : ''} available
           </Badge>
         )}
       </div>
@@ -194,12 +208,12 @@ export function PollList({ eventId, userId, onPollSelect }: PollListProps) {
         <Input
           placeholder="Search polls..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => handleSearchChange(e.target.value)}
           className="pl-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
         />
       </div>
 
-      {filteredPolls.length === 0 ? (
+      {polls.length === 0 && !isLoading ? (
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-gray-500">
@@ -209,7 +223,7 @@ export function PollList({ eventId, userId, onPollSelect }: PollListProps) {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {filteredPolls.map((poll) => {
+          {polls.map((poll) => {
             const status = getPollStatus(poll);
             const active = isPollActive(poll);
 
@@ -307,6 +321,49 @@ export function PollList({ eventId, userId, onPollSelect }: PollListProps) {
           })}
         </div>
       )}
+
+      {/* Pagination Controls - Always visible */}
+      <div className="mt-8">
+        <div className="flex justify-between items-center">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+            disabled={currentPage === 0 || isLoading}
+            className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5" />
+            Previous
+          </button>
+          <div className="text-sm font-semibold text-gray-700">
+            Page {currentPage + 1} of {Math.max(1, Math.ceil(totalCount / pageSize))}
+          </div>
+          <button
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            disabled={currentPage >= Math.ceil(totalCount / pageSize) - 1 || isLoading}
+            className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+          >
+            Next
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="text-center text-sm text-gray-600 mt-2">
+          {totalCount > 0 ? (
+            <>
+              Showing <span className="font-medium">{currentPage * pageSize + 1}</span> to{' '}
+              <span className="font-medium">
+                {Math.min((currentPage + 1) * pageSize, totalCount)}
+              </span>{' '}
+              of <span className="font-medium">{totalCount}</span> items
+            </>
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <span>No items found</span>
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm font-medium">
+                [No items match your criteria]
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

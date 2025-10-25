@@ -28,10 +28,16 @@ export async function fetchEventPollsServer(filters?: Record<string, any>) {
       throw new Error(`Failed to fetch polls: ${res.status}`);
     }
     
-    return await res.json();
+    const data = await res.json();
+    const totalCount = res.headers.get('x-total-count');
+    
+    return {
+      data: Array.isArray(data) ? data : [],
+      totalCount: totalCount ? parseInt(totalCount, 10) : (Array.isArray(data) ? data.length : 0)
+    };
   } catch (error) {
     console.error('Error fetching event polls:', error);
-    return [];
+    return { data: [], totalCount: 0 };
   }
 }
 

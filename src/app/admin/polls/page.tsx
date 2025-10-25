@@ -10,8 +10,9 @@ export default async function PollsPage() {
     redirect('/sign-in');
   }
 
-  // Fetch polls data
-  const polls = await fetchEventPollsServer();
+  // Fetch polls data - API now returns { data, totalCount }
+  const pollsResult = await fetchEventPollsServer();
+  const polls = pollsResult.data;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">

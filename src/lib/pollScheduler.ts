@@ -45,10 +45,11 @@ export class PollScheduler {
     try {
       console.log('Checking polls for activation/deactivation...');
       
-      // Fetch all polls
-      const polls = await fetchEventPollsServer({
+      // Fetch all polls - API now returns { data, totalCount }
+      const pollsResult = await fetchEventPollsServer({
         'isActive.equals': true, // Only check active polls
       });
+      const polls = pollsResult.data;
 
       const now = new Date();
       const updates: Promise<void>[] = [];
@@ -126,7 +127,8 @@ export class PollScheduler {
     deactivating: EventPollDTO[];
   }> {
     try {
-      const polls = await fetchEventPollsServer();
+      const pollsResult = await fetchEventPollsServer();
+      const polls = pollsResult.data;
       const now = new Date();
       const futureTime = new Date(now.getTime() + minutes * 60 * 1000);
 
@@ -234,7 +236,8 @@ export async function stopPollScheduler(): Promise<void> {
 
 export async function checkPollStatus(pollId: number): Promise<boolean> {
   try {
-    const polls = await fetchEventPollsServer({ 'id.equals': pollId });
+    const pollsResult = await fetchEventPollsServer({ 'id.equals': pollId });
+    const polls = pollsResult.data;
     if (polls.length === 0) return false;
     
     const scheduler = getPollScheduler();
