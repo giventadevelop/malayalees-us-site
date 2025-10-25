@@ -981,7 +981,7 @@ describe('UniversalPaymentCheckout', () => {
         transactionId: 123,
         providerType: 'STRIPE',
         clientSecret: 'pi_test_secret',
-        publicKey: 'pk_test_key'
+        publicKey: 'pk_test_***'
       })
     });
 

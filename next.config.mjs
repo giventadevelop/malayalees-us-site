@@ -47,9 +47,14 @@ const nextConfig = {
     return [];
   },
 
-  // Configure rewrites if needed
+  // Configure rewrites for Clerk proxy (satellite domain support)
   async rewrites() {
-    return [];
+    return [
+      {
+        source: '/__clerk/:path*',
+        destination: 'https://clerk.adwiise.com/:path*',
+      },
+    ];
   },
 
   // Configure headers if needed

@@ -153,23 +153,23 @@ Site B (Tenant: kerala_events)
 ```bash
 # Tenant A Deployment (.env)
 NEXT_PUBLIC_TENANT_ID=malayalees_us
-CLERK_SECRET_KEY=sk_test_malayalees_us_xxx
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_malayalees_us_xxx
+CLERK_SECRET_KEY=sk_test_***_us_xxx
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_***_us_xxx
 
 # Tenant B Deployment (.env)
 NEXT_PUBLIC_TENANT_ID=kerala_events
-CLERK_SECRET_KEY=sk_test_kerala_events_xxx
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_kerala_events_xxx
+CLERK_SECRET_KEY=sk_test_***_events_xxx
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_***_events_xxx
 ```
 
 **3. Backend Configuration** (Spring Boot):
 ```properties
 # Tenant A Backend
-clerk.secret.key=sk_test_malayalees_us_xxx
+clerk.secret.key=sk_test_***_us_xxx
 tenant.id=malayalees_us
 
 # Tenant B Backend
-clerk.secret.key=sk_test_kerala_events_xxx
+clerk.secret.key=sk_test_***_events_xxx
 tenant.id=kerala_events
 ```
 
@@ -451,14 +451,14 @@ Create separate `.env` files per tenant deployment:
 ```bash
 # .env.tenant_malayalees_us
 NEXT_PUBLIC_TENANT_ID=malayalees_us
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_malayalees_us_xxx
-CLERK_SECRET_KEY=sk_test_malayalees_us_xxx
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_***_us_xxx
+CLERK_SECRET_KEY=sk_test_***_us_xxx
 NEXT_PUBLIC_API_BASE_URL=https://api-malayalees-us.yourdomain.com
 
 # .env.tenant_kerala_events
 NEXT_PUBLIC_TENANT_ID=kerala_events
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_kerala_events_xxx
-CLERK_SECRET_KEY=sk_test_kerala_events_xxx
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_***_events_xxx
+CLERK_SECRET_KEY=sk_test_***_events_xxx
 NEXT_PUBLIC_API_BASE_URL=https://api-kerala-events.yourdomain.com
 ```
 
@@ -466,13 +466,13 @@ NEXT_PUBLIC_API_BASE_URL=https://api-kerala-events.yourdomain.com
 
 ```properties
 # application-malayalees_us.properties
-clerk.secret.key=sk_test_malayalees_us_xxx
+clerk.secret.key=sk_test_***_us_xxx
 clerk.api.base.url=https://api.clerk.com/v1
 server.tenant.id=malayalees_us
 spring.datasource.url=jdbc:postgresql://localhost:5432/malayalees_us
 
 # application-kerala_events.properties
-clerk.secret.key=sk_test_kerala_events_xxx
+clerk.secret.key=sk_test_***_events_xxx
 clerk.api.base.url=https://api.clerk.com/v1
 server.tenant.id=kerala_events
 spring.datasource.url=jdbc:postgresql://localhost:5432/kerala_events
@@ -666,12 +666,12 @@ Easier path:
    ```bash
    # Terminal 1: Tenant A
    NEXT_PUBLIC_TENANT_ID=tenant_A \
-   CLERK_SECRET_KEY=sk_test_tenant_A_xxx \
+   CLERK_SECRET_KEY=sk_test_***_A_xxx \
    npm run dev
 
    # Terminal 2: Tenant B
    NEXT_PUBLIC_TENANT_ID=tenant_B \
-   CLERK_SECRET_KEY=sk_test_tenant_B_xxx \
+   CLERK_SECRET_KEY=sk_test_***_B_xxx \
    npm run dev -- -p 3001
    ```
 

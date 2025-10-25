@@ -32,7 +32,7 @@ npm install @testing-library/react @testing-library/jest-dom jest
 
 Create `.env.local`:
 ```bash
-CLERK_SECRET_KEY=sk_test_your_clerk_secret_key
+CLERK_SECRET_KEY=sk_test_***_clerk_secret_key
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 NEXT_PUBLIC_TENANT_ID=tenant_demo_001
 NEXT_PUBLIC_APP_URL=http://localhost:3000

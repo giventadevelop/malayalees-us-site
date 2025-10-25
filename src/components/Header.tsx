@@ -101,6 +101,16 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
+  // Debug: Log auth state changes
+  useEffect(() => {
+    console.log('[Header] Auth state:', {
+      isLoaded,
+      userId,
+      userName: user?.firstName,
+      hostname: typeof window !== 'undefined' ? window.location.hostname : 'server'
+    });
+  }, [isLoaded, userId, user]);
+
   // Check if user has admin role from Clerk metadata
   useEffect(() => {
     if (isLoaded && user) {
@@ -108,6 +118,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
       const role = user.publicMetadata?.role as string;
       const isAdminUser = role === 'admin' || role === 'administrator';
       setIsAdmin(isAdminUser);
+      console.log('[Header] User role check:', { role, isAdminUser });
     } else {
       setIsAdmin(false);
     }

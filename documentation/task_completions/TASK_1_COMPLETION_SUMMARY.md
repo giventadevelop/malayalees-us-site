@@ -92,11 +92,11 @@ Add these to your `.env.local` file:
 
 ```bash
 # REQUIRED
-CLERK_SECRET_KEY=sk_test_your_clerk_secret_key_here
+CLERK_SECRET_KEY=sk_test_***_clerk_secret_key_here
 
 # OPTIONAL
 CLERK_BACKEND_API_URL=https://api.clerk.com
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_publishable_key_here
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_***_clerk_publishable_key_here
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
