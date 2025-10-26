@@ -662,6 +662,90 @@ alwaysApply: true
     - See `src/app/admin/events/[id]/media/ApiServerActions.ts` for correct usage
     - See `src/app/admin/ApiServerActions.ts` for correct usage
 
+---
+**Clerk Middleware Public Routes Configuration**
+- **CRITICAL**: When using Clerk authentication with satellite domain support, the `publicRoutes` array in `src/middleware.ts` must include `/api/proxy(.*)` to allow public API data access.
+- **Problem Solved**: Without this configuration, ALL `/api/proxy/` calls (even for public data like events, gallery, polls) will return 401 Unauthorized errors for unauthenticated users, breaking public pages.
+- **Architecture Decision**:
+  - **Clerk Middleware**: Handles user authentication and session management ONLY
+  - **Backend API**: Handles data authorization via JWT authentication
+  - **Public Data**: All `/api/proxy/` routes are public by default - backend determines what data requires authentication
+- **Required Configuration** in `src/middleware.ts`:
+  ```typescript
+  import { authMiddleware } from "@clerk/nextjs/server";
+  import { NextResponse } from "next/server";
+
+  export default authMiddleware({
+    // Define public routes that don't require authentication
+    // IMPORTANT: Public API routes allow unauthenticated users to fetch public data
+    publicRoutes: [
+      '/',
+      '/sign-in(.*)',
+      '/sign-up(.*)',
+      '/sso-callback(.*)',
+      '/api/webhooks(.*)',
+      '/api/public(.*)',
+      '/api/proxy(.*)',  // Public API proxy routes for public data (events, etc.)
+      '/mosc(.*)',
+      '/events(.*)',
+      '/gallery(.*)',
+      '/about(.*)',
+      '/contact(.*)',
+      '/polls(.*)',
+      '/charity-theme(.*)',
+    ],
+
+    // Satellite domain configuration for multi-domain support
+    isSatellite: process.env.NEXT_PUBLIC_APP_URL?.includes('mosc-temp.com') || false,
+    domain: process.env.NEXT_PUBLIC_APP_URL?.includes('mosc-temp.com') ? 'www.mosc-temp.com' : undefined,
+
+    signInUrl: process.env.NEXT_PUBLIC_APP_URL?.includes('amplifyapp.com') || process.env.NEXT_PUBLIC_APP_URL?.includes('mosc-temp.com')
+      ? 'https://www.adwiise.com/sign-in'
+      : '/sign-in',
+
+    afterAuth(auth, req) {
+      const response = NextResponse.next();
+      response.headers.set('x-pathname', req.nextUrl.pathname);
+      return response;
+    }
+  });
+  ```
+- **Why This Works**:
+  - Public pages (home, events, gallery, polls) can fetch data without requiring Clerk login
+  - Admin/protected routes are still protected by backend JWT authentication
+  - Separation of concerns: Clerk = user auth, Backend = data authorization
+  - Satellite domain authentication flow remains intact
+- **DO:**
+  ```typescript
+  // ✅ DO: Add /api/proxy(.*) to publicRoutes
+  publicRoutes: [
+    '/',
+    '/api/proxy(.*)',  // Allows public data access
+    // ... other public routes
+  ],
+  ```
+- **DON'T:**
+  ```typescript
+  // ❌ DON'T: Omit /api/proxy(.*) from publicRoutes
+  publicRoutes: [
+    '/',
+    '/sign-in(.*)',
+    // Missing /api/proxy(.*) - will cause 401 errors on all public pages
+  ],
+  ```
+- **Symptoms of Missing Configuration**:
+  - Console errors: `GET /api/proxy/event-details 401 (Unauthorized)`
+  - Public pages not loading data (events, gallery, polls)
+  - Backend JWT authentication working but Clerk blocking all requests
+- **Testing**:
+  - Sign out completely and visit public pages (home, events, gallery)
+  - Verify that data loads without authentication
+  - Verify that admin pages still require login
+- **References:**
+  - See `src/middleware.ts` for complete implementation
+  - See `src/app/layout.tsx` for satellite domain ClerkProvider configuration
+  - See ByteRover memory for architectural decision details
+
 
 
 
