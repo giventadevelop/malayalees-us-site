@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 
 export default authMiddleware({
   // Define public routes that don't require authentication
+  // IMPORTANT: Public API routes allow unauthenticated users to fetch public data
   publicRoutes: [
     '/',
     '/sign-in(.*)',
@@ -19,11 +20,14 @@ export default authMiddleware({
     '/sso-callback(.*)',
     '/api/webhooks(.*)',
     '/api/public(.*)',
+    '/api/proxy(.*)',  // Public API proxy routes for public data (events, etc.)
     '/mosc(.*)',
     '/events(.*)',
     '/gallery(.*)',
     '/about(.*)',
     '/contact(.*)',
+    '/polls(.*)',
+    '/charity-theme(.*)',
   ],
 
   // Satellite domain configuration for multi-domain support
