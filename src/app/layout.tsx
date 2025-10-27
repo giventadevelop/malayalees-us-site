@@ -33,13 +33,13 @@ export default async function RootLayout({
   const clerkProps = isSatellite
     ? {
       isSatellite: true,
-      domain: 'www.mosc-temp.com',
+      domain: 'mosc-temp.com', // Bare domain without www (required by Clerk)
       signInUrl: 'https://www.adwiise.com/sign-in',
       signUpUrl: 'https://www.adwiise.com/sign-up',
     }
     : {
       // Primary domain allows redirects from satellites
-      allowedRedirectOrigins: ['https://www.mosc-temp.com'],
+      allowedRedirectOrigins: ['https://www.mosc-temp.com'], // Full URL with www is OK here
     };
 
   // Determine tenant-scoped admin flag on the server

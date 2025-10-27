@@ -12,7 +12,7 @@ import { NextResponse } from "next/server";
 
 // Compute satellite config safely for production to avoid missing domain/proxyUrl
 const isSatEnv = process.env.NEXT_PUBLIC_CLERK_IS_SATELLITE === 'true' || process.env.NEXT_PUBLIC_APP_URL?.includes('mosc-temp.com') || false;
-const satDomain = process.env.NEXT_PUBLIC_CLERK_DOMAIN || (process.env.NEXT_PUBLIC_APP_URL?.includes('mosc-temp.com') ? 'www.mosc-temp.com' : undefined);
+const satDomain = process.env.NEXT_PUBLIC_CLERK_DOMAIN || (process.env.NEXT_PUBLIC_APP_URL?.includes('mosc-temp.com') ? 'mosc-temp.com' : undefined);
 const satProxyUrl = process.env.NEXT_PUBLIC_CLERK_PROXY_URL;
 const satConfig: any = {};
 if (isSatEnv) {
@@ -52,11 +52,24 @@ export default authMiddleware({
     ? 'https://www.adwiise.com/sign-in'
     : '/sign-in',
 
-  // Custom logic to add pathname header
+  // Ignore authentication on prefetch requests for public routes
+  ignoredRoutes: [
+    // Ignore Next.js RSC prefetch requests for public routes
+    '/(.*)?_rsc=(.*)$',
+  ],
+
+  // Custom logic to add pathname header and handle prefetch requests
   afterAuth(auth, req) {
     // Add pathname header for layout detection (used by ConditionalLayout)
     const response = NextResponse.next();
     response.headers.set('x-pathname', req.nextUrl.pathname);
+
+    // For prefetch requests on public routes, always allow them through
+    if (req.nextUrl.searchParams.has('_rsc')) {
+      // This is a Next.js prefetch/RSC request, allow it through without auth
+      return response;
+    }
+
     return response;
   }
 });
