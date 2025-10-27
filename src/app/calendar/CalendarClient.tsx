@@ -6,6 +6,8 @@ import { toCalendarEvents } from './utils/eventFormatters';
 import { ViewSwitcher } from './components/ViewSwitcher';
 import { CalendarPagination } from './components/CalendarPagination';
 import { MonthView } from './components/MonthView';
+import { WeekView } from './components/WeekView';
+import { DayView } from './components/DayView';
 import { useCalendarNav } from './hooks/useCalendarNav';
 
 export default function CalendarClient({ initialEvents, initialYear, initialMonth }: { initialEvents: CalendarEventDTO[]; initialYear: number; initialMonth: number; }) {
@@ -42,8 +44,11 @@ export default function CalendarClient({ initialEvents, initialYear, initialMont
       ) : (
         <>
           {nav.view === 'month' && <MonthView events={events} year={nav.year} month={nav.month} />}
-          {nav.view !== 'month' && (
-            <div className="text-sm text-gray-500">Week/Day views coming soon</div>
+          {nav.view === 'week' && (
+            <WeekView events={events} anchorDate={new Date(nav.year, nav.month - 1, 1)} />
+          )}
+          {nav.view === 'day' && (
+            <DayView events={events} date={new Date()} />
           )}
         </>
       )}
