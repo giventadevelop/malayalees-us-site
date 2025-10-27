@@ -217,7 +217,11 @@ export async function POST(request: Request) {
         console.log('User created:', { id, email });
 
         // 1. Lookup by email
-        const profileRes = await fetchWithJwtRetry(`${apiBaseUrl}/api/user-profiles?email.equals=${encodeURIComponent(email)}`, { method: 'GET' }, 'webhook-user-created-lookup');
+        const profileRes = await fetchWithJwtRetry(
+          `${apiBaseUrl}/api/user-profiles?email.equals=${encodeURIComponent(email)}&tenantId.equals=${encodeURIComponent(getTenantId())}`,
+          { method: 'GET' },
+          'webhook-user-created-lookup'
+        );
         let userProfile: UserProfileDTO | null = null;
         if (profileRes.ok) {
           const profiles = await profileRes.json();
@@ -249,7 +253,7 @@ export async function POST(request: Request) {
             lastName: last_name,
             profileImageUrl: image_url,
             userRole: 'MEMBER',
-            userStatus: 'pending',
+            userStatus: 'PENDING_APPROVAL',
             tenantId: getTenantId(),
             updatedAt: new Date().toISOString(),
           };
@@ -269,7 +273,7 @@ export async function POST(request: Request) {
             lastName: last_name,
             profileImageUrl: image_url,
             userRole: 'MEMBER',
-            userStatus: 'pending',
+            userStatus: 'PENDING_APPROVAL',
             tenantId: getTenantId(),
             createdAt: now,
             updatedAt: now,
@@ -294,7 +298,11 @@ export async function POST(request: Request) {
         console.log('User updated:', { id, email, first_name, last_name });
 
         // 1. Lookup profile by user ID first
-        let profileRes = await fetchWithJwtRetry(`${apiBaseUrl}/api/user-profiles/by-user/${id}`, { method: 'GET' }, 'webhook-user-updated-GET');
+        let profileRes = await fetchWithJwtRetry(
+          `${apiBaseUrl}/api/user-profiles/by-user/${id}?tenantId.equals=${encodeURIComponent(getTenantId())}`,
+          { method: 'GET' },
+          'webhook-user-updated-GET'
+        );
         let userProfile: UserProfileDTO | null = null;
 
         if (profileRes.ok) {
@@ -302,7 +310,11 @@ export async function POST(request: Request) {
         } else {
           // 2. Fallback: Lookup by email if profile not found by user ID
           console.log('[CLERK-WEBHOOK] [USER-UPDATED] Profile not found by user ID, trying email lookup');
-          profileRes = await fetchWithJwtRetry(`${apiBaseUrl}/api/user-profiles?email.equals=${encodeURIComponent(email)}`, { method: 'GET' }, 'webhook-user-updated-email-lookup');
+          profileRes = await fetchWithJwtRetry(
+            `${apiBaseUrl}/api/user-profiles?email.equals=${encodeURIComponent(email)}&tenantId.equals=${encodeURIComponent(getTenantId())}`,
+            { method: 'GET' },
+            'webhook-user-updated-email-lookup'
+          );
           if (profileRes.ok) {
             const profiles = await profileRes.json();
             if (Array.isArray(profiles) && profiles.length > 0) {
@@ -352,7 +364,7 @@ export async function POST(request: Request) {
             lastName: last_name,
             profileImageUrl: image_url,
             userRole: 'MEMBER',
-            userStatus: 'pending',
+            userStatus: 'PENDING_APPROVAL',
             tenantId: getTenantId(),
             createdAt: now,
             updatedAt: now,
@@ -392,7 +404,7 @@ export async function POST(request: Request) {
           break;
         }
 
-        // ASYNCHRONOUS PROFILE RECONCILIATION - After session creation
+        // ASYNCHRONOUS PROFILE RECONCILIATION / CREATION - After session creation
         console.log('[CLERK-WEBHOOK] [SESSION-CREATED] Starting asynchronous profile reconciliation for user:', user_id);
         console.log('[CLERK-WEBHOOK] [SESSION-CREATED] [IMMEDIATE-SUMMARY] 🎯 Profile Reconciliation Scheduled:', {
           sessionId: id,
@@ -404,10 +416,29 @@ export async function POST(request: Request) {
           lookupStrategy: 'EMAIL_BASED_FALLBACK'
         });
 
-        // Schedule reconciliation to run after a delay to avoid blocking the webhook response
+        // Schedule reconciliation/creation to run after a short delay to avoid blocking the webhook response
         setTimeout(async () => {
           try {
             console.log('[CLERK-WEBHOOK] [SESSION-CREATED] [ASYNC] Starting profile reconciliation process');
+
+            // 0. Quick existence check by userId + tenant
+            try {
+              const tenantId = getTenantId();
+              const existsRes = await fetchWithJwtRetry(
+                `${apiBaseUrl}/api/user-profiles?userId.equals=${encodeURIComponent(user_id)}&tenantId.equals=${encodeURIComponent(tenantId)}&size=1`,
+                { method: 'GET' },
+                'webhook-session-created-exists-by-user-tenant'
+              );
+              if (existsRes.ok) {
+                const list = await existsRes.json();
+                if (Array.isArray(list) && list.length > 0) {
+                  console.log('[CLERK-WEBHOOK] [SESSION-CREATED] [ASYNC] Tenant-scoped profile already exists');
+                  return;
+                }
+              }
+            } catch (err) {
+              console.warn('[CLERK-WEBHOOK] [SESSION-CREATED] [ASYNC] Exists check failed:', err);
+            }
 
             // 1. Fetch Clerk user data to get names and email
             const clerkUserResponse = await fetch(`https://api.clerk.dev/v1/users/${user_id}`, {
@@ -439,9 +470,9 @@ export async function POST(request: Request) {
               return;
             }
 
-            // 2. Lookup existing profile by email
+            // 2. Lookup existing profile by email (tenant-scoped)
             const profileRes = await fetchWithJwtRetry(
-              `${apiBaseUrl}/api/user-profiles?email.equals=${encodeURIComponent(email)}`,
+              `${apiBaseUrl}/api/user-profiles?email.equals=${encodeURIComponent(email)}&tenantId.equals=${encodeURIComponent(getTenantId())}`,
               { method: 'GET' },
               'webhook-session-created-email-lookup'
             );
@@ -472,7 +503,29 @@ export async function POST(request: Request) {
                   console.log('[CLERK-WEBHOOK] [SESSION-CREATED] [ASYNC] Profile is already up-to-date, no reconciliation needed');
                 }
               } else {
-                console.log('[CLERK-WEBHOOK] [SESSION-CREATED] [ASYNC] No existing profile found by email, will be created on first profile access');
+                console.log('[CLERK-WEBHOOK] [SESSION-CREATED] [ASYNC] No existing tenant-scoped profile found by email, creating new');
+                const now = new Date().toISOString();
+                const newProfile = withTenantId({
+                  userId: user_id,
+                  email,
+                  firstName,
+                  lastName,
+                  profileImageUrl: clerkUser.image_url || '',
+                  userRole: 'MEMBER',
+                  userStatus: 'PENDING_APPROVAL',
+                  createdAt: now,
+                  updatedAt: now,
+                });
+                const createRes = await fetchWithJwtRetry(`${apiBaseUrl}/api/user-profiles`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(newProfile),
+                }, 'webhook-session-created-create');
+                if (!createRes.ok) {
+                  console.error('[CLERK-WEBHOOK] [SESSION-CREATED] [ASYNC] Failed to create profile for tenant:', await createRes.text());
+                } else {
+                  console.log('[CLERK-WEBHOOK] [SESSION-CREATED] [ASYNC] ✅ Created tenant-scoped profile');
+                }
               }
             } else {
               console.log('[CLERK-WEBHOOK] [SESSION-CREATED] [ASYNC] Failed to lookup profile by email:', profileRes.status);

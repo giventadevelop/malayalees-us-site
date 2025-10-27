@@ -1,15 +1,16 @@
 # Task ID: 15
-# Title: Write unit tests for authentication services
-# Status: done
-# Dependencies: 2 ✅, 3 ✅, 4 ✅
-# Priority: medium
-# Description: Create unit tests for API client, token service, and authentication service.
+# Title: Implement Timezone-Aware Date Handling
+# Status: pending
+# Dependencies: 4 ⏱️
+# Priority: high
+# Description: Ensure all event dates display correctly in their intended timezone to prevent off-by-one-day errors.
 # Details:
-- Write tests for API client
-- Create tests for token service
-- Implement tests for auth service
-- Add mock responses for API calls
-- Test error handling
+- Use date-fns-tz for timezone-aware formatting
+- Implement transformToCalendarEvents function
+- Format dates with event's intended timezone
+- Show timezone abbreviation (EDT, PST, etc.)
+- Avoid using new Date('YYYY-MM-DD') directly
+- Always use formatInTimeZone for display
 
 # Test Strategy:
-Run unit tests to verify each service functions correctly in isolation.
+Test with events in various timezones and verify that dates display correctly without off-by-one-day errors.

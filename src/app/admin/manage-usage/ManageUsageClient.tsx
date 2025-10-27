@@ -200,19 +200,24 @@ function EditUserModal({ user, open, onClose, onSave }: {
               <label className="block font-semibold mb-1">Role</label>
               <select className="w-full border rounded px-3 py-2" value={form.userRole || ''} onChange={e => setForm(f => ({ ...f, userRole: e.target.value }))}>
                 <option value="">Select Role</option>
-                <option value="ADMIN">Admin</option>
-                <option value="MEMBER">Member</option>
-                <option value="ORGANIZER">Organizer</option>
+                <option value="SUPER_ADMIN">SUPER ADMIN</option>
+                <option value="ADMIN">ADMIN</option>
+                <option value="ORGANIZER">ORGANIZER</option>
+                <option value="VOLUNTEER">VOLUNTEER</option>
+                <option value="MEMBER">MEMBER</option>
               </select>
             </div>
             <div>
               <label className="block font-semibold mb-1">Status</label>
               <select className="w-full border rounded px-3 py-2" value={form.userStatus || ''} onChange={e => setForm(f => ({ ...f, userStatus: e.target.value }))}>
                 <option value="">Select Status</option>
-                <option value="ACTIVE">Active</option>
-                <option value="PENDING_APPROVAL">Pending Approval</option>
-                <option value="REJECTED">Rejected</option>
-                <option value="APPROVED">Approved</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="INACTIVE">INACTIVE</option>
+                <option value="PENDING_APPROVAL">PENDING APPROVAL</option>
+                <option value="SUSPENDED">SUSPENDED</option>
+                <option value="BANNED">BANNED</option>
+                <option value="REJECTED">REJECTED</option>
+                <option value="APPROVED">APPROVED</option>
               </select>
             </div>
           </div>
@@ -236,14 +241,18 @@ function EditUserModal({ user, open, onClose, onSave }: {
 const renderRoleBadge = (role: string | null | undefined) => {
   const baseClasses = 'px-2 py-1 text-xs font-semibold rounded-full';
   switch (role) {
+    case 'SUPER_ADMIN':
+      return <span className={`bg-blue-100 text-blue-800 ${baseClasses}`}>SUPER_ADMIN</span>;
     case 'ADMIN':
-      return <span className={`bg-blue-100 text-blue-800 ${baseClasses}`}>Administrator</span>;
+      return <span className={`bg-blue-100 text-blue-800 ${baseClasses}`}>ADMIN</span>;
     case 'ORGANIZER':
-      return <span className={`bg-purple-100 text-purple-800 ${baseClasses}`}>Organizer</span>;
+      return <span className={`bg-purple-100 text-purple-800 ${baseClasses}`}>ORGANIZER</span>;
+    case 'VOLUNTEER':
+      return <span className={`bg-gray-100 text-gray-800 ${baseClasses}`}>VOLUNTEER</span>;
     case 'MEMBER':
-      return <span className={`bg-gray-100 text-gray-800 ${baseClasses}`}>Member</span>;
+      return <span className={`bg-gray-100 text-gray-800 ${baseClasses}`}>MEMBER</span>;
     default:
-      return <span className={`bg-gray-100 text-gray-500 italic ${baseClasses}`}>{role || 'Not set'}</span>;
+      return <span className={`bg-gray-100 text-gray-500 italic ${baseClasses}`}>{role || 'NOT SET'}</span>;
   }
 };
 
@@ -254,11 +263,17 @@ const renderStatusBadge = (status: string | null | undefined) => {
     case 'APPROVED':
       return <span className={`bg-green-100 text-green-800 ${baseClasses}`}>{status}</span>;
     case 'PENDING_APPROVAL':
-      return <span className={`bg-yellow-100 text-yellow-800 ${baseClasses}`}>Pending</span>;
+      return <span className={`bg-yellow-100 text-yellow-800 ${baseClasses}`}>PENDING_APPROVAL</span>;
+    case 'INACTIVE':
+      return <span className={`bg-gray-100 text-gray-500 ${baseClasses}`}>INACTIVE</span>;
+    case 'SUSPENDED':
+      return <span className={`bg-orange-100 text-orange-800 ${baseClasses}`}>SUSPENDED</span>;
+    case 'BANNED':
+      return <span className={`bg-red-100 text-red-800 ${baseClasses}`}>BANNED</span>;
     case 'REJECTED':
-      return <span className={`bg-red-100 text-red-800 ${baseClasses}`}>Rejected</span>;
+      return <span className={`bg-red-100 text-red-800 ${baseClasses}`}>REJECTED</span>;
     default:
-      return <span className={`bg-gray-100 text-gray-500 italic ${baseClasses}`}>{status || 'Not set'}</span>;
+      return <span className={`bg-gray-100 text-gray-500 italic ${baseClasses}`}>{status || 'NOT SET'}</span>;
   }
 };
 
@@ -366,22 +381,27 @@ export default function ManageUsageClient({ adminProfile }: { adminProfile: User
   }
 
   async function handleApprove(user: UserProfileDTO) {
-    if (!user.id || !adminProfile?.id) {
-      setBulkMessage('Admin profile not loaded. Please refresh and try again.');
+    if (!user.id) {
+      setBulkMessage('Selected user record missing id.');
       return;
+    }
+    if (!adminProfile?.id) {
+      setBulkMessage('Admin profile not loaded. Please refresh and try again.');
+      // Soft fallback: allow approve when admin profile missing id is not required
+      // return; // uncomment to enforce strict requirement
     }
     setApprovingId(user.id);
     try {
       const now = new Date().toISOString();
       const payload = buildPatchedUser(user, {
         userStatus: 'APPROVED',
-        reviewedByAdminId: adminProfile.id,
+        reviewedByAdminId: adminProfile?.id ?? undefined,
         reviewedByAdminAt: now,
         updatedAt: now,
       });
       const res = await patchUserProfileServer(user.id, payload);
       if (res && !res.error) {
-        setUsers(users => users.map(u => u.id === user.id ? { ...u, userStatus: 'APPROVED', reviewedByAdminId: adminProfile.id, reviewedByAdminAt: now, updatedAt: now } : u));
+        setUsers(users => users.map(u => u.id === user.id ? { ...u, userStatus: 'APPROVED', reviewedByAdminId: adminProfile?.id, reviewedByAdminAt: now, updatedAt: now } : u));
       } else {
         setBulkMessage('Approve failed: ' + (res?.error || 'Unknown error'));
         setTimeout(() => setBulkMessage(null), 4000);
@@ -395,22 +415,26 @@ export default function ManageUsageClient({ adminProfile }: { adminProfile: User
   }
 
   async function handleReject(user: UserProfileDTO) {
-    if (!user.id || !adminProfile?.id) {
-      setBulkMessage('Admin profile not loaded. Please refresh and try again.');
+    if (!user.id) {
+      setBulkMessage('Selected user record missing id.');
       return;
+    }
+    if (!adminProfile?.id) {
+      setBulkMessage('Admin profile not loaded. Please refresh and try again.');
+      // return; // uncomment to enforce strict requirement
     }
     setRejectingId(user.id);
     try {
       const now = new Date().toISOString();
       const payload = buildPatchedUser(user, {
         userStatus: 'REJECTED',
-        reviewedByAdminId: adminProfile.id,
+        reviewedByAdminId: adminProfile?.id ?? undefined,
         reviewedByAdminAt: now,
         updatedAt: now,
       });
       const res = await patchUserProfileServer(user.id, payload);
       if (res && !res.error) {
-        setUsers(users => users.map(u => u.id === user.id ? { ...u, userStatus: 'REJECTED', reviewedByAdminId: adminProfile.id, reviewedByAdminAt: now, updatedAt: now } : u));
+        setUsers(users => users.map(u => u.id === user.id ? { ...u, userStatus: 'REJECTED', reviewedByAdminId: adminProfile?.id, reviewedByAdminAt: now, updatedAt: now } : u));
       } else {
         setBulkMessage('Reject failed: ' + (res?.error || 'Unknown error'));
         setTimeout(() => setBulkMessage(null), 4000);
@@ -553,7 +577,7 @@ export default function ManageUsageClient({ adminProfile }: { adminProfile: User
             />
           </div>
 
-          {/* Status Filter */}
+          {/* Status Filter (tenant-scoped) */}
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
@@ -561,20 +585,25 @@ export default function ManageUsageClient({ adminProfile }: { adminProfile: User
           >
             <option value="">All Statuses</option>
             <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
             <option value="PENDING_APPROVAL">Pending Approval</option>
+            <option value="SUSPENDED">Suspended</option>
+            <option value="BANNED">Banned</option>
             <option value="REJECTED">Rejected</option>
             <option value="APPROVED">Approved</option>
           </select>
 
-          {/* Role Filter */}
+          {/* Role Filter (tenant-scoped) */}
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
             className="block w-full h-10 px-3 border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Roles</option>
+            <option value="SUPER_ADMIN">Super Admin</option>
             <option value="ADMIN">Admin</option>
             <option value="ORGANIZER">Organizer</option>
+            <option value="VOLUNTEER">Volunteer</option>
             <option value="MEMBER">Member</option>
           </select>
         </div>

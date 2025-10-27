@@ -28,12 +28,14 @@ export default authMiddleware({
     '/contact(.*)',
     '/polls(.*)',
     '/charity-theme(.*)',
+    '/calendar(.*)',
   ],
 
   // Satellite domain configuration for multi-domain support
   // Detect if running on satellite domain
+  // Provide both keys to satisfy Clerk types when isSatellite is used
   isSatellite: process.env.NEXT_PUBLIC_APP_URL?.includes('mosc-temp.com') || false,
-  domain: process.env.NEXT_PUBLIC_APP_URL?.includes('mosc-temp.com') ? 'www.mosc-temp.com' : undefined,
+  proxyUrl: '',
 
   // For Amplify domains, point to primary domain for sign-in
   signInUrl: process.env.NEXT_PUBLIC_APP_URL?.includes('amplifyapp.com') || process.env.NEXT_PUBLIC_APP_URL?.includes('mosc-temp.com')

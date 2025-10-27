@@ -5,13 +5,22 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SignIn } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
+import { bootstrapUserProfile } from '@/components/ProfileBootstrapperApiServerActions';
 
 export default function SignInPage() {
   const router = useRouter();
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [isLocalhost, setIsLocalhost] = useState(false);
+  const { isSignedIn, userId, isLoaded } = useAuth();
+  const { user } = useUser();
 
   useEffect(() => {
+    // After sign-in completes locally, bootstrap tenant-scoped profile (upsert)
+    if (isLoaded && isSignedIn && userId) {
+      bootstrapUserProfile({ userId, user }).catch(() => { });
+    }
+
     // Check if we're on a satellite domain
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname;

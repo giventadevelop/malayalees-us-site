@@ -23,6 +23,11 @@ const navItems = [
     active: false
   },
   {
+    name: 'Calendar',
+    href: '/calendar',
+    active: false
+  },
+  {
     name: 'Gallery',
     href: '/gallery',
     active: false
@@ -63,6 +68,7 @@ const ORG_NAME = "Adwiise";
 type HeaderProps = {
   hideMenuItems?: boolean;
   variant?: 'charity' | 'default';
+  isTenantAdmin?: boolean;
 };
 
 const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -92,12 +98,12 @@ const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string
   window.dispatchEvent(new HashChangeEvent('hashchange'));
 };
 
-export default function Header({ hideMenuItems = false, variant = 'charity' }: HeaderProps) {
+export default function Header({ hideMenuItems = false, variant = 'charity', isTenantAdmin }: HeaderProps) {
   const pathname = usePathname();
   const { userId, isLoaded } = useAuth();
   const { user } = useUser();
   const { signOut } = useClerk();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(!!isTenantAdmin);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -111,33 +117,25 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
     });
   }, [isLoaded, userId, user]);
 
-  // Check if user has admin role from Clerk metadata
+  // Prefer server-verified tenant admin flag when provided; otherwise fall back to Clerk metadata
   useEffect(() => {
+    if (typeof isTenantAdmin === 'boolean') {
+      setIsAdmin(isTenantAdmin);
+      return;
+    }
     if (isLoaded && user) {
-      // Check publicMetadata for role
       const publicRole = user.publicMetadata?.role as string;
-
-      // Check organization memberships for admin role
       const orgRole = user.organizationMemberships?.[0]?.role;
-
-      // Check both locations
       const isAdminUser =
         publicRole === 'admin' ||
         publicRole === 'administrator' ||
         orgRole === 'admin' ||
         orgRole === 'org:admin';
-
       setIsAdmin(isAdminUser);
-      console.log('[Header] User role check:', {
-        publicRole,
-        orgRole,
-        hasOrgMemberships: user.organizationMemberships?.length || 0,
-        isAdminUser
-      });
     } else {
       setIsAdmin(false);
     }
-  }, [isLoaded, user]);
+  }, [isLoaded, user, isTenantAdmin]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);

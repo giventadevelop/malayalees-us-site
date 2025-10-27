@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "http://event-site-manager-dev.com",
+      "url": "http://localhost:8080",
       "description": "Generated server url"
     }
   ],
@@ -5642,8 +5642,8 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "Role updated successfully",
+          "403": {
+            "description": "Access denied - admin privileges required",
             "content": {
               "application/json": {
                 "schema": {
@@ -5652,8 +5652,8 @@
               }
             }
           },
-          "403": {
-            "description": "Access denied - admin privileges required",
+          "200": {
+            "description": "Role updated successfully",
             "content": {
               "application/json": {
                 "schema": {

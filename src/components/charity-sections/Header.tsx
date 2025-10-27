@@ -25,6 +25,11 @@ const navItems = [
     active: false
   },
   {
+    name: 'Calendar',
+    href: '/calendar',
+    active: false
+  },
+  {
     name: 'Gallery',
     href: '/gallery',
     active: false
@@ -63,6 +68,7 @@ const ORG_NAME = "Adwiise";
 type HeaderProps = {
   hideMenuItems?: boolean;
   variant?: 'charity' | 'default';
+  isTenantAdmin?: boolean;
 };
 
 const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -84,15 +90,19 @@ const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string
   }
 };
 
-export default function Header({ hideMenuItems = false, variant = 'charity' }: HeaderProps) {
+export default function Header({ hideMenuItems = false, variant = 'charity', isTenantAdmin }: HeaderProps) {
   const pathname = usePathname();
   const { userId } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(!!isTenantAdmin);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Check admin status
   useEffect(() => {
+    if (typeof isTenantAdmin === 'boolean') {
+      setIsAdmin(isTenantAdmin);
+      return;
+    }
     async function checkAdminInOrg() {
       if (!userLoaded || !user) {
         setIsAdmin(false);
@@ -112,7 +122,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity' }: H
       }
     }
     checkAdminInOrg();
-  }, [user, userLoaded]);
+  }, [user, userLoaded, isTenantAdmin]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);

@@ -551,15 +551,15 @@ CREATE TABLE public.user_profile (
                                      reviewed_by_admin_at timestamp without time zone,
                                      reviewed_by_admin_id bigint,
                                      clerk_user_id VARCHAR(255),
-								     clerk_session_id VARCHAR(255),
-								     clerk_org_id VARCHAR(255),
-								     clerk_org_role VARCHAR(100),
-								     auth_provider VARCHAR(50),
-								     auth_provider_user_id VARCHAR(255),
-								     email_verified BOOLEAN DEFAULT FALSE,
-								     profile_image_url_clerk VARCHAR(1024),
-								     last_sign_in_at TIMESTAMP WITHOUT TIME ZONE,
-								     clerk_metadata TEXT,
+                                     clerk_session_id VARCHAR(255),
+                                     clerk_org_id VARCHAR(255),
+                                     clerk_org_role VARCHAR(100),
+                                     auth_provider VARCHAR(50),
+                                     auth_provider_user_id VARCHAR(255),
+                                     email_verified BOOLEAN DEFAULT FALSE,
+                                     profile_image_url_clerk VARCHAR(1024),
+                                     last_sign_in_at TIMESTAMP WITHOUT TIME ZONE,
+                                     clerk_metadata TEXT,
                                      created_at timestamp without time zone DEFAULT now() NOT NULL,
                                      updated_at timestamp without time zone DEFAULT now() NOT NULL,
                                      CONSTRAINT check_email_format CHECK (((email IS NULL) OR ((email)::text ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'::text))),
@@ -571,6 +571,7 @@ CREATE TABLE public.user_profile (
     reviewed_at timestamp without time zone,
     approved_at timestamp without time zone,
     rejected_at timestamp without time zone,
+    CONSTRAINT ux_user_profile__tenant_user UNIQUE (tenant_id, user_id),
     CONSTRAINT user_profile_pkey PRIMARY KEY (id)
 );
 
@@ -2150,8 +2151,7 @@ ALTER TABLE ONLY public.event_ticket_transaction
 -- Name: user_profile ux_user_profile__user_id; Type: CONSTRAINT; Schema: public; Owner: giventa_event_management
 --
 
-ALTER TABLE ONLY public.user_profile
-    ADD CONSTRAINT ux_user_profile__user_id UNIQUE (user_id);
+-- Removed global unique on user_id in favor of (tenant_id, user_id) at table creation above
 
 
 
@@ -3529,23 +3529,23 @@ CREATE INDEX IF NOT EXISTS idx_user_profile_last_sign_in_at
 -- Add comments on indexes (safe - with exception handling)
 DO $$
 BEGIN
-    BEGIN
+BEGIN
         COMMENT ON INDEX idx_user_profile_clerk_user_id IS 'Index for fast Clerk user ID lookups';
-    EXCEPTION WHEN undefined_table THEN
+EXCEPTION WHEN undefined_table THEN
         RAISE NOTICE 'Index idx_user_profile_clerk_user_id does not exist, skipping comment';
-    END;
+END;
 
-    BEGIN
+BEGIN
         COMMENT ON INDEX idx_user_profile_tenant_email IS 'Index for tenant-scoped email queries';
-    EXCEPTION WHEN undefined_table THEN
+EXCEPTION WHEN undefined_table THEN
         RAISE NOTICE 'Index idx_user_profile_tenant_email does not exist, skipping comment';
-    END;
+END;
 
-    BEGIN
+BEGIN
         COMMENT ON INDEX idx_user_profile_clerk_org_id IS 'Index for organization-based queries';
-    EXCEPTION WHEN undefined_table THEN
+EXCEPTION WHEN undefined_table THEN
         RAISE NOTICE 'Index idx_user_profile_clerk_org_id does not exist, skipping comment';
-    END;
+END;
 END $$;
 
 -- ---------------------------------------------------
@@ -3555,7 +3555,7 @@ END $$;
 -- A user can have different roles in different tenants
 
 CREATE TABLE IF NOT EXISTS public.clerk_user_tenant (
-    id BIGINT DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                        id BIGINT DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
     user_profile_id BIGINT NOT NULL,
     tenant_id VARCHAR(255) NOT NULL,
     role VARCHAR(100),
@@ -3565,10 +3565,10 @@ CREATE TABLE IF NOT EXISTS public.clerk_user_tenant (
     CONSTRAINT clerk_user_tenant_pkey PRIMARY KEY (id),
     CONSTRAINT uq_clerk_user_tenant UNIQUE (user_profile_id, tenant_id),
     CONSTRAINT fk_clerk_user_tenant_user_profile
-        FOREIGN KEY (user_profile_id)
-        REFERENCES public.user_profile(id)
-        ON DELETE CASCADE
-);
+    FOREIGN KEY (user_profile_id)
+    REFERENCES public.user_profile(id)
+                        ON DELETE CASCADE
+    );
 
 -- Indexes for clerk_user_tenant
 CREATE INDEX IF NOT EXISTS idx_clerk_user_tenant_user
@@ -3595,7 +3595,7 @@ COMMENT ON COLUMN public.clerk_user_tenant.joined_at IS 'When user joined this t
 -- This table defines how Clerk org roles translate to app permissions
 
 CREATE TABLE IF NOT EXISTS public.clerk_organization_role (
-    id BIGINT DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                              id BIGINT DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
     clerk_org_id VARCHAR(255) NOT NULL,
     clerk_role_name VARCHAR(100) NOT NULL,
     application_role VARCHAR(100) NOT NULL,
@@ -3604,7 +3604,7 @@ CREATE TABLE IF NOT EXISTS public.clerk_organization_role (
     updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT clerk_organization_role_pkey PRIMARY KEY (id),
     CONSTRAINT uq_clerk_org_role UNIQUE (clerk_org_id, clerk_role_name)
-);
+    );
 
 -- Indexes for clerk_organization_role
 CREATE INDEX IF NOT EXISTS idx_clerk_org_role_org
@@ -3635,7 +3635,7 @@ COMMENT ON COLUMN public.clerk_organization_role.permissions IS 'JSON object con
 -- Supports idempotency and retry logic
 
 CREATE TABLE IF NOT EXISTS public.clerk_webhook_event (
-    id BIGINT DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                          id BIGINT DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
     event_id VARCHAR(255) UNIQUE NOT NULL,
     event_type VARCHAR(100) NOT NULL,
     clerk_user_id VARCHAR(255),
@@ -3647,7 +3647,7 @@ CREATE TABLE IF NOT EXISTS public.clerk_webhook_event (
     received_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT clerk_webhook_event_pkey PRIMARY KEY (id)
-);
+    );
 
 -- Indexes for clerk_webhook_event
 CREATE INDEX IF NOT EXISTS idx_clerk_webhook_event_type
@@ -3682,7 +3682,7 @@ COMMENT ON COLUMN public.clerk_webhook_event.retry_count IS 'Number of retry att
 -- Used for session management and audit trail
 
 CREATE TABLE IF NOT EXISTS public.clerk_session (
-    id BIGINT DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
+                                                    id BIGINT DEFAULT nextval('public.sequence_generator'::regclass) NOT NULL,
     session_id VARCHAR(255) UNIQUE NOT NULL,
     clerk_user_id VARCHAR(255) NOT NULL,
     user_profile_id BIGINT,
@@ -3696,10 +3696,10 @@ CREATE TABLE IF NOT EXISTS public.clerk_session (
     last_active_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT clerk_session_pkey PRIMARY KEY (id),
     CONSTRAINT fk_clerk_session_user_profile
-        FOREIGN KEY (user_profile_id)
-        REFERENCES public.user_profile(id)
-        ON DELETE CASCADE
-);
+    FOREIGN KEY (user_profile_id)
+    REFERENCES public.user_profile(id)
+                         ON DELETE CASCADE
+    );
 
 -- Indexes for clerk_session
 CREATE INDEX IF NOT EXISTS idx_clerk_session_user

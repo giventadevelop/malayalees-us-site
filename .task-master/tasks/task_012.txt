@@ -1,15 +1,17 @@
 # Task ID: 12
-# Title: Create error handling utilities and components
-# Status: done
-# Dependencies: 5 ✅
+# Title: Implement Search Functionality
+# Status: pending
+# Dependencies: 4 ⏱️
 # Priority: medium
-# Description: Implement utilities and components for user-friendly error handling.
+# Description: Add search bar to find events by title, description, or location.
 # Details:
-- Create error message mapping
-- Implement ErrorMessage component
-- Add error handling in forms
-- Create error utilities for API errors
-- Implement user-friendly error messages
+- Create CalendarSearch.tsx component
+- Implement real-time search as user types
+- Search event titles, descriptions, and locations
+- Show search results count
+- Highlight matching events
+- Add clear search button
+- Debounce search input (300ms)
 
 # Test Strategy:
-Test error handling with various error scenarios to verify correct display of error messages.
+Test searching for various terms and verify that only matching events are displayed. Test clearing search and verify all events return.

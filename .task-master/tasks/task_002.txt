@@ -1,15 +1,15 @@
 # Task ID: 2
-# Title: Implement API client with interceptors
-# Status: done
-# Dependencies: 1 ✅
+# Title: Set up API server actions
+# Status: pending
+# Dependencies: 1 ⏱️
 # Priority: high
-# Description: Create the API client with request and response interceptors for handling authentication tokens.
+# Description: Create ApiServerActions.ts with server-side API calls using fetchWithJwtRetry pattern.
 # Details:
-- Create base API client with axios/fetch
-- Implement request interceptor for adding auth tokens
-- Implement response interceptor for token refresh
-- Add error handling for authentication errors
-- Configure tenant ID header
+- Create `ApiServerActions.ts` with 'use server' directive
+- Implement `fetchEventsForMonthServer` function using fetchWithJwtRetry
+- Add error handling with graceful fallbacks
+- Set up query parameters for the event-details endpoint
+- Test with real API calls to ensure data is returned correctly
 
 # Test Strategy:
-Test API client with mock requests to verify interceptors are working correctly.
+Test API calls with various date ranges and verify data is returned correctly with proper error handling.

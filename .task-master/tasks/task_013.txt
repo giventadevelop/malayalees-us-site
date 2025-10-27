@@ -1,15 +1,16 @@
 # Task ID: 13
-# Title: Implement multi-tenant support
-# Status: done
-# Dependencies: 2 ✅, 4 ✅
+# Title: Implement Calendar Pagination
+# Status: pending
+# Dependencies: 4 ⏱️
 # Priority: medium
-# Description: Add functionality to determine tenant ID from domain or configuration.
+# Description: Add always-visible pagination controls for navigating through large event datasets.
 # Details:
-- Create tenant utility functions
-- Implement subdomain-based tenant detection
-- Add domain mapping configuration
-- Update auth service to use tenant information
-- Test multi-tenant support
+- Create CalendarPagination.tsx component
+- Implement Previous/Next/Page status pattern
+- Use x-total-count header from API
+- Show 'Showing X to Y of Z events'
+- Gray out buttons when navigation not possible
+- Ensure pagination is always visible (never conditionally hidden)
 
 # Test Strategy:
-Test tenant detection with different domains and subdomains to verify correct tenant ID is used.
+Test pagination with various dataset sizes and verify that navigation works correctly. Verify pagination is visible in all states (loading, empty, with data).
