@@ -19,26 +19,28 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Satellite domain configuration for multi-domain support (env-driven to match middleware)
+  // Satellite domain configuration for multi-domain support
+  // Primary domain: www.adwiise.com
+  // Satellite domains: www.mosc-temp.com (and future tenant domains)
+
   const headersList = await headers();
   const hostname = headersList.get('host') || '';
-  const envIsSatellite = process.env.NEXT_PUBLIC_CLERK_IS_SATELLITE === 'true';
-  const envDomain = process.env.NEXT_PUBLIC_CLERK_DOMAIN;
-  const envProxyUrl = process.env.NEXT_PUBLIC_CLERK_PROXY_URL;
-  const primarySignIn = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL || 'https://www.adwiise.com/sign-in';
-  const primarySignUp = process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL || 'https://www.adwiise.com/sign-up';
-  const satelliteOrigin = process.env.NEXT_PUBLIC_APP_URL || 'https://www.mosc-temp.com';
 
-  let clerkProps: any = {};
-  if (envIsSatellite) {
-    if (envProxyUrl) {
-      clerkProps = { isSatellite: true, proxyUrl: envProxyUrl, signInUrl: primarySignIn, signUpUrl: primarySignUp };
-    } else if (envDomain) {
-      clerkProps = { isSatellite: true, domain: envDomain, signInUrl: primarySignIn, signUpUrl: primarySignUp };
+  // Detect if this is a satellite domain
+  const isSatellite = hostname.includes('mosc-temp.com');
+
+  // Satellite domains must redirect to primary domain for authentication
+  const clerkProps = isSatellite
+    ? {
+      isSatellite: true,
+      domain: 'www.mosc-temp.com',
+      signInUrl: 'https://www.adwiise.com/sign-in',
+      signUpUrl: 'https://www.adwiise.com/sign-up',
     }
-  } else {
-    clerkProps = { allowedRedirectOrigins: [satelliteOrigin] };
-  }
+    : {
+      // Primary domain allows redirects from satellites
+      allowedRedirectOrigins: ['https://www.mosc-temp.com'],
+    };
 
   // Determine tenant-scoped admin flag on the server
   let isTenantAdmin = false;
