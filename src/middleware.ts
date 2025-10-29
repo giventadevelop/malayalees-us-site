@@ -42,6 +42,7 @@ export default authMiddleware({
     '/polls(.*)',
     '/charity-theme(.*)',
     '/calendar(.*)',
+    '/focus-groups(.*)',
   ],
 
   // Satellite domain configuration (only applied when envs are set)

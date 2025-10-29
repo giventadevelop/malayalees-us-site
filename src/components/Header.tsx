@@ -23,6 +23,11 @@ const navItems = [
     active: false
   },
   {
+    name: 'Focus Groups',
+    href: '/focus-groups',
+    active: false
+  },
+  {
     name: 'Calendar',
     href: '/calendar',
     active: false
@@ -57,6 +62,7 @@ const adminSubmenuItems = [
   { name: 'Event Analytics', href: '/admin/events/dashboard' },
   { name: 'Registrations', href: '/admin/events/registrations' },
   { name: 'Poll Management', href: '/admin/polls' },
+  { name: 'Focus Groups', href: '/admin/focus-groups' },
   { name: 'Promotion Emails', href: '/admin/promotion-emails' },
   { name: 'Test Stripe', href: '/admin/test-stripe' },
   { name: 'Media Management', href: '/admin/media' },
@@ -197,10 +203,10 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
                 <div className="text-left">
-                  <div className="text-2xl font-bold text-purple-600 leading-tight">
+                  <div className="text-xl font-bold text-purple-600 leading-snug">
                     Unite India
                   </div>
-                  <div className="text-xs font-medium text-purple-500 uppercase tracking-wider">
+                  <div className="text-[10px] font-medium text-purple-500 uppercase tracking-wider">
                     A NONPROFIT CORPORATION
                   </div>
                 </div>

@@ -1,11 +1,12 @@
 import { fetchEventsForMonthServer } from './ApiServerActions';
 import CalendarClient from './CalendarClient';
 
-export default async function CalendarPage() {
+export default async function CalendarPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth() + 1;
-  const initialEvents = await fetchEventsForMonthServer(year, month);
+  const focusGroup = typeof searchParams?.focusGroup === 'string' ? searchParams?.focusGroup : undefined;
+  const initialEvents = await fetchEventsForMonthServer(year, month, focusGroup);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
@@ -24,7 +25,7 @@ export default async function CalendarPage() {
         </div>
 
         <div className="bg-white rounded-xl shadow p-6">
-          <CalendarClient initialEvents={initialEvents} initialYear={year} initialMonth={month} />
+          <CalendarClient initialEvents={initialEvents} initialYear={year} initialMonth={month} focusGroup={focusGroup} />
         </div>
       </div>
     </div>

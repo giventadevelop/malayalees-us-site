@@ -1,16 +1,18 @@
 # Task ID: 15
-# Title: Implement Timezone-Aware Date Handling
+# Title: Implement comprehensive testing
 # Status: pending
-# Dependencies: 4 ⏱️
-# Priority: high
-# Description: Ensure all event dates display correctly in their intended timezone to prevent off-by-one-day errors.
+# Dependencies: 6 ⏱️, 7 ⏱️, 8 ⏱️, 9 ⏱️, 10 ⏱️, 11 ⏱️, 12 ⏱️, 13 ⏱️, 14 ⏱️
+# Priority: medium
+# Description: Create end-to-end and integration tests for Focus Group functionality
 # Details:
-- Use date-fns-tz for timezone-aware formatting
-- Implement transformToCalendarEvents function
-- Format dates with event's intended timezone
-- Show timezone abbreviation (EDT, PST, etc.)
-- Avoid using new Date('YYYY-MM-DD') directly
-- Always use formatInTimeZone for display
+Develop tests covering:
+- Public page rendering
+- Admin functionality
+- API integrations
+- Authentication and authorization
+- Edge cases and error handling
+
+Ensure all acceptance criteria are validated through automated tests.
 
 # Test Strategy:
-Test with events in various timezones and verify that dates display correctly without off-by-one-day errors.
+Run the test suite against a staging environment to verify full functionality.

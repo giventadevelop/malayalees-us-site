@@ -591,6 +591,39 @@ export interface DiscountCodeDTO {
   tenantId: string;
 }
 
+// Focus Groups
+export interface FocusGroupDTO {
+  id?: number;
+  tenantId?: string;
+  name: string;
+  slug: string;
+  description?: string;
+  coverImageUrl?: string;
+  isActive?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FocusGroupMemberDTO {
+  id?: number;
+  tenantId?: string;
+  focusGroupId: number;
+  userProfileId: number;
+  role: string;   // MEMBER | LEAD | ADMIN (uppercase)
+  status: string; // ACTIVE | INACTIVE | PENDING (uppercase)
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventFocusGroupDTO {
+  id?: number;
+  tenantId?: string;
+  eventId: number;
+  focusGroupId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /**
  * DTO for event ticket transaction statistics, matches backend OpenAPI schema.
  * Used for /api/event-ticket-transactions/statistics/{eventId} endpoint.

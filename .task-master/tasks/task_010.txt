@@ -1,18 +1,17 @@
 # Task ID: 10
-# Title: Create Event Modal
+# Title: Implement Focus Group members management page
 # Status: pending
-# Dependencies: 5 ⏱️
+# Dependencies: 3 ⏱️, 5 ⏱️, 8 ⏱️
 # Priority: high
-# Description: Implement modal to display event details when an event is clicked.
+# Description: Create the admin page for managing focus group membership
 # Details:
-- Create EventModal.tsx using React Portal
-- Implement sticky close button
-- Display complete event information
-- Add links to full event page and ticket purchase
-- Add 'Add to Calendar' export option
-- Position modal relative to clicked event
-- Ensure modal stays within viewport
-- Close on X, ESC key, or outside click
+Build the `/admin/focus-groups/[id]/members` page with:
+- List of current members with their roles and statuses
+- Add new members functionality
+- Change role and status capabilities
+- Remove members functionality
+
+Ensure proper validation for role and status values (uppercase normalization).
 
 # Test Strategy:
-Test modal opening/closing and verify all event details display correctly. Test positioning with events in different parts of the calendar.
+Test adding, updating, and removing members with different roles and statuses.

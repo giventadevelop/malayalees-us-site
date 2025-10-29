@@ -1,17 +1,16 @@
 # Task ID: 11
-# Title: Implement Event Filtering
+# Title: Update event calendar to support Focus Group filtering
 # Status: pending
-# Dependencies: 4 ⏱️
+# Dependencies: 3 ⏱️, 7 ⏱️
 # Priority: medium
-# Description: Add filters for events by category, location, and ticket availability.
+# Description: Enhance the event calendar to filter events by focus group
 # Details:
-- Create CalendarFilters.tsx component
-- Implement filter dropdowns (category, location, type)
-- Add filter state to CalendarClient
-- Update API calls with filter parameters
-- Add 'Clear Filters' button
-- Show active filters
-- Persist filter state during navigation
+Modify the existing event calendar to:
+- Accept `?focusGroup=slug` query parameter
+- Filter events based on focus group association
+- Update UI to indicate when a filter is active
+
+Ensure backward compatibility with existing calendar functionality.
 
 # Test Strategy:
-Test applying various filters and verify that only matching events are displayed. Test clearing filters and verify all events return.
+Test filtering by various focus groups and verify correct events are displayed.

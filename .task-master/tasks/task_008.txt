@@ -1,15 +1,17 @@
 # Task ID: 8
-# Title: Implement View Switcher
+# Title: Implement Focus Group admin listing page
 # Status: pending
-# Dependencies: 5 ⏱️, 6 ⏱️, 7 ⏱️
-# Priority: medium
-# Description: Create tabs to switch between Month, Week, and Day views while maintaining selected date.
+# Dependencies: 3 ⏱️, 5 ⏱️
+# Priority: high
+# Description: Create the admin page for managing focus groups
 # Details:
-- Create ViewSwitcher.tsx component
-- Implement Month/Week/Day tabs
-- Maintain selected date when switching views
-- Style according to design requirements
-- Add active state for current view
+Build the `/admin/focus-groups` page with:
+- List of all focus groups with filtering options
+- Create new focus group functionality
+- Edit and delete capabilities
+- Links to manage events and members for each group
+
+Ensure proper validation for all form inputs and confirmation for destructive actions.
 
 # Test Strategy:
-Test switching between views and verify that the selected date is maintained.
+Test CRUD operations for focus groups and verify validation works correctly.

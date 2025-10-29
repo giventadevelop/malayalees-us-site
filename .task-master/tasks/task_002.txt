@@ -1,15 +1,16 @@
 # Task ID: 2
-# Title: Set up API server actions
+# Title: Create DTOs for Focus Group entities
 # Status: pending
 # Dependencies: 1 ⏱️
 # Priority: high
-# Description: Create ApiServerActions.ts with server-side API calls using fetchWithJwtRetry pattern.
+# Description: Define TypeScript DTOs for the Focus Group related entities
 # Details:
-- Create `ApiServerActions.ts` with 'use server' directive
-- Implement `fetchEventsForMonthServer` function using fetchWithJwtRetry
-- Add error handling with graceful fallbacks
-- Set up query parameters for the event-details endpoint
-- Test with real API calls to ensure data is returned correctly
+Add the following DTOs to `src/types/index.ts`:
+- `FocusGroupDTO`
+- `FocusGroupMemberDTO`
+- `EventFocusGroupDTO`
+
+Ensure all DTOs are flat, serializable, and use uppercase enums for consistency.
 
 # Test Strategy:
-Test API calls with various date ranges and verify data is returned correctly with proper error handling.
+Verify the DTOs match the backend entities and include all required fields.

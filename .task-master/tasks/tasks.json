@@ -4,258 +4,195 @@
     "version": "1.5.0",
     "source": ".task-master/PRD.md",
     "description": "Tasks generated from PRD",
-    "totalTasksGenerated": 20,
-    "tasksIncluded": 20
+    "totalTasksGenerated": 15,
+    "tasksIncluded": 15
   },
   "tasks": [
     {
       "id": 1,
-      "title": "Create calendar page route",
-      "description": "Set up the basic calendar page route at /calendar with server component structure.",
+      "title": "Update database schema for Focus Groups",
+      "description": "Add new tables to the database schema for focus groups functionality",
       "status": "pending",
       "dependencies": [],
       "priority": "high",
-      "details": "- Create `/app/calendar/page.tsx` as a server component\n- Set up initial layout structure\n- Add `/calendar(.*)` to middleware publicRoutes\n- Verify page loads without authentication\n- Create basic metadata for SEO",
-      "testStrategy": "Verify that the page loads correctly at /calendar and does not require authentication."
+      "details": "Add the following tables to the schema:\n- `focus_group` (tenant_id, name, slug, description, cover_image_url, is_active, created_at, updated_at)\n- `focus_group_members` (tenant_id, focus_group_id, user_profile_id, role, status, created_at, updated_at)\n- `event_focus_groups` (tenant_id, event_id, focus_group_id)\n\nEnsure composite unique constraints are added per tenant for name/slug and joins. Set up VARCHAR(50) for role/status columns and create (but don't apply) the enums `focus_group_member_role_type` and `focus_group_member_status_type`.",
+      "testStrategy": "Verify schema changes are correctly applied and constraints are working as expected."
     },
     {
       "id": 2,
-      "title": "Set up API server actions",
-      "description": "Create ApiServerActions.ts with server-side API calls using fetchWithJwtRetry pattern.",
+      "title": "Create DTOs for Focus Group entities",
+      "description": "Define TypeScript DTOs for the Focus Group related entities",
       "status": "pending",
       "dependencies": [
         1
       ],
       "priority": "high",
-      "details": "- Create `ApiServerActions.ts` with 'use server' directive\n- Implement `fetchEventsForMonthServer` function using fetchWithJwtRetry\n- Add error handling with graceful fallbacks\n- Set up query parameters for the event-details endpoint\n- Test with real API calls to ensure data is returned correctly",
-      "testStrategy": "Test API calls with various date ranges and verify data is returned correctly with proper error handling."
+      "details": "Add the following DTOs to `src/types/index.ts`:\n- `FocusGroupDTO`\n- `FocusGroupMemberDTO`\n- `EventFocusGroupDTO`\n\nEnsure all DTOs are flat, serializable, and use uppercase enums for consistency.",
+      "testStrategy": "Verify the DTOs match the backend entities and include all required fields."
     },
     {
       "id": 3,
-      "title": "Install and set up calendar library",
-      "description": "Select and integrate a calendar library (react-big-calendar recommended) with basic configuration.",
+      "title": "Implement Focus Group proxy handlers",
+      "description": "Create API proxy handlers for focus group related endpoints",
       "status": "pending",
       "dependencies": [
-        1
+        2
       ],
       "priority": "high",
-      "details": "- Install react-big-calendar and dependencies\n- Install date-fns and date-fns-tz for timezone handling\n- Create basic calendar component with month view\n- Set up stylesheet integration with Tailwind\n- Create basic event rendering component",
-      "testStrategy": "Verify calendar renders correctly with basic styling and can display sample events."
+      "details": "Implement the following proxy handlers using `createProxyHandler`:\n- `GET /api/proxy/focus-groups`\n- `GET /api/proxy/focus-groups/by-slug/{slug}`\n- `GET /api/proxy/focus-group-members`\n- `POST /api/proxy/focus-groups`\n- `PATCH /api/proxy/focus-groups/{id}`\n- `POST /api/proxy/event-focus-groups`\n- `DELETE /api/proxy/event-focus-groups/{id}`\n\nEnsure all handlers properly inject tenantId, handle JWT, and forward queries to the backend.",
+      "testStrategy": "Test each endpoint to verify proper proxy functionality, authentication, and data flow."
     },
     {
       "id": 4,
-      "title": "Implement CalendarClient component",
-      "description": "Create client-side calendar component that manages state and renders the appropriate view.",
+      "title": "Update middleware for public Focus Group routes",
+      "description": "Add Focus Group routes to the public routes in middleware",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "medium",
+      "details": "Add `/focus-groups(.*)` pattern to the `publicRoutes` array in the middleware configuration to ensure public access to focus group pages.",
+      "testStrategy": "Verify that focus group pages are accessible without authentication."
+    },
+    {
+      "id": 5,
+      "title": "Create server actions for Focus Group management",
+      "description": "Implement server actions for authenticated admin mutations",
       "status": "pending",
       "dependencies": [
         2,
         3
       ],
       "priority": "high",
-      "details": "- Create CalendarClient.tsx as a client component\n- Set up state for current year/month/view\n- Implement useEffect to fetch events when date changes\n- Add loading states\n- Create basic layout with calendar container\n- Implement error handling for failed API calls",
-      "testStrategy": "Test that the component renders correctly and fetches data when dates change. Verify error states display correctly."
-    },
-    {
-      "id": 5,
-      "title": "Implement Month View",
-      "description": "Create the primary month view calendar with event display and interaction.",
-      "status": "pending",
-      "dependencies": [
-        4
-      ],
-      "priority": "high",
-      "details": "- Create MonthView.tsx component\n- Implement standard calendar grid (7 columns, 5-6 rows)\n- Highlight current day\n- Display events on correct dates\n- Handle multiple events per day\n- Implement truncation for event titles\n- Style according to design requirements",
-      "testStrategy": "Verify month view displays correctly with events on the right dates. Test with various month data to ensure grid adapts correctly."
+      "details": "Create server actions for:\n- Creating focus groups\n- Updating focus groups\n- Managing focus group members\n- Linking/unlinking events to focus groups\n\nUse `fetchWithJwtRetry` for all authenticated requests and ensure all server actions handle errors appropriately.",
+      "testStrategy": "Test each server action to verify authentication, proper data handling, and error management."
     },
     {
       "id": 6,
-      "title": "Implement Week View",
-      "description": "Create week view with hourly time slots and event positioning.",
+      "title": "Implement Focus Groups landing page",
+      "description": "Create the public landing page for all focus groups",
       "status": "pending",
       "dependencies": [
+        3,
         4
       ],
       "priority": "medium",
-      "details": "- Create WeekView.tsx component\n- Implement 7-day view with hourly slots\n- Position events by time\n- Handle multiple events in same time slot\n- Add hour markers\n- Style according to design requirements",
-      "testStrategy": "Test week view with various events to ensure proper positioning and display of overlapping events."
+      "details": "Build the `/focus-groups` page with:\n- Hero section\n- Grid layout of active focus group cards\n- Each card should display name, image, and brief description\n- Linking to individual focus group pages\n\nEnsure the page only shows active groups and sorts them by name.",
+      "testStrategy": "Verify the page displays correctly, shows only active groups, and links work properly."
     },
     {
       "id": 7,
-      "title": "Implement Day View",
-      "description": "Create detailed day view with hourly breakdown and event details.",
+      "title": "Implement individual Focus Group page",
+      "description": "Create the public page for individual focus groups with tabbed interface",
       "status": "pending",
       "dependencies": [
-        4
+        3,
+        4,
+        6
       ],
       "priority": "medium",
-      "details": "- Create DayView.tsx component\n- Implement single day view with hourly slots\n- Show all-day events at top\n- Position events by time with duration\n- Display detailed event information\n- Style according to design requirements",
-      "testStrategy": "Test day view with various events including all-day events to ensure proper display and positioning."
+      "details": "Build the `/focus-groups/[slug]` page with:\n- Hero section with group details\n- Tabbed interface for About, Events, and Members sections\n- About tab: Display full description and group leads\n- Events tab: List and calendar views filtered by the focus group\n- Members tab: Configurable public roster of members\n\nEnsure the page handles invalid slugs gracefully.",
+      "testStrategy": "Test with various focus groups to verify correct display of information across all tabs."
     },
     {
       "id": 8,
-      "title": "Implement View Switcher",
-      "description": "Create tabs to switch between Month, Week, and Day views while maintaining selected date.",
+      "title": "Implement Focus Group admin listing page",
+      "description": "Create the admin page for managing focus groups",
       "status": "pending",
       "dependencies": [
-        5,
-        6,
-        7
-      ],
-      "priority": "medium",
-      "details": "- Create ViewSwitcher.tsx component\n- Implement Month/Week/Day tabs\n- Maintain selected date when switching views\n- Style according to design requirements\n- Add active state for current view",
-      "testStrategy": "Test switching between views and verify that the selected date is maintained."
-    },
-    {
-      "id": 9,
-      "title": "Implement Navigation Controls",
-      "description": "Add controls to navigate between time periods (prev/next/today).",
-      "status": "pending",
-      "dependencies": [
-        4
-      ],
-      "priority": "high",
-      "details": "- Create navigation buttons (Previous/Next/Today)\n- Implement handlers for navigation in all views\n- Add month/year picker for quick jump\n- Ensure smooth transitions between periods\n- Add keyboard navigation support",
-      "testStrategy": "Test navigation controls in all views to ensure they correctly update the displayed time period."
-    },
-    {
-      "id": 10,
-      "title": "Create Event Modal",
-      "description": "Implement modal to display event details when an event is clicked.",
-      "status": "pending",
-      "dependencies": [
+        3,
         5
       ],
       "priority": "high",
-      "details": "- Create EventModal.tsx using React Portal\n- Implement sticky close button\n- Display complete event information\n- Add links to full event page and ticket purchase\n- Add 'Add to Calendar' export option\n- Position modal relative to clicked event\n- Ensure modal stays within viewport\n- Close on X, ESC key, or outside click",
-      "testStrategy": "Test modal opening/closing and verify all event details display correctly. Test positioning with events in different parts of the calendar."
+      "details": "Build the `/admin/focus-groups` page with:\n- List of all focus groups with filtering options\n- Create new focus group functionality\n- Edit and delete capabilities\n- Links to manage events and members for each group\n\nEnsure proper validation for all form inputs and confirmation for destructive actions.",
+      "testStrategy": "Test CRUD operations for focus groups and verify validation works correctly."
+    },
+    {
+      "id": 9,
+      "title": "Implement Focus Group events management page",
+      "description": "Create the admin page for linking events to focus groups",
+      "status": "pending",
+      "dependencies": [
+        3,
+        5,
+        8
+      ],
+      "priority": "high",
+      "details": "Build the `/admin/focus-groups/[id]/events` page with:\n- List of currently linked events\n- Search/filter functionality to find events\n- UI for linking new events to the focus group\n- Ability to unlink events\n\nEnsure the page handles pagination for large numbers of events.",
+      "testStrategy": "Test linking and unlinking events, verify the changes are reflected in both the admin UI and public pages."
+    },
+    {
+      "id": 10,
+      "title": "Implement Focus Group members management page",
+      "description": "Create the admin page for managing focus group membership",
+      "status": "pending",
+      "dependencies": [
+        3,
+        5,
+        8
+      ],
+      "priority": "high",
+      "details": "Build the `/admin/focus-groups/[id]/members` page with:\n- List of current members with their roles and statuses\n- Add new members functionality\n- Change role and status capabilities\n- Remove members functionality\n\nEnsure proper validation for role and status values (uppercase normalization).",
+      "testStrategy": "Test adding, updating, and removing members with different roles and statuses."
     },
     {
       "id": 11,
-      "title": "Implement Event Filtering",
-      "description": "Add filters for events by category, location, and ticket availability.",
+      "title": "Update event calendar to support Focus Group filtering",
+      "description": "Enhance the event calendar to filter events by focus group",
       "status": "pending",
       "dependencies": [
-        4
+        3,
+        7
       ],
       "priority": "medium",
-      "details": "- Create CalendarFilters.tsx component\n- Implement filter dropdowns (category, location, type)\n- Add filter state to CalendarClient\n- Update API calls with filter parameters\n- Add 'Clear Filters' button\n- Show active filters\n- Persist filter state during navigation",
-      "testStrategy": "Test applying various filters and verify that only matching events are displayed. Test clearing filters and verify all events return."
+      "details": "Modify the existing event calendar to:\n- Accept `?focusGroup=slug` query parameter\n- Filter events based on focus group association\n- Update UI to indicate when a filter is active\n\nEnsure backward compatibility with existing calendar functionality.",
+      "testStrategy": "Test filtering by various focus groups and verify correct events are displayed."
     },
     {
       "id": 12,
-      "title": "Implement Search Functionality",
-      "description": "Add search bar to find events by title, description, or location.",
+      "title": "Update event listing to show Focus Group associations",
+      "description": "Enhance event listings to display associated focus groups",
       "status": "pending",
       "dependencies": [
-        4
+        3,
+        7
       ],
       "priority": "medium",
-      "details": "- Create CalendarSearch.tsx component\n- Implement real-time search as user types\n- Search event titles, descriptions, and locations\n- Show search results count\n- Highlight matching events\n- Add clear search button\n- Debounce search input (300ms)",
-      "testStrategy": "Test searching for various terms and verify that only matching events are displayed. Test clearing search and verify all events return."
+      "details": "Modify event listing components to:\n- Display focus group tags/badges on event cards\n- Link these tags to respective focus group pages\n- Update event detail pages to show associated focus groups\n\nEnsure consistent styling with the rest of the application.",
+      "testStrategy": "Verify focus group associations are correctly displayed on event listings and detail pages."
     },
     {
       "id": 13,
-      "title": "Implement Calendar Pagination",
-      "description": "Add always-visible pagination controls for navigating through large event datasets.",
+      "title": "Implement Focus Group membership controls",
+      "description": "Add UI elements for users to join/leave focus groups",
       "status": "pending",
       "dependencies": [
-        4
+        3,
+        5,
+        7
       ],
       "priority": "medium",
-      "details": "- Create CalendarPagination.tsx component\n- Implement Previous/Next/Page status pattern\n- Use x-total-count header from API\n- Show 'Showing X to Y of Z events'\n- Gray out buttons when navigation not possible\n- Ensure pagination is always visible (never conditionally hidden)",
-      "testStrategy": "Test pagination with various dataset sizes and verify that navigation works correctly. Verify pagination is visible in all states (loading, empty, with data)."
+      "details": "Add functionality for:\n- Authenticated users to request to join a focus group\n- Members to leave a focus group\n- Display membership status to the user\n\nEnsure proper handling of different membership statuses (ACTIVE/INACTIVE/PENDING).",
+      "testStrategy": "Test the join/leave functionality with different user accounts and verify status changes are correctly reflected."
     },
     {
       "id": 14,
-      "title": "Implement Calendar Export",
-      "description": "Add functionality to export events to external calendars in iCal format.",
+      "title": "Add Focus Group filtering to event search",
+      "description": "Enhance event search functionality to filter by focus group",
       "status": "pending",
       "dependencies": [
-        10
+        3,
+        11,
+        12
       ],
       "priority": "low",
-      "details": "- Implement single event export to iCal\n- Add export for all events in a month\n- Add export for filtered/searched events\n- Generate valid .ics file format\n- Include all event details (title, description, date, time, location)\n- Test with popular calendar applications",
-      "testStrategy": "Test exporting single and multiple events and verify that the generated .ics files can be imported into Google Calendar, Apple Calendar, and Outlook."
+      "details": "Update the event search component to:\n- Add focus group filter option\n- Allow multiple focus group selection\n- Maintain filter state in URL parameters\n\nEnsure the UI clearly indicates when filters are active.",
+      "testStrategy": "Test various filter combinations to verify correct results are returned."
     },
     {
       "id": 15,
-      "title": "Implement Timezone-Aware Date Handling",
-      "description": "Ensure all event dates display correctly in their intended timezone to prevent off-by-one-day errors.",
+      "title": "Implement comprehensive testing",
+      "description": "Create end-to-end and integration tests for Focus Group functionality",
       "status": "pending",
       "dependencies": [
-        4
-      ],
-      "priority": "high",
-      "details": "- Use date-fns-tz for timezone-aware formatting\n- Implement transformToCalendarEvents function\n- Format dates with event's intended timezone\n- Show timezone abbreviation (EDT, PST, etc.)\n- Avoid using new Date('YYYY-MM-DD') directly\n- Always use formatInTimeZone for display",
-      "testStrategy": "Test with events in various timezones and verify that dates display correctly without off-by-one-day errors."
-    },
-    {
-      "id": 16,
-      "title": "Implement Responsive Mobile Design",
-      "description": "Ensure calendar works well on all screen sizes with touch-friendly controls.",
-      "status": "pending",
-      "dependencies": [
-        5,
-        6,
-        7
-      ],
-      "priority": "high",
-      "details": "- Implement responsive layouts for all views\n- Create mobile-specific list view for small screens\n- Add touch-friendly controls (44px+ tap targets)\n- Implement swipe gestures for navigation\n- Test on various screen sizes (320px+)\n- Ensure no horizontal scrolling required\n- Optimize performance for mobile",
-      "testStrategy": "Test on various device sizes and verify that the calendar is usable and displays correctly. Test touch interactions on mobile devices."
-    },
-    {
-      "id": 17,
-      "title": "Implement Loading States and Error Handling",
-      "description": "Add loading indicators and comprehensive error handling for all API interactions.",
-      "status": "pending",
-      "dependencies": [
-        4
-      ],
-      "priority": "medium",
-      "details": "- Add skeleton loading states for calendar\n- Implement error messages with retry options\n- Add fallback to cached data when API fails\n- Create 'No events found' state\n- Handle network timeouts\n- Log errors for monitoring",
-      "testStrategy": "Test various error scenarios (API failure, network timeout, empty results) and verify that appropriate messages are displayed with recovery options."
-    },
-    {
-      "id": 18,
-      "title": "Implement Performance Optimization",
-      "description": "Optimize calendar performance for large datasets and slow networks.",
-      "status": "pending",
-      "dependencies": [
-        4,
-        5,
-        6,
-        7
-      ],
-      "priority": "medium",
-      "details": "- Implement client-side caching of fetched events\n- Add debouncing for search and filters\n- Optimize event rendering for large datasets\n- Implement code splitting for calendar views\n- Add lazy loading for event images\n- Optimize bundle size",
-      "testStrategy": "Test with large datasets (100+ events) and verify that the calendar remains responsive. Test on slow network connections to ensure reasonable load times."
-    },
-    {
-      "id": 19,
-      "title": "Implement Accessibility Features",
-      "description": "Ensure calendar is accessible according to WCAG 2.1 AA standards.",
-      "status": "pending",
-      "dependencies": [
-        5,
-        6,
-        7,
-        10
-      ],
-      "priority": "medium",
-      "details": "- Add sufficient color contrast (4.5:1 for text)\n- Implement keyboard navigation\n- Add screen reader compatibility\n- Add focus indicators\n- Implement ARIA labels for interactive elements\n- Use semantic HTML structure",
-      "testStrategy": "Test with keyboard navigation and screen readers to verify that all calendar features are accessible. Check color contrast with accessibility tools."
-    },
-    {
-      "id": 20,
-      "title": "Final Integration and Testing",
-      "description": "Perform comprehensive testing and finalize integration with the rest of the application.",
-      "status": "pending",
-      "dependencies": [
-        1,
-        2,
-        3,
-        4,
-        5,
         6,
         7,
         8,
@@ -264,16 +201,11 @@
         11,
         12,
         13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19
+        14
       ],
-      "priority": "high",
-      "details": "- Perform cross-browser testing\n- Verify mobile responsiveness\n- Test all user flows and interactions\n- Verify API integration\n- Check performance metrics\n- Fix critical bugs\n- Prepare for production deployment",
-      "testStrategy": "Execute all test cases defined in the PRD Appendix D. Verify that all acceptance criteria are met for each feature."
+      "priority": "medium",
+      "details": "Develop tests covering:\n- Public page rendering\n- Admin functionality\n- API integrations\n- Authentication and authorization\n- Edge cases and error handling\n\nEnsure all acceptance criteria are validated through automated tests.",
+      "testStrategy": "Run the test suite against a staging environment to verify full functionality."
     }
   ]
 }

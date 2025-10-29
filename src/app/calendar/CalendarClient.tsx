@@ -10,7 +10,7 @@ import { WeekView } from './components/WeekView';
 import { DayView } from './components/DayView';
 import { useCalendarNav } from './hooks/useCalendarNav';
 
-export default function CalendarClient({ initialEvents, initialYear, initialMonth }: { initialEvents: CalendarEventDTO[]; initialYear: number; initialMonth: number; }) {
+export default function CalendarClient({ initialEvents, initialYear, initialMonth, focusGroup }: { initialEvents: CalendarEventDTO[]; initialYear: number; initialMonth: number; focusGroup?: string; }) {
   const [events, setEvents] = useState(toCalendarEvents(initialEvents));
   const [loading, setLoading] = useState(false);
   const nav = useCalendarNav(initialYear, initialMonth);
@@ -19,7 +19,7 @@ export default function CalendarClient({ initialEvents, initialYear, initialMont
     const load = async () => {
       setLoading(true);
       try {
-        const data = await fetchEventsForMonthServer(nav.year, nav.month);
+        const data = await fetchEventsForMonthServer(nav.year, nav.month, focusGroup);
         setEvents(toCalendarEvents(data));
       } finally {
         setLoading(false);

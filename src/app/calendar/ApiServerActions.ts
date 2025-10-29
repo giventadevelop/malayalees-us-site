@@ -19,7 +19,7 @@ export interface CalendarEventDTO {
   tenantId?: string;
 }
 
-export async function fetchEventsForMonthServer(year: number, month: number) {
+export async function fetchEventsForMonthServer(year: number, month: number, focusGroupSlug?: string) {
   if (!API_BASE_URL) return [];
   const tenantId = getTenantId();
   const start = new Date(Date.UTC(year, month - 1, 1));
@@ -27,12 +27,16 @@ export async function fetchEventsForMonthServer(year: number, month: number) {
   const startDate = start.toISOString().slice(0, 10);
   const endDate = end.toISOString().slice(0, 10);
 
-  const url = `${API_BASE_URL}/api/event-details?`
+  let url = `${API_BASE_URL}/api/event-details?`
     + `startDate.greaterThanOrEqual=${startDate}&`
     + `endDate.lessThanOrEqual=${endDate}&`
     + `isActive.equals=true&`
     + `tenantId.equals=${encodeURIComponent(tenantId)}&`
     + `sort=startDate,asc&page=0&size=200`;
+  if (focusGroupSlug) {
+    // backend to resolve slug→id; if not available, a proxy convenience can handle this
+    url += `&focusGroupSlug.equals=${encodeURIComponent(focusGroupSlug)}`;
+  }
 
   try {
     const res = await fetchWithJwtRetry(url, { cache: 'no-store' }, 'calendar-fetch-month');

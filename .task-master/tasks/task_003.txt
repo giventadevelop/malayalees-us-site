@@ -1,15 +1,20 @@
 # Task ID: 3
-# Title: Install and set up calendar library
+# Title: Implement Focus Group proxy handlers
 # Status: pending
-# Dependencies: 1 ⏱️
+# Dependencies: 2 ⏱️
 # Priority: high
-# Description: Select and integrate a calendar library (react-big-calendar recommended) with basic configuration.
+# Description: Create API proxy handlers for focus group related endpoints
 # Details:
-- Install react-big-calendar and dependencies
-- Install date-fns and date-fns-tz for timezone handling
-- Create basic calendar component with month view
-- Set up stylesheet integration with Tailwind
-- Create basic event rendering component
+Implement the following proxy handlers using `createProxyHandler`:
+- `GET /api/proxy/focus-groups`
+- `GET /api/proxy/focus-groups/by-slug/{slug}`
+- `GET /api/proxy/focus-group-members`
+- `POST /api/proxy/focus-groups`
+- `PATCH /api/proxy/focus-groups/{id}`
+- `POST /api/proxy/event-focus-groups`
+- `DELETE /api/proxy/event-focus-groups/{id}`
+
+Ensure all handlers properly inject tenantId, handle JWT, and forward queries to the backend.
 
 # Test Strategy:
-Verify calendar renders correctly with basic styling and can display sample events.
+Test each endpoint to verify proper proxy functionality, authentication, and data flow.

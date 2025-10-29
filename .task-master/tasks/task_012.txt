@@ -1,17 +1,16 @@
 # Task ID: 12
-# Title: Implement Search Functionality
+# Title: Update event listing to show Focus Group associations
 # Status: pending
-# Dependencies: 4 ⏱️
+# Dependencies: 3 ⏱️, 7 ⏱️
 # Priority: medium
-# Description: Add search bar to find events by title, description, or location.
+# Description: Enhance event listings to display associated focus groups
 # Details:
-- Create CalendarSearch.tsx component
-- Implement real-time search as user types
-- Search event titles, descriptions, and locations
-- Show search results count
-- Highlight matching events
-- Add clear search button
-- Debounce search input (300ms)
+Modify event listing components to:
+- Display focus group tags/badges on event cards
+- Link these tags to respective focus group pages
+- Update event detail pages to show associated focus groups
+
+Ensure consistent styling with the rest of the application.
 
 # Test Strategy:
-Test searching for various terms and verify that only matching events are displayed. Test clearing search and verify all events return.
+Verify focus group associations are correctly displayed on event listings and detail pages.

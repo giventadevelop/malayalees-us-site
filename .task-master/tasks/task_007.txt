@@ -1,16 +1,18 @@
 # Task ID: 7
-# Title: Implement Day View
+# Title: Implement individual Focus Group page
 # Status: pending
-# Dependencies: 4 ⏱️
+# Dependencies: 3 ⏱️, 4 ⏱️, 6 ⏱️
 # Priority: medium
-# Description: Create detailed day view with hourly breakdown and event details.
+# Description: Create the public page for individual focus groups with tabbed interface
 # Details:
-- Create DayView.tsx component
-- Implement single day view with hourly slots
-- Show all-day events at top
-- Position events by time with duration
-- Display detailed event information
-- Style according to design requirements
+Build the `/focus-groups/[slug]` page with:
+- Hero section with group details
+- Tabbed interface for About, Events, and Members sections
+- About tab: Display full description and group leads
+- Events tab: List and calendar views filtered by the focus group
+- Members tab: Configurable public roster of members
+
+Ensure the page handles invalid slugs gracefully.
 
 # Test Strategy:
-Test day view with various events including all-day events to ensure proper display and positioning.
+Test with various focus groups to verify correct display of information across all tabs.
