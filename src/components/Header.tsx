@@ -154,8 +154,26 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
+
+      // Try server-side sign out first (works even if Clerk client fails to load)
+      try {
+        const response = await fetch('/api/clerk-signout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (response.ok) {
+          console.log('[Header] Server-side sign out successful');
+          // Force full page reload to clear all state
+          window.location.href = '/';
+          return;
+        }
+      } catch (serverError) {
+        console.warn('[Header] Server-side sign out failed, trying client-side:', serverError);
+      }
+
+      // Fallback to client-side sign out if server-side fails
       await signOut();
-      // Redirect to home page after sign out
       window.location.href = '/';
     } catch (error) {
       console.error('[Header] Error signing out:', error);
