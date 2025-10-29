@@ -152,32 +152,43 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
   };
 
   const handleSignOut = async () => {
+    console.log('[Header] Sign out button clicked');
+    setIsSigningOut(true);
+
     try {
-      setIsSigningOut(true);
+      // Always try server-side sign out first (works even if Clerk client fails to load)
+      console.log('[Header] Calling server-side sign out...');
+      const response = await fetch('/api/clerk-signout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-      // Try server-side sign out first (works even if Clerk client fails to load)
-      try {
-        const response = await fetch('/api/clerk-signout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        });
+      console.log('[Header] Server-side sign out response:', response.status);
 
-        if (response.ok) {
-          console.log('[Header] Server-side sign out successful');
-          // Force full page reload to clear all state
-          window.location.href = '/';
-          return;
-        }
-      } catch (serverError) {
-        console.warn('[Header] Server-side sign out failed, trying client-side:', serverError);
+      if (response.ok) {
+        console.log('[Header] Server-side sign out successful, redirecting...');
+        // Force full page reload to clear all state
+        window.location.href = '/';
+        return;
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[Header] Server-side sign out failed:', errorData);
       }
+    } catch (serverError) {
+      console.error('[Header] Server-side sign out error:', serverError);
+    }
 
-      // Fallback to client-side sign out if server-side fails
+    // Try client-side sign out as fallback
+    try {
+      console.log('[Header] Attempting client-side sign out...');
       await signOut();
+      console.log('[Header] Client-side sign out successful');
       window.location.href = '/';
-    } catch (error) {
-      console.error('[Header] Error signing out:', error);
-      setIsSigningOut(false);
+    } catch (clientError) {
+      console.error('[Header] Client-side sign out failed:', clientError);
+      // Last resort: just redirect to home and hope cookies are cleared
+      console.log('[Header] Forcing redirect to clear state...');
+      window.location.href = '/';
     }
   };
 
