@@ -213,6 +213,59 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
     }
   }, []); // Empty deps array = runs once on mount
 
+  // Listen for sign-out events from other tabs (cross-tab synchronization)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleStorageChange = (e: StorageEvent) => {
+      // Detect sign-out broadcast from another tab
+      if (e.key === 'clerk_signout_broadcast' && e.newValue) {
+        console.log('[Header] ===== SIGN-OUT DETECTED FROM ANOTHER TAB =====');
+        console.log('[Header] This tab will reload to clear session...');
+
+        // Small delay to ensure the message is logged
+        setTimeout(() => {
+          // Reload page to clear any cached auth state
+          window.location.reload();
+        }, 100);
+      }
+    };
+
+    // Listen for localStorage changes from other tabs
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  // Monitor auth state and detect invalid sessions (handle 401s gracefully)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // If Clerk is loaded but no user, and we're on a protected route, we may have been signed out
+    if (isLoaded && !userId && !user) {
+      // Check if we were previously signed in (detect session invalidation)
+      const wasSignedIn = sessionStorage.getItem('was_signed_in');
+      const currentPath = window.location.pathname;
+
+      if (wasSignedIn === 'true' && currentPath.startsWith('/admin')) {
+        console.log('[Header] ===== SESSION INVALIDATED =====');
+        console.log('[Header] You were signed out in another tab or your session expired');
+        console.log('[Header] Redirecting to home page...');
+
+        // Clear the flag
+        sessionStorage.removeItem('was_signed_in');
+
+        // Redirect to home with a message
+        window.location.href = '/?session_expired=true';
+      }
+    } else if (isLoaded && userId) {
+      // Track that user is signed in
+      sessionStorage.setItem('was_signed_in', 'true');
+    }
+  }, [isLoaded, userId, user]);
+
   // Debug: Log auth state changes
   useEffect(() => {
     console.log('[Header] Auth state:', {
@@ -275,6 +328,14 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
     console.log('[Header] Sign out button clicked at:', new Date().toISOString());
 
     setIsSigningOut(true);
+
+    // Broadcast sign-out to all other tabs BEFORE redirecting
+    try {
+      localStorage.setItem('clerk_signout_broadcast', Date.now().toString());
+      console.log('[Header] Broadcasted sign-out to other tabs');
+    } catch (e) {
+      console.error('[Header] Failed to broadcast sign-out:', e);
+    }
 
     // For satellite domains, redirect to primary domain's sign-out URL
     // This is the ONLY way to properly clear Clerk cookies set by the primary domain
