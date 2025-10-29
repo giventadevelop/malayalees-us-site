@@ -182,13 +182,12 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
     if (isSatellite) {
       console.log('[Header] Satellite domain detected, redirecting to primary domain sign-out...');
 
-      // Redirect to primary domain's Clerk sign-out URL
-      // After sign-out, Clerk will redirect back to our satellite domain
-      const primarySignOutUrl = 'https://www.adwiise.com/sign-in#/sign-out';
+      // Redirect to primary domain's dedicated sign-out page
+      // This page will call Clerk's signOut() and redirect back to satellite
+      const primarySignOutUrl = 'https://www.adwiise.com/auth/signout-redirect';
       const returnUrl = encodeURIComponent(window.location.origin);
 
-      console.log('[Header] Redirecting to:', primarySignOutUrl);
-      console.log('[Header] Return URL:', returnUrl);
+      console.log('[Header] Redirecting to:', `${primarySignOutUrl}?redirect_url=${returnUrl}`);
 
       // Redirect to primary domain for sign out
       window.location.href = `${primarySignOutUrl}?redirect_url=${returnUrl}`;

@@ -31,6 +31,7 @@ export default authMiddleware({
     '/sign-in(.*)',
     '/sign-up(.*)',
     '/sso-callback(.*)',
+    '/auth/signout-redirect(.*)',  // Public sign-out redirect page
     '/api/webhooks(.*)',
     '/api/public(.*)',
     '/api/proxy(.*)',  // Public API proxy routes for public data (events, etc.)
