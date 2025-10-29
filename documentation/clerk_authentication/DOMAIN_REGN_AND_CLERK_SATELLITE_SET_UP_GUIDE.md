@@ -74,9 +74,11 @@ See **"Domain Setup Steps"** section below for detailed instructions.
 
 ## Authentication Flow Architecture
 
+### Sign-In Flow
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│              Cross-App Authentication Flow                           │
+│              Cross-App Authentication Flow (SIGN IN)                 │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                       │
 │  1. User visits www.mosc-temp.com                                   │
@@ -103,25 +105,93 @@ See **"Domain Setup Steps"** section below for detailed instructions.
 │     → Different app, same user account!                             │
 │                                                                       │
 └─────────────────────────────────────────────────────────────────────┘
+```
+
+### Sign-Out Flow (Cross-Domain Cookie Clearing)
+
+**CRITICAL CHALLENGE**: Due to browser security (SameSite/HttpOnly cookies), the satellite domain CANNOT clear authentication cookies set by the primary domain. This requires a special redirect-based sign-out flow.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│              Cross-App Sign-Out Flow (SIGN OUT)                      │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  1. User on www.mosc-temp.com clicks "Sign Out"                    │
+│     → Satellite domain detects it's NOT the primary domain          │
+│                                                                       │
+│  2. Satellite redirects to primary's sign-out handler:              │
+│     → https://www.adwiise.com/auth/signout-redirect?                │
+│       redirect_url=https://www.mosc-temp.com                        │
+│                                                                       │
+│  3. Primary domain receives sign-out request                        │
+│     → /auth/signout-redirect page loads                             │
+│     → Calls Clerk's signOut() method                                │
+│     → ONLY primary domain can clear its own cookies!                │
+│                                                                       │
+│  4. Clerk clears cookies on primary domain                          │
+│     → __session, __clerk_db_jwt, __client_uat, etc.                │
+│     → Session revoked in Clerk backend                              │
+│                                                                       │
+│  5. Primary domain redirects back to satellite with flag:           │
+│     → https://www.mosc-temp.com?clerk_signout=true                 │
+│                                                                       │
+│  6. Satellite domain detects clerk_signout=true flag               │
+│     → Header.tsx useEffect triggers on mount                        │
+│     → Clears ALL local Clerk state:                                 │
+│       • localStorage (Clerk SDK cache)                              │
+│       • sessionStorage (Clerk temporary data)                       │
+│       • Attempts to clear cookies (best effort)                     │
+│                                                                       │
+│  7. Satellite forces hard page reload                               │
+│     → window.location.replace() with flag removed                   │
+│     → Clerk SDK re-initializes with cleared state                   │
+│     → User appears logged out                                       │
+│                                                                       │
+│  8. Cross-tab synchronization (bonus)                               │
+│     → localStorage.setItem('clerk_signout_broadcast')               │
+│     → All other open tabs detect sign-out via storage event         │
+│     → All tabs reload to clear their auth state                     │
+│                                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+WHY THIS IS NEEDED:
+  ❌ Satellite cannot call Clerk signOut() - would fail with:
+     "This operation is not allowed on a satellite domain"
+
+  ❌ Satellite cannot clear primary's cookies - browser security prevents:
+     • Cross-domain cookie access (SameSite policy)
+     • HttpOnly cookies cannot be accessed by JavaScript
+     • Secure cookies require HTTPS and same domain
+
+  ✅ Solution: Redirect to primary domain for sign-out
+     • Only primary domain can call Clerk's signOut()
+     • Only primary domain can clear its own cookies
+     • Flag-based state clearing ensures satellite is also logged out
+     • Hard reload prevents cached auth state issues
+```
+
+### Architecture Summary
 
 Primary App (www.adwiise.com - Amplify App #1):
   - Separate codebase
-  - Handles ALL authentication
+  - Handles ALL authentication (sign-in AND sign-out)
   - OAuth flows happen here
   - Users see Clerk UI on this domain
+  - Has dedicated sign-out redirect page at `/auth/signout-redirect`
 
 Satellite App (www.mosc-temp.com - Amplify App #2):
   - Separate codebase
-  - Redirects to primary for auth
+  - Redirects to primary for auth operations (sign-in AND sign-out)
   - Receives session via Clerk ticket exchange
+  - Clears local state when receiving sign-out flag
   - Users work here after authentication
 
 Key Point: Session transfer via Clerk backend (NOT cookies)
   - Sessions stored in Clerk's backend
   - Each domain gets its own session cookie
   - Both cookies point to SAME Clerk session
-  - No cookie sharing needed!
-```
+  - Sign-out requires coordinated cross-domain flow
+  - Flag-based state management ensures consistent logout across domains
 
 ---
 
@@ -593,6 +663,459 @@ return (
 
 ---
 
+### STEP 7A: Implement Cross-Domain Sign-Out (CRITICAL - 30 min)
+
+**This is the most complex and critical part of multi-domain authentication setup.**
+
+Due to browser security, satellite domains cannot clear cookies set by the primary domain. This requires implementing a redirect-based sign-out flow where the satellite redirects to the primary domain for sign-out, then redirects back with a flag.
+
+#### Part 1: Create Sign-Out Redirect Page on Primary Domain
+
+**In www.adwiise.com repo** (Primary App), create `src/app/auth/signout-redirect/page.tsx`:
+
+```typescript
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useClerk } from '@clerk/nextjs';
+import { useSearchParams } from 'next/navigation';
+
+/**
+ * Dedicated sign-out page for handling satellite domain sign-outs
+ *
+ * This page should ONLY be accessed on the PRIMARY domain (www.adwiise.com)
+ * Flow:
+ * 1. Satellite domain redirects here with ?redirect_url=satellite-url
+ * 2. This page calls Clerk's signOut() on primary domain (clears cookies)
+ * 3. Redirects back to satellite domain with clerk_signout=true flag
+ */
+export default function SignOutRedirect() {
+  const { signOut } = useClerk();
+  const searchParams = useSearchParams();
+  const [status, setStatus] = useState<'processing' | 'error'>('processing');
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    const performSignOut = async () => {
+      try {
+        console.log('[SignOut Redirect] Starting sign-out process...');
+
+        // Get redirect URL from query params
+        const redirectUrl = searchParams.get('redirect_url') || '/';
+        console.log('[SignOut Redirect] Redirect URL:', redirectUrl);
+
+        // Validate redirect URL (security check)
+        if (redirectUrl && !redirectUrl.startsWith('http')) {
+          // Relative URL, use as-is
+        } else if (redirectUrl) {
+          // Absolute URL - validate it's one of our domains
+          const allowedDomains = ['mosc-temp.com', 'adwiise.com'];
+          const url = new URL(redirectUrl);
+          const isAllowed = allowedDomains.some(domain => url.hostname.includes(domain));
+
+          if (!isAllowed) {
+            console.error('[SignOut Redirect] Invalid redirect URL:', redirectUrl);
+            setError('Invalid redirect URL');
+            setStatus('error');
+            return;
+          }
+        }
+
+        console.log('[SignOut Redirect] Calling Clerk signOut...');
+
+        // Sign out (without redirect parameter - Clerk handles it differently)
+        await signOut();
+
+        console.log('[SignOut Redirect] Sign out complete, manually redirecting to:', redirectUrl);
+
+        // Add a flag to indicate sign-out was successful
+        // This helps the satellite domain know to clear its local Clerk state
+        const separator = redirectUrl.includes('?') ? '&' : '?';
+        const redirectWithFlag = `${redirectUrl}${separator}clerk_signout=true`;
+
+        console.log('[SignOut Redirect] Redirecting with flag:', redirectWithFlag);
+
+        // Add a small delay to ensure sign-out completed
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Manually redirect after sign out completes
+        window.location.href = redirectWithFlag;
+      } catch (err) {
+        console.error('[SignOut Redirect] Error during sign-out:', err);
+        setError(String(err));
+        setStatus('error');
+
+        // Even on error, try to redirect after a delay
+        const redirectUrl = searchParams.get('redirect_url') || '/';
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 2000);
+      }
+    };
+
+    performSignOut();
+  }, [signOut, searchParams]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
+        {status === 'processing' && (
+          <>
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <h2 className="mt-6 text-2xl font-bold text-gray-900">
+                Signing out...
+              </h2>
+              <p className="mt-2 text-sm text-gray-600">
+                Please wait while we sign you out.
+              </p>
+            </div>
+          </>
+        )}
+
+        {status === 'error' && (
+          <>
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <h2 className="mt-6 text-2xl font-bold text-gray-900">
+                Sign out error
+              </h2>
+              <p className="mt-2 text-sm text-gray-600">
+                {error || 'An error occurred while signing out.'}
+              </p>
+              <p className="mt-2 text-sm text-gray-600">
+                Redirecting back in a moment...
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+**File Location**: `src/app/auth/signout-redirect/page.tsx` in PRIMARY domain repo
+
+**Commit and push** to deploy this page on www.adwiise.com.
+
+#### Part 2: Update Primary Domain layout.tsx
+
+**In www.adwiise.com repo** (Primary App), ensure `src/app/layout.tsx` has satellite domain detection:
+
+```typescript
+// In layout.tsx
+
+import { headers } from "next/headers";
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // Get hostname to detect satellite vs primary
+  const headersList = await headers();
+  const hostname = headersList.get('host') || '';
+
+  // Detect if this is a satellite domain
+  const isSatellite = hostname.includes('mosc-temp.com');
+
+  // Configure Clerk based on domain type
+  const clerkProps = isSatellite
+    ? {
+        isSatellite: true,
+        domain: 'mosc-temp.com', // Bare domain without www
+        signInUrl: 'https://www.adwiise.com/sign-in',
+        signUpUrl: 'https://www.adwiise.com/sign-up',
+      }
+    : {
+        // Primary domain allows redirects from satellites
+        allowedRedirectOrigins: ['https://www.mosc-temp.com'],
+      };
+
+  return (
+    <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      {...clerkProps}
+    >
+      {/* ... rest of app */}
+    </ClerkProvider>
+  );
+}
+```
+
+**File Location**: `src/app/layout.tsx` in PRIMARY domain repo (lines 27-44)
+
+**Key Points**:
+- Uses `headers()` to detect hostname server-side
+- Dynamically configures Clerk based on domain
+- Adds `allowedRedirectOrigins` for primary domain to accept redirects from satellites
+- Uses bare domain (`mosc-temp.com`) without `www` for satellite `domain` prop
+
+#### Part 3: Update Header Component with Sign-Out Logic
+
+**In BOTH repos** (Primary AND Satellite), update `src/components/Header.tsx`:
+
+```typescript
+// In Header.tsx
+
+'use client';
+
+import { useAuth, useClerk } from '@clerk/nextjs';
+import { useState, useEffect } from 'react';
+
+export default function Header({ /* props */ }) {
+  const { signOut } = useClerk();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  // CRITICAL: Check for sign-out flag IMMEDIATELY on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const clerkSignedOut = urlParams.get('clerk_signout');
+
+    console.log('[Header] Checking for clerk_signout flag:', clerkSignedOut);
+
+    if (clerkSignedOut === 'true') {
+      console.log('[Header] ===== DETECTED clerk_signout=true FLAG! =====');
+      console.log('[Header] Clearing Clerk state and forcing reload...');
+
+      // Clear any Clerk-related storage on satellite domain
+      try {
+        // Clear localStorage items that contain Clerk data
+        const localStorageKeys = Object.keys(localStorage);
+        localStorageKeys.forEach(key => {
+          if (key.includes('clerk') || key.includes('__clerk')) {
+            console.log('[Header] Clearing localStorage key:', key);
+            localStorage.removeItem(key);
+          }
+        });
+
+        // Clear sessionStorage items
+        const sessionStorageKeys = Object.keys(sessionStorage);
+        sessionStorageKeys.forEach(key => {
+          if (key.includes('clerk') || key.includes('__clerk')) {
+            console.log('[Header] Clearing sessionStorage key:', key);
+            sessionStorage.removeItem(key);
+          }
+        });
+
+        // Attempt to clear cookies (best effort - HttpOnly cookies can't be cleared)
+        const cookies = document.cookie.split(';');
+        cookies.forEach(cookie => {
+          const cookieName = cookie.split('=')[0].trim();
+          if (cookieName.includes('clerk') || cookieName.includes('__session')) {
+            const domains = [window.location.hostname, '.mosc-temp.com', 'mosc-temp.com'];
+            domains.forEach(domain => {
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain}`;
+            });
+          }
+        });
+
+        console.log('[Header] Cleared Clerk-related storage');
+      } catch (e) {
+        console.error('[Header] Error clearing storage:', e);
+      }
+
+      // Remove the flag from URL
+      urlParams.delete('clerk_signout');
+      const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+
+      console.log('[Header] Forcing hard reload with URL:', newUrl);
+
+      // Force a HARD reload (clears cache)
+      window.location.replace(newUrl);
+    }
+  }, []); // Empty deps = runs once on mount
+
+  // Cross-tab sign-out synchronization
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'clerk_signout_broadcast' && e.newValue) {
+        console.log('[Header] Sign-out detected from another tab, reloading...');
+        setTimeout(() => window.location.reload(), 100);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Sign-out handler
+  const handleSignOut = async () => {
+    console.log('[Header] ===== SIGN OUT STARTED =====');
+    setIsSigningOut(true);
+
+    // Broadcast sign-out to other tabs
+    try {
+      localStorage.setItem('clerk_signout_broadcast', Date.now().toString());
+      console.log('[Header] Broadcasted sign-out to other tabs');
+    } catch (e) {
+      console.error('[Header] Failed to broadcast:', e);
+    }
+
+    // Detect if we're on satellite domain
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    const isSatellite = hostname.includes('mosc-temp.com');
+
+    if (isSatellite) {
+      console.log('[Header] Satellite domain - redirecting to primary for sign-out...');
+
+      // Redirect to primary domain's sign-out handler
+      const primarySignOutUrl = 'https://www.adwiise.com/auth/signout-redirect';
+      const returnUrl = encodeURIComponent(window.location.origin);
+
+      console.log('[Header] Redirecting to:', `${primarySignOutUrl}?redirect_url=${returnUrl}`);
+
+      // Redirect to primary domain for sign out
+      window.location.href = `${primarySignOutUrl}?redirect_url=${returnUrl}`;
+      return;
+    }
+
+    // For primary domain, use normal Clerk sign out
+    try {
+      console.log('[Header] Primary domain - using Clerk signOut()...');
+      await signOut();
+      console.log('[Header] Sign out successful');
+      window.location.href = '/';
+    } catch (error) {
+      console.error('[Header] Error signing out:', error);
+      setIsSigningOut(false);
+    }
+  };
+
+  // ... rest of component
+  return (
+    <header>
+      {/* ... */}
+      <button onClick={handleSignOut} disabled={isSigningOut}>
+        {isSigningOut ? 'Signing out...' : 'Sign Out'}
+      </button>
+      {/* ... */}
+    </header>
+  );
+}
+```
+
+**File Location**: `src/components/Header.tsx` in BOTH repos (lines 114-370)
+
+**Key Implementation Details**:
+
+1. **Flag Detection (lines 117-214)**:
+   - Runs IMMEDIATELY on component mount (before Clerk loads)
+   - Detects `?clerk_signout=true` query parameter
+   - Clears all localStorage/sessionStorage with 'clerk' in the key
+   - Attempts to clear cookies (best effort)
+   - Forces hard page reload with flag removed
+
+2. **Cross-Tab Sync (lines 216-240)**:
+   - Uses localStorage 'storage' event
+   - Broadcasts sign-out to all open tabs
+   - Other tabs detect broadcast and reload
+
+3. **Sign-Out Handler (lines 326-370)**:
+   - Detects if running on satellite vs primary domain
+   - **Satellite**: Redirects to `https://www.adwiise.com/auth/signout-redirect?redirect_url=<origin>`
+   - **Primary**: Calls Clerk's `signOut()` directly
+
+#### Part 4: Optional Server-Side Sign-Out API (Backup)
+
+**In www.adwiise.com repo** (Primary App), create `src/app/api/clerk-signout/route.ts`:
+
+This provides a server-side backup sign-out method if Clerk's client-side JS fails to load.
+
+```typescript
+import { auth, clerkClient } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+
+/**
+ * Server-side Clerk sign-out endpoint
+ * Backup method when client-side JavaScript fails
+ */
+export async function POST() {
+  try {
+    const { userId, sessionId } = await auth();
+
+    if (!userId || !sessionId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
+    // Revoke session on Clerk servers
+    try {
+      const client = await clerkClient();
+      await client.sessions.revokeSession(sessionId);
+    } catch (revokeError) {
+      console.error('[Clerk Sign Out API] Failed to revoke session:', revokeError);
+    }
+
+    // Clear Clerk cookies
+    const response = NextResponse.json({ success: true });
+    const cookiesToClear = ['__session', '__clerk_db_jwt', '__client_uat'];
+
+    cookiesToClear.forEach(cookieName => {
+      response.cookies.delete(cookieName);
+      response.cookies.delete({ name: cookieName, path: '/' });
+    });
+
+    return response;
+  } catch (error) {
+    console.error('[Clerk Sign Out API] Error:', error);
+    return NextResponse.json({ error: 'Sign out error' }, { status: 500 });
+  }
+}
+```
+
+**File Location**: `src/app/api/clerk-signout/route.ts` in PRIMARY domain repo
+
+**Usage**: Call via `fetch('/api/clerk-signout', { method: 'POST' })` if Clerk client-side SDK is unavailable.
+
+#### Testing the Sign-Out Flow
+
+After implementing all parts:
+
+1. **Deploy both domains** (wait for Amplify builds to complete)
+2. **Test on satellite domain**:
+   - Sign in on www.mosc-temp.com
+   - Click "Sign Out"
+   - Watch browser console for logs:
+     ```
+     [Header] Satellite domain - redirecting to primary for sign-out...
+     [SignOut Redirect] Starting sign-out process...
+     [SignOut Redirect] Calling Clerk signOut...
+     [SignOut Redirect] Redirecting with flag: https://www.mosc-temp.com?clerk_signout=true
+     [Header] DETECTED clerk_signout=true FLAG!
+     [Header] Clearing Clerk state and forcing reload...
+     [Header] Cleared Clerk-related storage
+     ```
+   - Page should reload and show signed-out state
+3. **Open multiple tabs** and test cross-tab sync
+4. **Test on primary domain**:
+   - Sign in on www.adwiise.com
+   - Click "Sign Out"
+   - Should use Clerk's normal sign-out flow
+
+**Expected Behavior**:
+- Satellite domain: Brief redirect to primary, then back with clean state
+- Primary domain: Normal sign-out without redirect
+- All tabs: Sync sign-out automatically
+- No residual Clerk state in browser storage
+
+**Troubleshooting**:
+- If sign-out doesn't work, check browser console for errors
+- Verify `/auth/signout-redirect` page exists on primary domain
+- Check that `allowedRedirectOrigins` includes satellite domain
+- Ensure both domains use same Clerk publishable key
+- Clear browser cache and try in incognito mode
+
+---
+
 ### STEP 8: Update Google OAuth (3 min)
 
 Add `www.mosc-temp.com` to your Google OAuth configuration.
@@ -835,6 +1358,209 @@ const clerkProps = {
 2. Check that both domains use same Clerk publishable key
 3. Verify satellite domain is verified (not just added)
 
+### Sign-Out Doesn't Work on Satellite Domain
+
+**Issue**: Clicking "Sign Out" on www.mosc-temp.com doesn't sign the user out
+
+**Symptoms**:
+- User clicks sign out button but remains logged in
+- Page reload shows user still authenticated
+- Browser console shows Clerk errors like "This operation is not allowed on a satellite domain"
+
+**Root Cause**:
+Satellite domains CANNOT call Clerk's `signOut()` method directly. They must redirect to the primary domain for sign-out.
+
+**Fix**:
+1. **Verify sign-out redirect page exists** on primary domain:
+   - Check that `src/app/auth/signout-redirect/page.tsx` exists in www.adwiise.com repo
+   - Deploy primary domain if missing
+
+2. **Check Header.tsx has satellite detection**:
+   ```typescript
+   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+   const isSatellite = hostname.includes('mosc-temp.com');
+
+   if (isSatellite) {
+     // Should redirect to primary domain
+     window.location.href = `https://www.adwiise.com/auth/signout-redirect?redirect_url=${encodeURIComponent(window.location.origin)}`;
+   }
+   ```
+
+3. **Verify allowedRedirectOrigins** in primary domain's layout.tsx:
+   ```typescript
+   const clerkProps = {
+     allowedRedirectOrigins: ['https://www.mosc-temp.com'],
+   };
+   ```
+
+4. **Test the flow manually**:
+   - Open browser console on www.mosc-temp.com
+   - Click "Sign Out"
+   - Watch for logs: `[Header] Satellite domain - redirecting to primary for sign-out...`
+   - Should redirect to: `https://www.adwiise.com/auth/signout-redirect?redirect_url=https://www.mosc-temp.com`
+   - Then redirect back to: `https://www.mosc-temp.com?clerk_signout=true`
+
+5. **Check flag detection** in Header.tsx:
+   - Verify useEffect runs on mount
+   - Look for log: `[Header] DETECTED clerk_signout=true FLAG!`
+   - Should clear localStorage/sessionStorage and force reload
+
+6. **Clear browser cache completely**:
+   ```
+   Chrome: Ctrl+Shift+Delete → "All time" → Check "Cached images and files" and "Cookies"
+   ```
+
+7. **Test in incognito mode** to rule out cached state
+
+### Sign-Out Flag Not Detected
+
+**Issue**: After redirect from primary domain, satellite domain doesn't detect the `clerk_signout=true` flag
+
+**Symptoms**:
+- URL shows `?clerk_signout=true` but nothing happens
+- User still appears logged in after redirect
+- Console doesn't show "DETECTED clerk_signout=true FLAG!" message
+
+**Fix**:
+1. **Check useEffect is at top of Header component**:
+   - Flag detection useEffect must run BEFORE Clerk initializes
+   - Should be FIRST useEffect in component (lines 117-214 in reference implementation)
+   - Empty dependency array `[]` ensures it runs once on mount
+
+2. **Verify useEffect is not conditional**:
+   ```typescript
+   // ✅ CORRECT - Always runs
+   useEffect(() => {
+     if (typeof window === 'undefined') return;
+     const urlParams = new URLSearchParams(window.location.search);
+     const clerkSignedOut = urlParams.get('clerk_signout');
+     if (clerkSignedOut === 'true') {
+       // Clear state and reload
+     }
+   }, []);
+
+   // ❌ WRONG - Runs too late
+   useEffect(() => {
+     if (isLoaded && userId) {  // Don't wait for Clerk!
+       // ...
+     }
+   }, [isLoaded, userId]);
+   ```
+
+3. **Check component is 'use client'**:
+   - Header.tsx must have `'use client';` at the top
+   - Server components can't detect URL params on mount
+
+4. **Verify hard reload is happening**:
+   - Look for `window.location.replace(newUrl)` call
+   - Should force reload, not soft navigation
+
+### User Appears Logged In After Sign-Out
+
+**Issue**: User signed out but still sees authenticated content on satellite domain
+
+**Symptoms**:
+- Flag was detected and page reloaded
+- LocalStorage/sessionStorage were cleared
+- But Clerk SDK still shows user as authenticated
+
+**Fix**:
+1. **Check cookies are being cleared**:
+   ```typescript
+   // In Header.tsx flag detection
+   const cookies = document.cookie.split(';');
+   cookies.forEach(cookie => {
+     const cookieName = cookie.split('=')[0].trim();
+     if (cookieName.includes('clerk') || cookieName.includes('__session')) {
+       // Try all domain variations
+       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`;
+       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.mosc-temp.com`;
+     }
+   });
+   ```
+
+2. **HttpOnly cookies can't be cleared by JavaScript**:
+   - These can only be cleared by the server that set them (primary domain)
+   - Verify sign-out actually happened on primary domain
+   - Check primary domain's `/auth/signout-redirect` page logs
+
+3. **Session may be cached by Clerk SDK**:
+   - Hard reload should fix this
+   - Verify `window.location.replace()` is being used (not `window.location.href =`)
+   - Try closing and reopening browser
+
+4. **Check for service workers**:
+   - Service workers can cache auth state
+   - Unregister service workers in browser DevTools → Application → Service Workers
+
+5. **Verify both domains use SAME Clerk publishable key**:
+   - Primary and satellite MUST share the same Clerk instance
+   - Check `.env` files in both repos
+
+### Sign-Out Works But Other Tabs Stay Logged In
+
+**Issue**: User signs out in one tab but remains logged in on other open tabs
+
+**Fix**:
+1. **Verify cross-tab broadcast is implemented**:
+   ```typescript
+   // In handleSignOut function
+   localStorage.setItem('clerk_signout_broadcast', Date.now().toString());
+   ```
+
+2. **Check storage event listener exists**:
+   ```typescript
+   // In Header.tsx
+   useEffect(() => {
+     const handleStorageChange = (e: StorageEvent) => {
+       if (e.key === 'clerk_signout_broadcast' && e.newValue) {
+         window.location.reload();
+       }
+     };
+     window.addEventListener('storage', handleStorageChange);
+     return () => window.removeEventListener('storage', handleStorageChange);
+   }, []);
+   ```
+
+3. **LocalStorage events only fire on OTHER tabs**:
+   - Tab that sets localStorage value doesn't receive the event
+   - This is expected browser behavior
+   - Signing-out tab handles its own sign-out
+
+4. **Check browser privacy settings**:
+   - Some browsers block localStorage in private/incognito mode
+   - Cross-tab sync won't work in this case
+
+### Redirect URL Validation Error
+
+**Issue**: Sign-out redirect page shows "Invalid redirect URL" error
+
+**Symptoms**:
+- URL: `https://www.adwiise.com/auth/signout-redirect?redirect_url=https://www.mosc-temp.com`
+- Error message displayed on sign-out redirect page
+- Console shows: `[SignOut Redirect] Invalid redirect URL`
+
+**Fix**:
+1. **Check allowedDomains array** in sign-out redirect page:
+   ```typescript
+   // In src/app/auth/signout-redirect/page.tsx
+   const allowedDomains = ['mosc-temp.com', 'adwiise.com'];  // Add your satellite domains
+   ```
+
+2. **Add new satellite domains to array**:
+   ```typescript
+   const allowedDomains = [
+     'mosc-temp.com',
+     'adwiise.com',
+     'your-new-satellite.com',  // Add here
+   ];
+   ```
+
+3. **Check redirect_url parameter format**:
+   - Should be full URL: `https://www.mosc-temp.com`
+   - Not path only: `/` (this would fail validation)
+   - Encoded properly: `encodeURIComponent(window.location.origin)`
+
 ---
 
 ## Verification Checklist
@@ -883,17 +1609,164 @@ This setup enables true multi-tenant:
 
 ## Next Steps: Adding More Tenant Domains
 
-To add future tenants (e.g., `www.tenant2.com`, `www.tenant3.com`):
+To add future tenants (e.g., `www.tenant2.com`, `www.tenant3.com`), follow this checklist:
 
-1. **Update layout.tsx**:
+### Step-by-Step Process for New Satellite Domain
+
+#### 1. Update Primary Domain Code (www.adwiise.com repo)
+
+**File: `src/app/layout.tsx`** - Add new satellite domain to detection logic:
 ```typescript
-const isSatellite = hostname.includes('mosc-temp.com') || hostname.includes('tenant2.com');
+// Before:
+const isSatellite = hostname.includes('mosc-temp.com');
+
+// After:
+const isSatellite = hostname.includes('mosc-temp.com') ||
+                     hostname.includes('tenant2.com') ||
+                     hostname.includes('tenant3.com');
+
+// Update allowedRedirectOrigins:
+const clerkProps = isSatellite
+  ? { /* satellite config */ }
+  : {
+      allowedRedirectOrigins: [
+        'https://www.mosc-temp.com',
+        'https://www.tenant2.com',    // Add new domain
+        'https://www.tenant3.com',    // Add new domain
+      ],
+    };
 ```
 
-2. **Follow same DNS setup process** for new domain
-3. **Add to Clerk Dashboard** as satellite domain
-4. **Add to Google OAuth** authorized origins
-5. **Update `allowedRedirectOrigins`** in layout.tsx
+**File: `src/app/auth/signout-redirect/page.tsx`** - Add to allowed domains:
+```typescript
+// Update allowedDomains array:
+const allowedDomains = [
+  'mosc-temp.com',
+  'adwiise.com',
+  'tenant2.com',     // Add new domain
+  'tenant3.com',     // Add new domain
+];
+```
+
+**File: `src/components/Header.tsx`** - No changes needed (uses dynamic hostname detection)
+
+#### 2. Update Satellite Domain Code (tenant2.com repo)
+
+**File: `src/app/layout.tsx`**:
+```typescript
+const isSatellite = hostname.includes('tenant2.com');  // Your new domain
+
+const clerkProps = isSatellite
+  ? {
+      isSatellite: true,
+      domain: 'tenant2.com',  // Bare domain without www
+      signInUrl: 'https://www.adwiise.com/sign-in',
+      signUpUrl: 'https://www.adwiise.com/sign-up',
+    }
+  : {
+      allowedRedirectOrigins: ['https://www.tenant2.com'],
+    };
+```
+
+**File: `src/components/Header.tsx`** - Update satellite detection:
+```typescript
+const isSatellite = hostname.includes('tenant2.com');  // Your new domain
+
+if (isSatellite) {
+  // Redirect to primary for sign-out
+  window.location.href = `https://www.adwiise.com/auth/signout-redirect?redirect_url=${encodeURIComponent(window.location.origin)}`;
+}
+
+// In flag detection useEffect, update cookie clearing domains:
+const domains = [
+  window.location.hostname,
+  '.tenant2.com',   // Your new domain
+  'tenant2.com',    // Your new domain
+];
+```
+
+#### 3. DNS and Clerk Dashboard Setup
+
+1. **Register or configure domain** (tenant2.com)
+2. **Create hosted zone** in Route53
+3. **Add to AWS Amplify** (new app or branch)
+4. **Add CNAME records**:
+   - `www.tenant2.com` → Amplify app URL
+   - `clerk.www.tenant2.com` → `frontend-api.clerk.services` (from Clerk Dashboard)
+5. **Add to Clerk Dashboard** → Satellite domains → "Add satellite domain"
+6. **Verify satellite domain** in Clerk Dashboard
+
+#### 4. OAuth Configuration
+
+**Google OAuth** (or other OAuth providers):
+- Add `https://www.tenant2.com` to **Authorized JavaScript origins**
+- Add `https://www.tenant2.com/sso-callback` to **Authorized redirect URIs**
+
+#### 5. Deploy and Test
+
+1. **Deploy primary domain** (www.adwiise.com) with updated code
+2. **Deploy new satellite domain** (www.tenant2.com)
+3. **Test sign-in flow**:
+   - Visit www.tenant2.com
+   - Click "Sign in" → Should redirect to www.adwiise.com
+   - Sign in → Should redirect back to www.tenant2.com
+4. **Test sign-out flow**:
+   - Click "Sign out" on www.tenant2.com
+   - Should redirect to www.adwiise.com/auth/signout-redirect
+   - Should redirect back to www.tenant2.com with `?clerk_signout=true`
+   - Page should reload and show logged-out state
+
+### Quick Reference: Files to Update
+
+**Primary Domain (www.adwiise.com) - 2 files**:
+- [ ] `src/app/layout.tsx` - Add to `isSatellite` detection and `allowedRedirectOrigins`
+- [ ] `src/app/auth/signout-redirect/page.tsx` - Add to `allowedDomains` array
+
+**New Satellite Domain (tenant2.com) - 2 files**:
+- [ ] `src/app/layout.tsx` - Configure satellite with new domain
+- [ ] `src/components/Header.tsx` - Update satellite detection and cookie domains
+
+**External Services**:
+- [ ] Route53 DNS records (2 CNAMEs)
+- [ ] Clerk Dashboard (add and verify satellite domain)
+- [ ] Google OAuth (add authorized origins and redirects)
+- [ ] AWS Amplify (deploy changes)
+
+### Automated Setup Script (Optional)
+
+For multiple satellite domains, consider creating a setup script:
+
+```typescript
+// scripts/add-satellite-domain.ts
+
+const satelliteDomains = [
+  'mosc-temp.com',
+  'tenant2.com',
+  'tenant3.com',
+  // Add more domains here
+];
+
+// This array can be imported in layout.tsx and sign-out redirect page
+export const SATELLITE_DOMAINS = satelliteDomains;
+
+export const isHostnameSatellite = (hostname: string): boolean => {
+  return satelliteDomains.some(domain => hostname.includes(domain));
+};
+
+export const getAllowedRedirectOrigins = (): string[] => {
+  return satelliteDomains.map(domain => `https://www.${domain}`);
+};
+```
+
+Then in `layout.tsx`:
+```typescript
+import { isHostnameSatellite, getAllowedRedirectOrigins } from '@/scripts/add-satellite-domain';
+
+const isSatellite = isHostnameSatellite(hostname);
+const allowedRedirectOrigins = getAllowedRedirectOrigins();
+```
+
+This centralizes satellite domain configuration and reduces errors when adding new domains.
 
 ---
 
