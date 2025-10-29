@@ -113,6 +113,28 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
+  // CRITICAL: Check for sign-out flag IMMEDIATELY on mount, before Clerk loads
+  // This must run synchronously on first render
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const clerkSignedOut = urlParams.get('clerk_signout');
+
+    if (clerkSignedOut === 'true') {
+      console.log('[Header] DETECTED clerk_signout=true flag!');
+      console.log('[Header] Clearing flag and forcing hard reload...');
+
+      // Remove the flag from URL
+      urlParams.delete('clerk_signout');
+      const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+
+      // Force a HARD reload (clears cache) by using location.replace
+      console.log('[Header] Executing hard reload to:', newUrl);
+      window.location.replace(newUrl);
+    }
+  }, []); // Empty deps array = runs once on mount
+
   // Debug: Log auth state changes
   useEffect(() => {
     console.log('[Header] Auth state:', {
@@ -138,22 +160,7 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
         sessionStorage.removeItem('signout_debug_logs');
       }
 
-      // Check if we're returning from a sign-out on primary domain
-      const urlParams = new URLSearchParams(window.location.search);
-      const clerkSignedOut = urlParams.get('clerk_signout');
-
-      if (clerkSignedOut === 'true') {
-        console.log('[Header] Detected clerk_signout flag - forcing Clerk to reload session...');
-
-        // Remove the flag from URL
-        urlParams.delete('clerk_signout');
-        const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
-        window.history.replaceState({}, '', newUrl);
-
-        // Force a full page reload to clear Clerk's cached state
-        console.log('[Header] Forcing page reload to clear Clerk state...');
-        window.location.reload();
-      }
+      // Note: clerk_signout flag detection moved to separate useEffect that runs immediately on mount
     }
   }, [isLoaded, userId, user]);
 
