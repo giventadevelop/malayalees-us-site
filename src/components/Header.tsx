@@ -135,6 +135,9 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
       console.log('[Header] ===== DETECTED clerk_signout=true FLAG! =====');
       console.log('[Header] Clearing flag and forcing hard reload...');
 
+      // Log all cookies before clearing
+      console.log('[Header] Current cookies:', document.cookie);
+
       // Clear any Clerk-related storage on satellite domain
       try {
         // Clear localStorage items that might contain Clerk data
@@ -155,7 +158,30 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
           }
         });
 
-        console.log('[Header] Cleared Clerk-related storage');
+        // Try to clear Clerk cookies (this may not work due to HttpOnly/Secure flags)
+        const cookies = document.cookie.split(';');
+        cookies.forEach(cookie => {
+          const cookieName = cookie.split('=')[0].trim();
+          if (cookieName.includes('clerk') || cookieName.includes('__clerk') || cookieName.includes('__session')) {
+            console.log('[Header] Attempting to clear cookie:', cookieName);
+            // Try multiple domain variations
+            const domains = [
+              window.location.hostname,
+              '.mosc-temp.com',
+              'mosc-temp.com',
+              '.adwiise.com',
+              'adwiise.com',
+              ''
+            ];
+            domains.forEach(domain => {
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain}`;
+              document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+            });
+          }
+        });
+
+        console.log('[Header] Cleared Clerk-related storage and cookies');
+        console.log('[Header] Cookies after clearing:', document.cookie);
       } catch (e) {
         console.error('[Header] Error clearing storage:', e);
       }
@@ -176,6 +202,12 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
         console.log('[Header] ===== POST-SIGNOUT RELOAD COMPLETE =====');
         console.log('[Header] Flag was detected at:', detectedTime);
         console.log('[Header] Page has been reloaded, Clerk state should be cleared');
+        console.log('[Header] Cookies after reload:', document.cookie);
+
+        // List all cookies to help debug
+        const cookies = document.cookie.split(';').map(c => c.trim());
+        console.log('[Header] Cookie list:', cookies);
+
         sessionStorage.removeItem('clerk_signout_detected');
       }
     }
