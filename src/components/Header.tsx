@@ -118,20 +118,66 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // Debug: Always log the current URL to verify flag is present
+    const currentUrl = window.location.href;
+    console.log('[Header FLAG CHECK] Current URL:', currentUrl);
+    console.log('[Header FLAG CHECK] Search params:', window.location.search);
+
     const urlParams = new URLSearchParams(window.location.search);
     const clerkSignedOut = urlParams.get('clerk_signout');
 
+    console.log('[Header FLAG CHECK] clerk_signout flag value:', clerkSignedOut);
+
     if (clerkSignedOut === 'true') {
-      console.log('[Header] DETECTED clerk_signout=true flag!');
+      // Store debug info that persists across reload
+      sessionStorage.setItem('clerk_signout_detected', new Date().toISOString());
+
+      console.log('[Header] ===== DETECTED clerk_signout=true FLAG! =====');
       console.log('[Header] Clearing flag and forcing hard reload...');
+
+      // Clear any Clerk-related storage on satellite domain
+      try {
+        // Clear localStorage items that might contain Clerk data
+        const localStorageKeys = Object.keys(localStorage);
+        localStorageKeys.forEach(key => {
+          if (key.includes('clerk') || key.includes('__clerk')) {
+            console.log('[Header] Clearing localStorage key:', key);
+            localStorage.removeItem(key);
+          }
+        });
+
+        // Clear sessionStorage items (except our debug flag)
+        const sessionStorageKeys = Object.keys(sessionStorage);
+        sessionStorageKeys.forEach(key => {
+          if (key !== 'clerk_signout_detected' && (key.includes('clerk') || key.includes('__clerk'))) {
+            console.log('[Header] Clearing sessionStorage key:', key);
+            sessionStorage.removeItem(key);
+          }
+        });
+
+        console.log('[Header] Cleared Clerk-related storage');
+      } catch (e) {
+        console.error('[Header] Error clearing storage:', e);
+      }
 
       // Remove the flag from URL
       urlParams.delete('clerk_signout');
       const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
 
+      console.log('[Header] New URL after flag removal:', newUrl);
+      console.log('[Header] Executing hard reload NOW...');
+
       // Force a HARD reload (clears cache) by using location.replace
-      console.log('[Header] Executing hard reload to:', newUrl);
       window.location.replace(newUrl);
+    } else {
+      // Check if we just did a reload after sign-out
+      const detectedTime = sessionStorage.getItem('clerk_signout_detected');
+      if (detectedTime) {
+        console.log('[Header] ===== POST-SIGNOUT RELOAD COMPLETE =====');
+        console.log('[Header] Flag was detected at:', detectedTime);
+        console.log('[Header] Page has been reloaded, Clerk state should be cleared');
+        sessionStorage.removeItem('clerk_signout_detected');
+      }
     }
   }, []); // Empty deps array = runs once on mount
 
