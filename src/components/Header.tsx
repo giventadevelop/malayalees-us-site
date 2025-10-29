@@ -172,64 +172,38 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
     console.log('[Header] =============== SIGN OUT STARTED ===============');
     console.log('[Header] Sign out button clicked at:', new Date().toISOString());
 
-    // Store log in sessionStorage to survive page reload
-    const logs: string[] = [];
-    const addLog = (msg: string) => {
-      console.log(msg);
-      logs.push(msg);
-      sessionStorage.setItem('signout_debug_logs', JSON.stringify(logs));
-    };
-
     setIsSigningOut(true);
-    addLog('[Header] isSigningOut set to true');
 
-    try {
-      // Always try server-side sign out first (works even if Clerk client fails to load)
-      addLog('[Header] Calling server-side sign out API...');
+    // For satellite domains, redirect to primary domain's sign-out URL
+    // This is the ONLY way to properly clear Clerk cookies set by the primary domain
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    const isSatellite = hostname.includes('mosc-temp.com');
 
-      const startTime = Date.now();
-      const response = await fetch('/api/clerk-signout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const endTime = Date.now();
+    if (isSatellite) {
+      console.log('[Header] Satellite domain detected, redirecting to primary domain sign-out...');
 
-      addLog(`[Header] Server-side sign out response: ${response.status} (took ${endTime - startTime}ms)`);
+      // Redirect to primary domain's Clerk sign-out URL
+      // After sign-out, Clerk will redirect back to our satellite domain
+      const primarySignOutUrl = 'https://www.adwiise.com/sign-in#/sign-out';
+      const returnUrl = encodeURIComponent(window.location.origin);
 
-      if (response.ok) {
-        const data = await response.json();
-        addLog('[Header] Server-side sign out successful: ' + JSON.stringify(data));
-        addLog('[Header] Redirecting to home page...');
+      console.log('[Header] Redirecting to:', primarySignOutUrl);
+      console.log('[Header] Return URL:', returnUrl);
 
-        // Add a small delay to ensure logs are visible
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Force full page reload to clear all state
-        window.location.href = '/';
-        return;
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        addLog('[Header] Server-side sign out failed: ' + JSON.stringify(errorData));
-      }
-    } catch (serverError) {
-      addLog('[Header] Server-side sign out error: ' + String(serverError));
+      // Redirect to primary domain for sign out
+      window.location.href = `${primarySignOutUrl}?redirect_url=${returnUrl}`;
+      return;
     }
 
-    // Try client-side sign out as fallback
+    // For primary domain, use normal Clerk sign out
     try {
-      addLog('[Header] Attempting client-side sign out...');
+      console.log('[Header] Primary domain - using Clerk signOut()...');
       await signOut();
-      addLog('[Header] Client-side sign out successful');
-
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('[Header] Sign out successful');
       window.location.href = '/';
-    } catch (clientError) {
-      addLog('[Header] Client-side sign out failed: ' + String(clientError));
-      // Last resort: just redirect to home and hope cookies are cleared
-      addLog('[Header] Forcing redirect to clear state...');
-
-      await new Promise(resolve => setTimeout(resolve, 500));
-      window.location.href = '/';
+    } catch (error) {
+      console.error('[Header] Error signing out:', error);
+      setIsSigningOut(false);
     }
   };
 
