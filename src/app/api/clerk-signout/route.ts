@@ -56,14 +56,13 @@ export async function POST() {
 
     console.log('[Clerk Sign Out API] Clearing cookies:', cookiesToClear);
 
+    // Delete cookies - must use 'delete' not 'set' for Next.js
     cookiesToClear.forEach(cookieName => {
-      response.cookies.set(cookieName, '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 0,
+      response.cookies.delete(cookieName);
+      // Also try deleting with explicit options
+      response.cookies.delete({
+        name: cookieName,
         path: '/',
-        domain: undefined, // Let browser handle domain
       });
     });
 
@@ -92,13 +91,10 @@ export async function POST() {
     ];
 
     cookiesToClear.forEach(cookieName => {
-      response.cookies.set(cookieName, '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 0,
+      response.cookies.delete(cookieName);
+      response.cookies.delete({
+        name: cookieName,
         path: '/',
-        domain: undefined,
       });
     });
 
