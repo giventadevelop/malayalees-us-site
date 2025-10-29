@@ -121,6 +121,23 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
       userName: user?.firstName,
       hostname: typeof window !== 'undefined' ? window.location.hostname : 'server'
     });
+
+    // Check for sign out logs from previous page load
+    if (typeof window !== 'undefined') {
+      const savedLogs = sessionStorage.getItem('signout_debug_logs');
+      if (savedLogs) {
+        console.log('[Header] =============== PREVIOUS SIGN OUT LOGS ===============');
+        try {
+          const logs = JSON.parse(savedLogs);
+          logs.forEach((log: string) => console.log(log));
+          console.log('[Header] ===============================================');
+        } catch (e) {
+          console.error('[Header] Failed to parse saved logs');
+        }
+        // Clear the logs after displaying
+        sessionStorage.removeItem('signout_debug_logs');
+      }
+    }
   }, [isLoaded, userId, user]);
 
   // Prefer server-verified tenant admin flag when provided; otherwise fall back to Clerk metadata
@@ -152,42 +169,66 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
   };
 
   const handleSignOut = async () => {
-    console.log('[Header] Sign out button clicked');
+    console.log('[Header] =============== SIGN OUT STARTED ===============');
+    console.log('[Header] Sign out button clicked at:', new Date().toISOString());
+
+    // Store log in sessionStorage to survive page reload
+    const logs: string[] = [];
+    const addLog = (msg: string) => {
+      console.log(msg);
+      logs.push(msg);
+      sessionStorage.setItem('signout_debug_logs', JSON.stringify(logs));
+    };
+
     setIsSigningOut(true);
+    addLog('[Header] isSigningOut set to true');
 
     try {
       // Always try server-side sign out first (works even if Clerk client fails to load)
-      console.log('[Header] Calling server-side sign out...');
+      addLog('[Header] Calling server-side sign out API...');
+
+      const startTime = Date.now();
       const response = await fetch('/api/clerk-signout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
+      const endTime = Date.now();
 
-      console.log('[Header] Server-side sign out response:', response.status);
+      addLog(`[Header] Server-side sign out response: ${response.status} (took ${endTime - startTime}ms)`);
 
       if (response.ok) {
-        console.log('[Header] Server-side sign out successful, redirecting...');
+        const data = await response.json();
+        addLog('[Header] Server-side sign out successful: ' + JSON.stringify(data));
+        addLog('[Header] Redirecting to home page...');
+
+        // Add a small delay to ensure logs are visible
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         // Force full page reload to clear all state
         window.location.href = '/';
         return;
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error('[Header] Server-side sign out failed:', errorData);
+        addLog('[Header] Server-side sign out failed: ' + JSON.stringify(errorData));
       }
     } catch (serverError) {
-      console.error('[Header] Server-side sign out error:', serverError);
+      addLog('[Header] Server-side sign out error: ' + String(serverError));
     }
 
     // Try client-side sign out as fallback
     try {
-      console.log('[Header] Attempting client-side sign out...');
+      addLog('[Header] Attempting client-side sign out...');
       await signOut();
-      console.log('[Header] Client-side sign out successful');
+      addLog('[Header] Client-side sign out successful');
+
+      await new Promise(resolve => setTimeout(resolve, 500));
       window.location.href = '/';
     } catch (clientError) {
-      console.error('[Header] Client-side sign out failed:', clientError);
+      addLog('[Header] Client-side sign out failed: ' + String(clientError));
       // Last resort: just redirect to home and hope cookies are cleared
-      console.log('[Header] Forcing redirect to clear state...');
+      addLog('[Header] Forcing redirect to clear state...');
+
+      await new Promise(resolve => setTimeout(resolve, 500));
       window.location.href = '/';
     }
   };
