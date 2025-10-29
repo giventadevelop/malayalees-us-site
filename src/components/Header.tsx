@@ -137,6 +137,23 @@ export default function Header({ hideMenuItems = false, variant = 'charity', isT
         // Clear the logs after displaying
         sessionStorage.removeItem('signout_debug_logs');
       }
+
+      // Check if we're returning from a sign-out on primary domain
+      const urlParams = new URLSearchParams(window.location.search);
+      const clerkSignedOut = urlParams.get('clerk_signout');
+
+      if (clerkSignedOut === 'true') {
+        console.log('[Header] Detected clerk_signout flag - forcing Clerk to reload session...');
+
+        // Remove the flag from URL
+        urlParams.delete('clerk_signout');
+        const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+        window.history.replaceState({}, '', newUrl);
+
+        // Force a full page reload to clear Clerk's cached state
+        console.log('[Header] Forcing page reload to clear Clerk state...');
+        window.location.reload();
+      }
     }
   }, [isLoaded, userId, user]);
 
