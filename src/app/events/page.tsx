@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { EventWithMedia, EventDetailsDTO } from "@/types";
 import { formatInTimeZone } from 'date-fns-tz';
 import LocationDisplay from '@/components/LocationDisplay';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 // import { formatInTimeZone } from 'date-fns-tz';
 
 const EVENTS_PAGE_SIZE = 10;
@@ -899,27 +900,40 @@ export default function EventsPage() {
                 </div>
               ))}
             </div>
-            {/* Pagination controls */}
-            <div className="flex justify-center items-center mt-12 gap-4">
-              <button
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                disabled={page === 0}
-                className="px-6 py-3 rounded-xl bg-white hover:bg-gray-50 text-gray-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2"
-              >
-                <span>←</span>
-                <span>Previous</span>
-              </button>
-              <span className="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg">
-                Page {page + 1} of {totalPages}
-              </span>
-              <button
-                onClick={() => setPage((p) => (p + 1 < totalPages ? p + 1 : p))}
-                disabled={page + 1 >= totalPages}
-                className="px-6 py-3 rounded-xl bg-white hover:bg-gray-50 text-gray-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2"
-              >
-                <span>Next</span>
-                <span>→</span>
-              </button>
+            {/* Pagination controls - matching admin page style */}
+            <div className="mt-8">
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0 || loading}
+                  className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+                >
+                  <FaChevronLeft />
+                  Previous
+                </button>
+                <div className="text-sm font-semibold text-gray-700">
+                  Page {page + 1} of {totalPages}
+                </div>
+                <button
+                  onClick={() => setPage((p) => (p + 1 < totalPages ? p + 1 : p))}
+                  disabled={page + 1 >= totalPages || loading}
+                  className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+                >
+                  Next
+                  <FaChevronRight />
+                </button>
+              </div>
+              <div className="text-center text-sm text-gray-600 mt-2">
+                {events.length > 0 ? (
+                  <>
+                    Showing <span className="font-medium">{page * EVENTS_PAGE_SIZE + 1}</span> to{' '}
+                    <span className="font-medium">{page * EVENTS_PAGE_SIZE + events.length}</span> of{' '}
+                    <span className="font-medium">{events.length}</span> events
+                  </>
+                ) : (
+                  <span>No events found</span>
+                )}
+              </div>
             </div>
           </>
         )}
